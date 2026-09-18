@@ -29,31 +29,40 @@
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
-  /* ── Arah visual: tenang dan terpercaya ──
-     Latar krem lembut, bukan putih murni, untuk menekan silau (pemicu beban
-     sensorik). Kartu dan kendali tetap putih supaya lapisan terbaca dari
-     perbedaan latar dan garis, tanpa bayangan. */
+  /* ── Palet pilihan pemilik produk, bernomor 1 sampai 6 ──
+     Arahan penyesuaian cukup menyebut nomornya ("ganti 6 jadi ...").
+     Rasio kontras (WCAG 2.1):
+       1 vs 5 = 9,16 · 1 vs putih = 10,92 · 1 vs 6 = 7,93 · 1 vs 4 = 7,73
+       2 sampai 6 di bawah 3 terhadap latar terang mana pun, jadi HANYA untuk
+       latar, garis dekoratif, dan aksen, tidak pernah untuk teks. */
+  --color-p1: #363b58; /* teks, merek, tombol utama */
+  --color-p2: #a2a8b4; /* garis dekoratif tegas, ikon pasif */
+  --color-p3: #c1c5ce; /* garis dekoratif */
+  --color-p4: #d5d9e4; /* latar bagian, hover */
+  --color-p5: #ecebe9; /* latar halaman */
+  --color-p6: #e7dac7; /* aksen hangat: sorotan, ilustrasi */
 
-  /* ── Netral ── */
-  --color-canvas: #f8f9fa; /* latar halaman */
-  --color-ink: #212529; /* 14,63 vs canvas · 15,43 vs putih */
-  --color-ink-muted: #555c64; /* 6,42 vs canvas · 5,97 vs surface-alt */
-  --color-surface: #ffffff; /* kartu, kendali */
-  --color-surface-alt: #eef1f4; /* hover, bagian */
-  --color-line: #dee2e6; /* 1,30 vs putih. DEKORATIF SAJA, tidak untuk batas kendali */
-  --color-line-control: #6b7280; /* 4,59 vs canvas · 4,26 vs surface-alt */
+  /* ── Peran, dipetakan ke palet ──
+     Dua nada turunan warna 1 (lebih terang, hue sama) mengisi kebutuhan yang
+     tidak bisa dipenuhi 2 sampai 6: teks sekunder dan batas kendali. */
+  --color-canvas: var(--color-p5);
+  --color-ink: var(--color-p1);
+  --color-ink-muted: #565b70; /* 1 lebih terang. 5,64 vs 5 · 4,76 vs 4 */
+  --color-surface: #ffffff; /* kartu dan kendali */
+  --color-surface-alt: var(--color-p4);
+  --color-line: var(--color-p3); /* DEKORATIF SAJA */
+  --color-line-control: #6b7080; /* 1 lebih terang. 4,14 vs 5 · 3,50 vs 4 (>= 3) */
 
-  /* ── Merek: navy untuk kepala halaman, judul, dan tautan ── */
-  --color-brand: #1d3557; /* 11,72 vs canvas · 12,36 vs putih */
-  --color-on-brand: #f8f9fa; /* teks di atas navy, 11,72 */
-  --color-on-brand-focus: #c9d6e8; /* cincin fokus di atas navy, 8,40 */
-  /* Teal usulan (#2A9D8F) hanya 3,32 dengan teks putih, jadi tidak dipakai
-     untuk teks atau isian tombol. Ia tinggal sebagai aksen dekoratif. */
-  --color-accent: #2a9d8f;
+  --color-brand: var(--color-p1);
+  --color-on-brand: #ffffff; /* 10,92 di atas 1 */
+  --color-on-brand-focus: var(--color-p6); /* cincin fokus di atas 1, 7,93 */
+  --color-accent: var(--color-p6);
 
-  /* ── Aksi dan fokus ── */
-  --color-action: #1e7268; /* teal gelap. 5,73 vs putih; putih di atasnya juga 5,73 · 5,44 vs canvas */
-  --color-focus-ring: #1d3557; /* 11,72 vs canvas. Beda hue dari tombol teal */
+  /* ── Aksi dan fokus ──
+     Tombol utama berisi 1. Cincin fokus juga 1: terlihat karena JARAKNYA
+     2px dari tombol, duduk di latar terang. */
+  --color-action: var(--color-p1);
+  --color-focus-ring: var(--color-p1);
 
   /* ── Penilaian: SATU-SATUNYA warna semantik di produk ──
      garis vs isian (WCAG 1.4.11): tidak 4,86 · catatan 3,57 · dapat 4,47 · belum 3,71
@@ -95,9 +104,10 @@
   --text-label--line-height: 1.3;
   --text-label--font-weight: 600;
 
-  /* Radius: 4 kecil, 8 kartu dan kendali, 999 pil. */
+  /* Radius: 4 kecil, 8 kartu dan kendali, 16 panel mengambang, 999 pil. */
   --radius-sm: 4px;
   --radius-md: 8px;
+  --radius-lg: 16px;
   --radius-pill: 999px;
 
   /* Skala jarak satu-satunya: 4 8 12 16 24 32 48 64
@@ -144,7 +154,7 @@
   }
 
   /* ── A1: fokus selalu terlihat ──
-     focus-ring (navy) vs action (teal) hanya 2,16. Cincin fokus di tombol
+     focus-ring dan action sama-sama warna 1. Cincin fokus di tombol
      utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
      halaman, bukan di atas isian tombol. outline-offset 2px JANGAN diubah atau
      dihapus. Satu-satunya `outline: none` di produk ini ada di tautan kartu
@@ -302,4 +312,26 @@
 .leaflet-container .leaflet-bar a:focus-visible {
   outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+/* Peta layar penuh di beranda: kendali Leaflet digeser supaya tidak tertutup
+   kepala halaman di atas dan panel profil di bawah. */
+.peta-penuh .leaflet-top {
+  top: 8.5rem;
+}
+.peta-penuh .leaflet-bottom {
+  bottom: 12rem;
+}
+@media (min-width: 48rem) {
+  .peta-penuh .leaflet-top {
+    top: 6rem;
+  }
+  .peta-penuh .leaflet-bottom {
+    bottom: 8.5rem;
+  }
+}
+
+/* Latar di balik dialog panduan: warna 1, tembus pandang. */
+.panduan::backdrop {
+  background: rgb(54 59 88 / 0.6);
 }
