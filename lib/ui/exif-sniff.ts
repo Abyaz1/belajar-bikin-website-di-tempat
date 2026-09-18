@@ -1,5 +1,5 @@
 /**
- * Pengendus metadata berkas gambar, sisi klien, KHUSUS untuk /uji-kamera.
+ * Pengendus metadata berkas gambar, sisi klien, KHUSUS untuk /uji-kamera-produk.
  *
  * Ini bukan pemeriksaan keaslian. Pemeriksaan yang sah (C3) berjalan di server
  * atas byte yang benar-benar diterima. Berkas ini hanya menjawab pertanyaan tes
