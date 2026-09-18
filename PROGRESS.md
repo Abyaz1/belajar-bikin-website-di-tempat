@@ -71,6 +71,7 @@ sistem sejenis, dan di sini ada buktinya.
 | Tempat di produksi | 44 (39 OSM, 5 demo) | Cloud SQL |
 | Atribut terverifikasi tanpa jejak audit | 0 | pemeriksaan di akhir skrip benih |
 | Build produksi | berhasil, tanpa peringatan | `npm run build` |
+| EXIF pada tangkapan getUserMedia | tidak ada, juga tanpa tag GPS | Samsung Browser 30 / Android 10, 480x640, 40 KB, lewat /uji-kamera |
 | Jarak pHash antar pintu berbeda | terdekat 24, ambang 6, jarak aman 18 | `npm run phash:kalibrasi` atas 12 foto koridor, 66 pasangan |
 | Precision usulan model | step_count 1,00 (n=3) · ramp_wheelchair 1,00 (n=2) · tactile_paving tak terdefinisi | 36 citra berlabel manusia, gemini-3.8-flash, prompt 2026-09-18.v1 |
 | Atribut usulan AI yang dimatikan gerbang | 1 dari 3 (`tactile_paving`) | migrasi 202609182330, sudah berlaku di produksi |
@@ -100,11 +101,28 @@ foto pintu yang berbeda — 66 pasangan diuji, yang terdekat pun masih 24, jadi
 kekhawatiran "turunkan ke 4 kalau salah tolak" di CLAUDE.md §17 tidak terbukti
 dari sisi ini dan ambangnya dibiarkan 6.
 
-Yang **belum** terjawab, dan lebih penting: dua orang memotret pintu yang sama
-jatuh di jarak berapa. Pita penguatan C8 cuma 3–6. Kalau dua pemotret berbeda
-ternyata jatuh di atas 6, cabang "flag, bukan fail" itu tidak pernah menyala dan
-penguatan lintas kontributor tidak pernah tertangkap. Butuh dua foto pintu yang
-sama dari dua orang untuk mengukurnya; belum ada bahannya.
+Separuh yang belum terjawab sudah dapat petunjuk pertama, dan petunjuknya tidak
+menyenangkan. Dua HP memotret pintu yang sama dari jarak 2 cm menghasilkan jarak
+**16**, jauh di atas pita penguatan C8 yang cuma 3–6. Dua sentimeter praktis
+titik pandang yang sama, jadi kontribusi sungguhan dari dua orang akan lebih jauh
+lagi, bukan lebih dekat. Dugaan sementara: cabang "flag, bukan fail" untuk dua
+kontributor berbeda tidak pernah terjangkau.
+
+Angka 16 itu **hitungan peramban** dari halaman /uji-kamera, n=1, dan hash
+peramban bukan hash yang menegakkan C8 (median menyertakan DC, downscale canvas).
+Jadi ini petunjuk, belum bukti. Menyandingkannya dengan angka 24 di atas untuk
+menetapkan ambang baru justru kesalahan yang dihindari scripts/kalibrasi-phash.ts.
+Yang dibutuhkan: berkas JPEG dari kedua HP, dihitung ulang dengan modul server.
+
+Yang tidak terpengaruh, supaya tidak salah dibaca: tugas utama C8 — menangkap
+berkas daur ulang — tetap jalan, karena berkas yang sama menghasilkan jarak <=2.
+Dan corroboration_count di mesin status tidak memakai pHash sama sekali; dia
+menghitung contributor_id berbeda dengan nilai sama. Penguatan sebagai fitur
+produk tetap hidup.
+
+Kalau pita itu memang perlu dilebarkan, itu mengubah kontrak yang dibekukan
+(CLAUDE.md §17 justru mengantisipasi arah sebaliknya), jadi butuh persetujuan
+tiga engineer dan satu entri PERUBAHAN.md.
 
 ---
 
