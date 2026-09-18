@@ -216,6 +216,30 @@ di atas http. Dua sasaran yang sah:
 | `next dev` lokal | `npm run dev` lalu `TRUST_BASE_URL=http://localhost:3000` | `NODE_ENV=development`, cookie tanpa flag `Secure` |
 | Deployment Cloud Run | `TRUST_BASE_URL=https://<url-cloud-run>` | HTTPS, jadi cookie `Secure` terkirim normal |
 
+### Kalibrasi ambang pHash
+
+Ambang duplikat **harus diputuskan dari hash yang dihitung server**, bukan dari
+angka yang muncul di peramban. Keduanya berbeda karena dua hal: basis median
+(`app/uji-kamera/phash.ts` menyertakan koefisien DC, `lib/trust/image.ts`
+membuangnya) dan cara mengecilkan gambar (canvas vs `sharp`). Selisihnya terukur
+satu bit pada 200 dari 200 citra yang sama — cukup untuk membalik verdict di
+batas 2 dan 6.
+
+Skrip di bawah memanggil modul pHash yang persis sama dengan yang dijalankan C8:
+
+```bash
+npm run phash:kalibrasi -- --sama pintuA-orang1.jpg pintuA-orang2.jpg \
+                          --beda pintuB.jpg pintuC.jpg
+```
+
+`--sama` adalah foto pintu yang sama oleh orang berbeda; semua pasangannya harus
+masuk pita penguatan. `--beda` adalah foto pintu berbeda; tidak satu pun boleh
+dianggap cocok. Keluarannya menyebut jarak terjauh pada kelompok pertama, jarak
+terdekat pada kelompok kedua, dan rentang ambang yang memisahkan keduanya.
+
+Kalau celahnya sempit, sebut apa adanya sebagai batasan. Memilih satu angka di
+celah yang tidak memisahkan apa pun bukan kalibrasi.
+
 #### Mengulang satu jalan uji yang gagal
 
 Tabel `evidence` bersifat append-only dan memang tidak boleh dibersihkan, jadi
