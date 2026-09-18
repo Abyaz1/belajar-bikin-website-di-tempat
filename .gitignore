@@ -50,3 +50,6 @@ next-env.d.ts
 /docs/docs-20-verification.md
 /docs/docs-30-product.md
 /docs/docs-40-problem-owner.md
+
+# agent
+.claude/
