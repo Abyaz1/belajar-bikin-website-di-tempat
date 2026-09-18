@@ -200,7 +200,13 @@ Tidak pernah ada kredensial di dalam commit, sejak commit pertama.
 **Hanya E5 yang boleh menulis ke `observation` dan `attribute_state`.** Ini bukan konvensi,
 ini pagar. E4 menulis `evidence`, `provenance_check`, dan `audit_event` saja.
 
-Parameter `profil` wajib di E1 dan E2. Tanpa itu, 400.
+Parameter **`profile`** wajib di E1 dan E2. Tanpa itu, 400 `PROFILE_REQUIRED`.
+
+Perhatikan ejaannya, karena dua lapisan memakai kata yang berbeda dan itu disengaja
+menurut §14: API memakai **`profile`** (bahasa domain, Inggris), sedangkan URL halaman
+di bawah memakai **`profil`** (bahasa yang dilihat pengguna, Indonesia). Jadi
+`/tempat?profil=netra` benar, dan `/api/places?profile=netra` juga benar; menukar
+keduanya menghasilkan 400.
 
 ### URL halaman
 
