@@ -9,7 +9,7 @@ export interface LatLon {
 /**
  * Radius rata-rata bumi menurut IUGG (R1). Dipakai konsisten di seluruh
  * sistem supaya angka jarak di layar penolakan sama dengan angka di jejak audit.
- * HARUS sama dengan konstanta di trust_haversine_m (002_trust_functions.sql).
+ * HARUS sama dengan konstanta di trust_haversine_m (202609181301_trust_fungsi.sql).
  */
 const EARTH_MEAN_RADIUS_M = 6_371_008.8;
 

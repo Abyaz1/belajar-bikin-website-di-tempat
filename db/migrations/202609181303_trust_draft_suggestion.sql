@@ -1,5 +1,5 @@
 -- =====================================================================
--- 004_draft_suggestion.sql
+-- 202609181303_trust_draft_suggestion.sql
 --
 -- docs/10-trust.md §E5 mengunci kiriman klien ke [{attribute_code,
 -- confirmed_value}] — tanpa nilai usulan. Tapi observation punya

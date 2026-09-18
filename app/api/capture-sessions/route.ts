@@ -15,13 +15,15 @@ export const dynamic = 'force-dynamic';
 
 const VANTAGES: readonly Vantage[] = ['entrance', 'interior', 'toilet'];
 
+// Kolom mengikuti tabel attribute_type milik Verification
+// (202609181245_verifikasi_referensi.sql). allowed_values di sana NOT NULL dan
+// juga mencakup tipe integer — step_count disimpan sebagai '0'..'20' — sehingga
+// min_value dan max_value tidak ada lagi, dan tidak dibutuhkan.
 interface ClaimableRow {
   code: string;
   value_type: 'integer' | 'enum';
-  allowed_values: string[] | null;
-  min_value: number | null;
-  max_value: number | null;
-  is_required: boolean;
+  allowed_values: string[];
+  is_required_at_vantage: boolean;
 }
 
 /**
@@ -64,10 +66,13 @@ export async function POST(req: Request) {
       }
 
       const claimable = await c.query<ClaimableRow>(
-        `SELECT code, value_type, allowed_values, min_value, max_value, is_required
+        // Tabel Verification tidak punya sort_order. Diurutkan per code supaya
+        // urutannya tetap sama di tiap panggilan; kalau antarmuka butuh urutan
+        // tampil tertentu, itu kolom yang perlu diminta ke Verification.
+        `SELECT code, value_type, allowed_values, is_required_at_vantage
            FROM attribute_type
           WHERE vantage = $1
-          ORDER BY sort_order`,
+          ORDER BY code`,
         [vantage],
       );
 
@@ -100,15 +105,11 @@ export async function POST(req: Request) {
       expires_at: result.expiresAt.toISOString(),
       claimable: result.claimable.map((a) => ({
         attribute_code: a.code,
-        required: a.is_required,
+        required: a.is_required_at_vantage,
         value_type: a.value_type,
-        // 'not_visible' sah untuk atribut mana pun, dan sengaja TIDAK
-        // disimpan di allowed_values (CHECK di DDL). Ditambahkan di sini
-        // supaya klien bisa menampilkannya sebagai pilihan.
-        allowed_values:
-          a.value_type === 'enum' ? [...(a.allowed_values ?? []), 'not_visible'] : null,
-        min_value: a.min_value,
-        max_value: a.max_value,
+        // 'not_visible' sah untuk atribut mana pun dan tidak disimpan di tabel,
+        // jadi ditambahkan di sini supaya klien bisa menampilkannya.
+        allowed_values: [...a.allowed_values, 'not_visible'],
       })),
     });
   } catch (err) {

@@ -12,13 +12,14 @@ export const dynamic = 'force-dynamic';
 
 const NOT_VISIBLE = 'not_visible';
 
+// Kolom mengikuti tabel attribute_type milik Verification. allowed_values di
+// sana NOT NULL dan mencakup tipe integer juga ('0'..'20' untuk step_count),
+// sehingga satu aturan keanggotaan cukup untuk kedua tipe.
 interface AttributeRow {
   code: string;
   value_type: 'integer' | 'enum';
-  allowed_values: string[] | null;
-  min_value: number | null;
-  max_value: number | null;
-  is_required: boolean;
+  allowed_values: string[];
+  is_required_at_vantage: boolean;
 }
 
 /** Dibuang di sini supaya galat 409 tidak membocorkan draft milik orang lain. */
@@ -102,8 +103,8 @@ export async function POST(
 
       // ---- kamus atribut untuk vantage ini --------------------------
       const { rows: allowed } = await c.query<AttributeRow>(
-        `SELECT code, value_type, allowed_values, min_value, max_value, is_required
-           FROM attribute_type WHERE vantage = $1 ORDER BY sort_order`,
+        `SELECT code, value_type, allowed_values, is_required_at_vantage
+           FROM attribute_type WHERE vantage = $1 ORDER BY code`,
         [vantage],
       );
       const byCode = new Map(allowed.map((a) => [a.code, a]));
@@ -151,7 +152,7 @@ export async function POST(
 
       // ---- 5. atribut wajib tidak dikirim → 400 ---------------------
       for (const a of allowed) {
-        if (a.is_required && !seen.has(a.code)) {
+        if (a.is_required_at_vantage && !seen.has(a.code)) {
           throw badRequest(
             'REQUIRED_ATTRIBUTE_MISSING',
             `Atribut wajib ${a.code} belum diisi untuk titik pandang ${vantage}`,
@@ -164,25 +165,18 @@ export async function POST(
         const a = byCode.get(s.code) as AttributeRow;
         if (s.value === NOT_VISIBLE) continue;   // sah untuk atribut mana pun
 
-        if (a.value_type === 'enum') {
-          if (!(a.allowed_values ?? []).includes(s.value)) {
-            throw badRequest(
-              'VALUE_NOT_IN_VOCABULARY',
-              `Nilai "${s.value}" tidak sah untuk ${s.code}. ` +
-              `Pilihan: ${(a.allowed_values ?? []).join(', ')}, ${NOT_VISIBLE}`,
-            );
-          }
-        } else {
-          if (!/^-?\d+$/.test(s.value)) {
-            throw badRequest('VALUE_NOT_IN_VOCABULARY', `Nilai ${s.code} harus bilangan bulat`);
-          }
-          const n = Number(s.value);
-          if (n < (a.min_value ?? 0) || n > (a.max_value ?? 0)) {
-            throw badRequest(
-              'VALUE_NOT_IN_VOCABULARY',
-              `Nilai ${s.code} harus antara ${a.min_value} dan ${a.max_value}`,
-            );
-          }
+        // Satu aturan untuk kedua tipe: nilai harus ada di kosakata atribut.
+        // Rentang integer tidak lagi diperiksa dengan min/max karena kosakata
+        // integer pun tersimpan utuh sebagai daftar nilai yang sah.
+        if (!a.allowed_values.includes(s.value)) {
+          const pilihan =
+            a.value_type === 'integer' && a.allowed_values.length > 2
+              ? `${a.allowed_values[0]}..${a.allowed_values[a.allowed_values.length - 1]}`
+              : a.allowed_values.join(', ');
+          throw badRequest(
+            'VALUE_NOT_IN_VOCABULARY',
+            `Nilai "${s.value}" tidak sah untuk ${s.code}. Pilihan: ${pilihan}, ${NOT_VISIBLE}`,
+          );
         }
       }
 
