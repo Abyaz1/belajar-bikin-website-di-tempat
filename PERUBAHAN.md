@@ -1257,3 +1257,40 @@ tidak ada" sampai ke level data. Foto yang tidak memperlihatkan ramp tidak
 menghasilkan catatan "tidak ada ramp". Akibatnya tercatat terbuka: sebagian
 jawaban model adalah `not_visible`, sehingga usulan yang bisa dinilai jadi lebih
 sedikit (entri 30).
+
+---
+
+## 43. Lapis terverifikasi dipersempit ke gedung Unpad Dipatiukur; seed OSM koridor tetap jadi latar
+
+**Kondisi di proposal:** Exsum 3.5 menetapkan penerapan awal pada satu koridor yang
+dilalui satu komunitas, yaitu rute kampus, halte, dan fasilitas kesehatan terdekat.
+Seluruh koridor itu dibayangkan menjadi wilayah verifikasi.
+
+**Yang diubah:**
+- Wilayah yang diverifikasi dengan foto dipersempit ke gedung-gedung Universitas
+  Padjadjaran di Jalan Dipati Ukur. Saat entri ini ditulis, lapis terverifikasi
+  berisi satu tempat, dengan 7 atribut yang punya bukti foto, hasil pemeriksaan
+  keaslian, dan jejak audit.
+- Hasil penyemaian OSM untuk seluruh koridor tetap dipertahankan sebagai latar:
+  39 tempat berupa kampus, fasilitas kesehatan, dan halte, semuanya berstatus belum
+  terverifikasi. Tempat-tempat itu tetap tampil di daftar dan peta, dan penilaiannya
+  "belum dapat dipastikan" untuk semua profil.
+
+**Alasan perubahan:** Verifikasi harus terjangkau dalam 24 jam. Satu kontribusi yang
+sah menuntut kontributor berdiri di depan pintu masuk, dalam radius 75–120 m dari
+titik tempat, dengan fix GPS segar. Artinya setiap tempat terverifikasi butuh
+kunjungan fisik. Gedung Unpad Dipatiukur berada dalam jangkauan tim selama
+acara. Halte dan fasilitas kesehatan di sepanjang koridor tidak bisa didatangi
+satu per satu sambil tetap membangun sistemnya.
+
+**Dampak terhadap masalah inti:** Keputusan ini justru menguatkan masalah inti.
+Masalah yang kami angkat adalah platform yang menyimpan klaim tanpa bukti. Dengan
+lapis terverifikasi yang sempit di atas latar OSM yang luas, perbandingannya
+terlihat langsung di layar yang sama:
+- segelintir atribut membawa foto, tanggal, dan jejak audit;
+- puluhan tempat lain hanya punya lokasi dan, paling banyak, klaim pihak ketiga
+  yang tidak dipakai untuk menilai.
+
+Batasnya dinyatakan: cakupan terverifikasi jauh lebih kecil dari koridor yang
+dijanjikan Exsum, dan halte serta fasilitas kesehatan belum punya satu pun bukti
+berfoto.
