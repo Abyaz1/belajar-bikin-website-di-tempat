@@ -1,8 +1,5 @@
-/**
- * Nama produk di satu tempat. PRD menyebut nama ditetapkan problem owner di
- * jam 0; "Jejak Akses" dipakai sampai ada keputusan lain. Ganti di sini saja.
- */
-export const PRODUCT_NAME = "Jejak Akses";
+/** Nama produk di satu tempat — ditetapkan tim: Astara. */
+export const PRODUCT_NAME = "Astara";
 
 /** Mode data contoh untuk mengembangkan antarmuka sebelum endpoint siap.
  *  Mati secara bawaan. Kalau menyala, setiap halaman menampilkan bilah

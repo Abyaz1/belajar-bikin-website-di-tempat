@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files: .env dan semua turunannya; hanya .env.example (nama variabel saja) yang di-commit
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# arahan agent AI dari create-next-app / next dev (tidak di-commit)
+/AGENTS.md
+/CLAUDE.md
+
+# spek internal tim, dibagikan di luar repo (tidak di-commit)
+/docs/docs-00-KONTRAK.md
+/docs/docs-10-trust.md
+/docs/docs-20-verification.md
+/docs/docs-30-product.md
+/docs/docs-40-problem-owner.md
