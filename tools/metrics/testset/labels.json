@@ -9,8 +9,8 @@
       "kelompok_asal": "layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.26.jpeg",
       "label": {
-        "step_count": "",
-        "ramp_wheelchair": "",
+        "step_count": "3",
+        "ramp_wheelchair": "ada",
         "tactile_paving": ""
       }
     },
@@ -23,8 +23,8 @@
       "berkas_asal": "WhatsApp Image 2026-09-18 at 18.41.07 (1).jpeg",
       "label": {
         "step_count": "",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "ramp_wheelchair": "3",
+        "tactile_paving": "ada"
       }
     },
     {
@@ -35,7 +35,7 @@
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.16 (1).jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "5",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -48,8 +48,8 @@
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.21.jpeg",
       "label": {
-        "step_count": "",
-        "ramp_wheelchair": "",
+        "step_count": "2",
+        "ramp_wheelchair": "ada",
         "tactile_paving": ""
       }
     },
@@ -74,7 +74,7 @@
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.28.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "3",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -87,7 +87,7 @@
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.30.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "2",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -100,7 +100,7 @@
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.16.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "6",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -113,7 +113,7 @@
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.27.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "3",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -126,7 +126,7 @@
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.29 (1).jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "6",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -139,7 +139,7 @@
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.29.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "6",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
@@ -152,7 +152,7 @@
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 18.41.07.jpeg",
       "label": {
-        "step_count": "",
+        "step_count": "2",
         "ramp_wheelchair": "",
         "tactile_paving": ""
       }
