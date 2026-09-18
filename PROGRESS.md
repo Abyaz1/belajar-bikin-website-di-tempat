@@ -69,7 +69,8 @@ sistem sejenis, dan di sini ada buktinya.
 | Unit test seluruh repo | 285 lolos, 2 dilewati | `npm test` |
 | Uji penolakan | 55 lolos, sepuluh atau lebih per kelas | `pytest tests/rejection` |
 | Tempat di produksi | 44 (39 OSM, 5 demo) | Cloud SQL |
-| Atribut terverifikasi tanpa jejak audit | 0 | pemeriksaan di akhir skrip benih |
+| Atribut terverifikasi tanpa jejak audit | 0 | `npm run periksa:keutuhan` atas Cloud SQL produksi |
+| Aturan jalur tulis yang terbukti berlaku di basis data hidup | 11 dari 11 | idem; append-only dibuktikan dengan mencoba UPDATE/DELETE, bukan membaca kebijakan |
 | Build produksi | berhasil, tanpa peringatan | `npm run build` |
 | EXIF pada tangkapan getUserMedia | tidak ada, juga tanpa tag GPS | Samsung Browser 30 / Android 10, 480x640, 40 KB, lewat /uji-kamera |
 | Jarak pHash antar pintu berbeda | terdekat 24, ambang 6, jarak aman 18 | `npm run phash:kalibrasi` atas 12 foto koridor, 66 pasangan |
@@ -146,6 +147,31 @@ lebih tepat daripada kemiripan citra, karena yang menguatkan sebuah fakta adalah
 dua orang menyatakan hal yang sama, bukan dua foto yang mirip. Pita pHash itu
 sedari awal jalur kedua untuk sesuatu yang sudah punya jalur pertama yang lebih
 baik. Yang hilang karena ia tidak terjangkau, karena itu, kecil.
+
+Keutuhan jalur tulis sekarang bisa dibuktikan kapan saja, bukan cuma saat
+menyemai. `npm run periksa:keutuhan` menguji sebelas hal atas basis data yang
+sedang hidup dan keluar dengan kode 1 kalau ada yang gagal. Yang penting dari cara
+kerjanya: append-only tidak diperiksa dengan membaca daftar kebijakan RLS,
+melainkan dengan benar-benar menjalankan UPDATE dan DELETE di dalam transaksi
+lalu me-rollback-nya, dan menghitung baris yang terpengaruh. Membaca kebijakan
+tidak membuktikan apa pun kalau peran koneksinya ternyata ber-BYPASSRLS — dan
+kegagalan itu diam: tidak ada galat, barisnya cuma tidak berubah. Peran koneksi
+karena itu ikut diperiksa lebih dulu.
+
+Hasil atas produksi: 11 dari 11 lolos, nol atribut terverifikasi tanpa jejak
+audit. Sempat terbaca 12 cacat, tapi itu kueri pemeriksanya yang salah alamat —
+kode atribut ada di `payload_snapshot->'after'`, bukan di akar payload. Diperiksa
+dulu sebelum dilaporkan sebagai cacat; datanya memang bersih.
+
+Uji penolakan tidak dijalankan ulang malam ini, dan itu disengaja. Suite-nya uji
+kotak-hitam lewat HTTP, jadi dia menulis ke basis data mana pun yang dipakai
+aplikasi. Produksi baru punya 8 baris bukti; menjalankan 55 kasus ke sana akan
+menambahkan puluhan baris uji yang PERMANEN, karena tabelnya append-only, tepat
+di basis data yang mungkin dibuka juri. Keutuhannya diperiksa statis: 55 kasus,
+dan keempat kelas yang diminta docs-10 §5 masing-masing 11, 11, 14, dan 10.
+Untuk menjalankannya sungguhan, pakai Postgres lokal dan `next dev` — bukan
+`next start`, yang memaksa NODE_ENV=production sehingga cookie Secure tidak
+pernah kembali lewat http.
 
 Skrip kalibrasinya sendiri sempat menutupi ini: dia hanya menganggap hasil `fail`
 sebagai masalah, sehingga pasangan yang terlewat (`none`) dilaporkan sebagai
