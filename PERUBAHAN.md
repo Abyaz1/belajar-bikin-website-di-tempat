@@ -1157,6 +1157,17 @@ kelas serangan di luar ketiganya.
   radius, 10 berkas daur ulang, **11 unggahan bersih lewat API langsung**, ditambah
   6 kasus sesi dan waktu serta 3 pagar aturan. Pada jalan terakhir yang tercatat,
   55 dari 55 sesuai harapan.
+- Suite lengkap dijalankan di lingkungan terpisah, bukan ke produksi. Tabel bukti
+  bersifat append-only, jadi 55 kiriman uji akan meninggalkan puluhan baris permanen
+  di basis data yang dibuka juri. Sebagai gantinya, **enam kiriman bermasalah**
+  dijalankan lewat E4 produksi ke tempat khusus "Gedung Latihan Uji Penolakan":
+  unggahan galeri ber-EXIF, foto lokasi lain (17.171 m, batas 120 m), ketelitian
+  lokasi rendah (500 m, batas 150 m), selisih waktu 3.600 detik, berkas daur ulang
+  (Hamming 0), dan satu kiriman yang gagal di empat pemeriksaan sekaligus. **Enam
+  ditolak, nol lolos (n=6).** Satu kiriman bersih di tempat yang sama diterima.
+- Sesudahnya, setiap bukti yang gagal di produksi punya catatan audit
+  `provenance_failed`, dan tidak satu pun atribut tersimpan dari bukti yang gagal
+  (aturan 4, diperiksa dengan `npm run periksa:keutuhan`).
 - Di tiga kelas Exsum, setiap kiriman yang dirancang bermasalah ditolak, jadi yang
   lolos 0 persen. Suite yang sama juga memuat kasus kendali yang **harus** diterima,
   misalnya foto berbeda di tempat yang sama, dan kasus itu memang diterima.
@@ -1181,7 +1192,7 @@ menunjukkan persis di mana batas itu berada.
 
 ---
 
-## 40. Beban kontribusi dilaporkan: 2 dari 8 kontribusi lewat 60 detik
+## 40. Beban kontribusi dilaporkan: pintu masuk 30,6 dan 61,2 detik (n=2)
 
 **Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4): beban kontribusi di bawah 60
 detik per lokasi, diuji pada anggota tim dan peserta lain di lokasi acara, dan
@@ -1189,25 +1200,35 @@ angkanya dinyatakan bersifat awal.
 
 **Yang diubah:** Beban diukur dari jam server, bukan stopwatch (`npm run ukur:beban`):
 dari layar titik pandang dibuka (`capture_session.issued_at`) sampai konfirmasi
-tersimpan (`observation.observed_at`). Hasil atas 8 kontribusi yang selesai sampai
-konfirmasi di basis data produksi:
+tersimpan (`observation.observed_at`). Metriknya dihitung hanya untuk titik pandang
+**wajib**, yaitu pintu masuk (CLAUDE.md §5), karena titik pandang lain menuntut
+satu atribut dan tidak memanggil model.
 
-| titik pandang | n | median | terlama | lewat 60 dtk |
-|---|---|---|---|---|
-| pintu masuk | 3 | 30,6 dtk | 61,2 dtk | 1 |
-| dalam gedung | 2 | 26,6 dan 71,2 dtk | 71,2 dtk | 1 |
-| toilet | 3 | 7,6 dtk | 28,9 dtk | 0 |
-| semua | 8 | 30,1 dtk | 71,2 dtk | **2** |
+| titik pandang | kontribusi | total per kontribusi | lewat 60 dtk |
+|---|---|---|---|
+| **pintu masuk (metrik)** | 2 | **61,2 dtk** dan **30,6 dtk** | 1, lewat 1,2 dtk |
+| toilet (pembanding) | 3 | 28,9 · 7,6 · 7,3 dtk | 0 |
+| dalam gedung (pembanding) | 2 | 71,2 · 26,6 dtk | 1 |
+
+Satu kontribusi lain di basis data (Gedung Latihan Uji Penolakan, waktu siapkan
+dan kirim 1,0 detik) berasal dari pengujian jalur tulis lewat skrip, bukan dari
+orang yang memotret. Kontribusi itu tidak dihitung.
 
 **Alasan perubahan:** Exsum menjanjikan angka ini tanpa menyebut cara mengukurnya.
 Jam server tidak bisa salah tekan dan bisa diulang siapa pun dari basis data yang
-sama. Jam klien sengaja tidak dipakai karena bisa dinyatakan apa saja.
+sama. Jam klien sengaja tidak dipakai karena bisa dinyatakan apa saja. Titik pandang
+tidak dirata-ratakan jadi satu. Kalau dicampur, kontribusi toilet yang cepat membuat
+median turun ke kisaran 29 detik, padahal tidak ada satu pun kontribusi pintu masuk
+secepat itu.
 
-**Dampak terhadap masalah inti:** Target 60 detik tercapai di median, tetapi tidak
-di setiap kontribusi. Dua kontribusi melewatinya dan tetap dihitung, tidak dibuang.
-Pintu masuk, satu-satunya titik pandang wajib, menuntut enam atribut dan satu
-panggilan model, jadi paling berat. Sampelnya kecil dan pesertanya anggota tim,
-bukan pengguna sasaran, sesuai batas yang sudah dinyatakan Exsum.
+**Dampak terhadap masalah inti:** Target 60 detik tercapai pada satu dari dua
+kontribusi pintu masuk; yang lain lewat 1,2 detik dan tetap dihitung. Percobaan
+kedua memakan separuh waktu percobaan pertama. Itu efek belajar, dan kontributor
+sungguhan juga baru pertama kali mencoba, jadi angka percobaan pertama yang lebih
+mewakili mereka. Selisih antara pintu masuk dan toilet memperlihatkan porsi
+anggaran yang dihabiskan panggilan model dan enam atribut. Sampelnya dua, dan
+pesertanya anggota tim, bukan pengguna sasaran, sesuai batas yang sudah dinyatakan
+Exsum.
 
 ---
 
