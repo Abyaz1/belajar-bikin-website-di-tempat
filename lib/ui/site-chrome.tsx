@@ -99,28 +99,52 @@ export function FixtureBanner() {
   );
 }
 
-/** Kaki halaman. Tidak tampil di halaman peta: di sana peta memenuhi layar dan atribusinya ada di peta. */
+/**
+ * Kaki halaman: latar warna 1 (Tinta Malam), teks putih. Tidak tampil di
+ * halaman peta: di sana peta memenuhi layar dan atribusinya ada di peta.
+ */
 export function SiteFooter() {
   const path = usePathname() ?? "/";
   if (path === "/peta") return null;
+  const TAUTAN = "text-on-brand underline underline-offset-2 hover:decoration-2";
   return (
-    <footer className="mt-16 border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-6 px-3 py-8 text-meta text-ink-muted md:grid-cols-2 md:px-6">
-        <div className="space-y-2">
-          <p className="font-semibold text-ink">{PRODUCT_NAME}</p>
-          <p>
-            Daftar lokasi bersumber dari{" "}
-            <a href="https://www.openstreetmap.org/copyright">© kontributor OpenStreetMap</a>, dilisensikan ODbL.
-            Kondisi fisik tiap lokasi berasal dari kontribusi berfoto yang lolos pemeriksaan.
+    <footer className="on-brand mt-16 bg-brand text-on-brand">
+      <div className="mx-auto grid max-w-6xl gap-8 px-3 py-10 text-meta md:grid-cols-[2fr_1fr_1fr] md:px-6">
+        <div className="space-y-3">
+          <p className="flex items-center gap-3 text-card font-bold">
+            <span className="rounded-[0.6rem] ring-2 ring-on-brand/40">
+              <BrandMark />
+            </span>
+            {PRODUCT_NAME}
+          </p>
+          <p className="max-w-md">
+            Kondisi fisik fasilitas publik, berbukti foto, tanggal, dan hasil pemeriksaan keaslian. Dinilai menurut
+            kebutuhan Anda.
           </p>
         </div>
-        <div className="space-y-2">
-          <p className="font-semibold text-ink">Untuk pengujian</p>
+        <nav aria-label="Tautan kaki halaman" className="space-y-3">
+          <p className="font-bold">Jelajahi</p>
+          <ul className="space-y-2">
+            <li><Link className={TAUTAN} href="/peta">Peta</Link></li>
+            <li><Link className={TAUTAN} href="/tempat">Daftar tempat</Link></li>
+            <li><Link className={TAUTAN} href="/profil">Aturan penilaian</Link></li>
+            <li><Link className={TAUTAN} href="/cara-kerja">Cara kerja</Link></li>
+          </ul>
+        </nav>
+        <div className="space-y-3">
+          <p className="font-bold">Untuk pengujian</p>
           <p>
-            <Link href="/uji-penolakan">Perkakas uji penolakan</Link>: coba kirim foto yang tidak sah dan lihat
-            alasan penolakannya.
+            <Link className={TAUTAN} href="/uji-penolakan">Perkakas uji penolakan</Link>: coba kirim foto yang tidak
+            sah dan lihat alasan penolakannya.
           </p>
         </div>
+      </div>
+      <div className="border-t border-on-brand/20">
+        <p className="mx-auto max-w-6xl px-3 py-4 text-label font-normal md:px-6">
+          Daftar lokasi bersumber dari{" "}
+          <a className={TAUTAN} href="https://www.openstreetmap.org/copyright">© kontributor OpenStreetMap</a>,
+          dilisensikan ODbL. Kondisi fisik tiap lokasi berasal dari kontribusi berfoto yang lolos pemeriksaan.
+        </p>
       </div>
     </footer>
   );
