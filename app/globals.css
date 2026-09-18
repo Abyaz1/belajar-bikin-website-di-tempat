@@ -135,7 +135,12 @@
   }
 
   /* Kata panjang (kode alasan, URL) tidak boleh memaksa scroll mendatar saat
-     halaman diperbesar 200%. */
+     halaman diperbesar 200%. `overflow-x: clip` memotong elemen selebar layar
+     (100vw termasuk lebar scrollbar) tanpa membuat wadah gulir baru. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     overflow-wrap: break-word;
   }
@@ -345,4 +350,14 @@
 .peta-latar.leaflet-container {
   background: var(--color-p5);
   cursor: default;
+}
+
+/* Kolom pilihan tanpa bingkai (formulir cari di beranda): panah kecil warna 1
+   supaya tetap terbaca sebagai dropdown. */
+.pilih {
+  padding-inline-end: 1.125rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23363b58' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 0.875rem;
 }

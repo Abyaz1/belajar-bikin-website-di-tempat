@@ -27,7 +27,7 @@ function pilihUnggulan(places: PlaceSummary[]): PlaceSummary | null {
   return [...places].sort((a, b) => diperiksa(b) - diperiksa(a))[0] ?? null;
 }
 
-const FIELD = "block w-full min-h-12 appearance-none bg-transparent pe-6 text-body font-semibold text-ink";
+const FIELD = "pilih block w-full min-h-12 appearance-none bg-transparent text-meta font-semibold text-ink sm:text-body";
 
 export default async function Page({ searchParams }: PageProps<"/">) {
   const raw = (await searchParams).profil;
@@ -57,24 +57,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   return (
     <div className="space-y-16 md:space-y-24">
       {/* ── Hero di atas peta pudar ── */}
-      <section className="relative -mx-3 overflow-hidden rounded-lg md:mx-0">
-        <div className="absolute inset-x-0 bottom-0 top-[26rem] md:top-[21rem] [mask-image:linear-gradient(to_bottom,transparent,black_18%)]">
-          <MapView
-            latar
-            label=""
-            places={places.map((p) => ({
-              id: p.id,
-              name: p.name,
-              lat: p.lat,
-              lon: p.lon,
-              verdict: p.verdict,
-              verdictText: verdictWithProfile(p.verdict, profile),
-              href: `/tempat/${encodeURIComponent(p.id)}?profil=${profile}`,
-            }))}
-          />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-3xl space-y-6 px-4 pt-6 text-center md:pt-10">
+      {/* Hero setinggi sisa layar; petanya membentang selebar layar (bukan
+          selebar kolom isi) dan memudar di tepi atas dan bawah. */}
+      <section className="relative isolate flex min-h-[calc(100dvh-8rem)] flex-col">
+        <div className="relative z-10 mx-auto max-w-3xl space-y-4 px-2 pt-2 text-center md:space-y-6 md:px-4 md:pt-10">
           <Link
             href="/cara-kerja"
             className="inline-flex min-h-12 items-center gap-2 rounded-pill border border-line bg-surface px-3 text-meta font-semibold text-ink no-underline hover:bg-surface-alt"
@@ -83,7 +69,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             Apa itu Astara?
           </Link>
 
-          <h1 className="text-[2.25rem] leading-[1.15] font-bold tracking-tight text-ink md:text-[3.5rem]">
+          <h1 className="text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
             Periksa kondisi tempat{" "}
             <span className="inline-block h-[0.95em] w-[1.6em] translate-y-[0.12em] overflow-hidden rounded-pill align-baseline">
               <IlustrasiKursiRoda className="h-full w-full" />
@@ -91,19 +77,39 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             sebelum berangkat
           </h1>
 
-          <p className="mx-auto max-w-xl text-card font-normal text-ink-muted">
+          <p className="mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
             Anak tangga, ramp, lebar pintu, dan jalur pemandu, masing-masing dengan foto, tanggal foto diambil, dan hasil
             pemeriksaan keasliannya.
           </p>
+        </div>
+
+        {/* Peta berlabuh di formulir: mulai setengah tinggi formulir dan
+            memanjang sampai akhir hero, di ukuran layar apa pun. */}
+        <div className="relative mt-6 flex flex-1 flex-col md:mt-8">
+          <div className="absolute bottom-0 left-1/2 top-8 -z-10 w-screen -translate-x-1/2 [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]">
+            <MapView
+              latar
+              label=""
+              places={places.map((p) => ({
+                id: p.id,
+                name: p.name,
+                lat: p.lat,
+                lon: p.lon,
+                verdict: p.verdict,
+                verdictText: verdictWithProfile(p.verdict, profile),
+                href: `/tempat/${encodeURIComponent(p.id)}?profil=${profile}`,
+              }))}
+            />
+          </div>
 
           <form
             method="get"
             action="/tempat"
             role="search"
             aria-label="Cari tempat"
-            className="mx-auto grid max-w-2xl grid-cols-1 items-center gap-2 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
+            className="relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
           >
-            <label className="block rounded-md px-3 py-1 hover:bg-surface-alt sm:border-e sm:border-line">
+            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
               <span className="block text-label font-normal text-ink-muted">Profil kebutuhan</span>
               <select name="profil" defaultValue={profile} className={FIELD}>
                 {PROFILES.map((p) => (
@@ -113,7 +119,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 ))}
               </select>
             </label>
-            <label className="block rounded-md px-3 py-1 hover:bg-surface-alt sm:border-e sm:border-line">
+            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
               <span className="block text-label font-normal text-ink-muted">Jenis tempat</span>
               <select name="q" defaultValue="" className={FIELD}>
                 {JENIS.map((j) => (
@@ -123,7 +129,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 ))}
               </select>
             </label>
-            <label className="block rounded-md px-3 py-1 hover:bg-surface-alt">
+            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3">
               <span className="block text-label font-normal text-ink-muted">Tampilan</span>
               <select name="tampilan" defaultValue="daftar" className={FIELD}>
                 <option value="daftar">Daftar</option>
@@ -132,16 +138,15 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             </label>
             <button
               type="submit"
-              className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-pill bg-action px-5 font-semibold text-on-brand hover:opacity-90 sm:ms-2 sm:size-12 sm:px-0"
+              className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 self-center rounded-pill bg-action px-4 font-semibold text-on-brand hover:opacity-90 sm:ms-2 sm:size-12 sm:px-0"
             >
               <IconSearch />
-              <span className="sm:sr-only">Cari tempat</span>
+              <span className="sm:sr-only">Cari</span>
             </button>
           </form>
-        </div>
 
         {/* Tempat unggulan melayang di atas peta */}
-        <div className="relative z-10 mx-auto mt-12 w-[min(19rem,calc(100%-2rem))] pb-8 md:mt-16">
+        <div className="relative z-10 mx-auto mt-10 w-[min(19rem,calc(100%-2rem))] pb-16 md:mt-16">
           {unggulan ? (
             <article className="card-link overflow-hidden rounded-lg border border-line bg-surface p-2">
               <div className="relative aspect-[16/10] overflow-hidden rounded-md bg-p4">
@@ -199,6 +204,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           <p className="mt-4 text-center text-label font-normal text-ink-muted">
             Peta: <a href="https://www.openstreetmap.org/copyright">© kontributor OpenStreetMap</a>, ODbL
           </p>
+        </div>
         </div>
       </section>
 
