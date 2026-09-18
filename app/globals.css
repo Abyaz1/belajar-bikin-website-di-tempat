@@ -223,6 +223,14 @@
     border-color: var(--color-action);
   }
 
+  /* Tautan jejak halaman: sasaran sentuh 44px (spek 30 §2) walau tampil
+     sebagai teks meta satu baris. */
+  .breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+
   /* Label data demonstrasi: garis tepi kiri bermotif diagonal. */
   .demo-stripe {
     border-inline-start: 0.5rem solid transparent;
