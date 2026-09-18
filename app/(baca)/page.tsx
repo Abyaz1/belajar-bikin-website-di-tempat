@@ -84,26 +84,16 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const unpad = unggulan ? adalahUnpad(unggulan.name) : false;
 
   return (
+    <>
     <div className="space-y-16 md:space-y-24">
       {/* ── Hero di atas peta pudar ── */}
       {/* Hero setinggi sisa layar; petanya membentang selebar layar (bukan
           selebar kolom isi) dan memudar di tepi atas dan bawah. */}
       <section className="relative isolate flex min-h-[calc(100dvh-8rem)] flex-col">
         <div className="relative z-10 mx-auto max-w-3xl space-y-4 px-2 pt-2 text-center md:space-y-6 md:px-4 md:pt-10">
-          <Link
-            href="/cara-kerja"
-            className="inline-flex min-h-12 items-center gap-2 rounded-pill border border-line bg-surface px-3 text-meta font-semibold text-ink no-underline hover:bg-surface-alt"
-          >
-            <span aria-hidden="true" className="size-3 rounded-pill bg-tidak-line" />
-            Apa itu Astara?
-          </Link>
 
           <h1 className="text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
-            Periksa kondisi tempat{" "}
-            <span className="inline-block h-[0.95em] w-[1.6em] translate-y-[0.12em] overflow-hidden rounded-pill align-baseline">
-              <IlustrasiKursiRoda className="h-full w-full" />
-            </span>{" "}
-            sebelum berangkat
+            Periksa kondisi tempat sebelum berangkat
           </h1>
 
           <p className="mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
@@ -253,11 +243,13 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
-      {/* Bagian bawah beranda: doodle samar selebar layar mengisi ruang kosong. Dekoratif. */}
+      {/* Bagian bawah beranda: doodle samar selebar layar mengisi ruang kosong
+          sampai menyentuh kaki halaman (melewati padding bawah main dan margin
+          atas footer). Dekoratif. */}
       <div className="relative isolate space-y-16 pb-8 md:space-y-24">
         <div
           aria-hidden="true"
-          className="absolute -top-8 bottom-0 left-1/2 -z-10 w-screen -translate-x-1/2 bg-[url(/doodle-astara.svg)] bg-[length:240px_240px] [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]"
+          className="absolute -top-8 -bottom-24 left-1/2 -z-10 m-0! w-screen -translate-x-1/2 bg-[url(/doodle-astara.svg)] bg-[length:240px_240px] md:-bottom-26 [mask-image:linear-gradient(to_bottom,transparent,black_10%)]"
         />
       {/* ── Angka koridor ── */}
       <section aria-labelledby="judul-angka" className="space-y-6">
@@ -275,19 +267,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </div>
         ))}
       </div>
-      <p className="mx-auto max-w-2xl text-center text-meta text-ink-muted">
-        Angka ini sengaja kecil. Kami mulai dari satu koridor, karena lima puluh titik yang bisa dipertanggungjawabkan lebih
-        berguna daripada sepuluh ribu titik yang tidak bisa dipercaya.
-      </p>
       </section>
 
       {/* ── Kenapa Astara ── */}
       <section aria-labelledby="kenapa" className="grid gap-10 md:grid-cols-[2fr_3fr] md:gap-12">
         <div className="flex flex-col gap-6">
-          <p className="flex items-center gap-2 text-label text-ink">
-            <span aria-hidden="true" className="size-2 rounded-pill bg-tidak-line" />
-            Kenapa Astara
-          </p>
           <h2 id="kenapa" className="text-[2rem] leading-tight font-bold text-ink md:text-[2.5rem]">
             Fakta berbukti di balik setiap penilaian
           </h2>
@@ -360,8 +344,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
       </section>
 
       </div>
-
-      <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
     </div>
+
+    {/* Di luar wadah berjarak: dialog tertutup tetap dihitung sebagai saudara
+        oleh space-y dan akan menambah celah di atas kaki halaman. */}
+    <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
+    </>
   );
 }
