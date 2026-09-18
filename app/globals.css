@@ -208,15 +208,6 @@
     outline-color: var(--color-on-brand-focus);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
 }
 
 @layer components {
@@ -515,4 +506,59 @@
   background-repeat: no-repeat;
   background-position: right center;
   background-size: 0.875rem;
+}
+
+/* ── Kurangi gerakan ──
+   Bukan mematikan semua animasi. Yang dibuang: perpindahan, skala, putaran,
+   dan jeda (supaya isi tidak menunggu redup). Yang dipertahankan: perubahan
+   warna dan opasitas yang singkat, karena itu yang memberi tahu "tombol ini
+   disorot" atau "penilaian baru dihitung". Diletakkan di luar layer supaya
+   menang atas aturan komponen. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Masuk dan dicap: tinggal memudar, tanpa gerak dan tanpa buram. */
+  .masuk,
+  .stempel,
+  .panduan[open] {
+    animation-name: pudar;
+    animation-duration: 150ms;
+  }
+
+  /* Efek sorot: warna dan bayangan tetap, gerak dihapus. */
+  .card-link:hover,
+  :where(a, button).rounded-pill:hover,
+  .group:hover .kipas {
+    translate: none;
+    rotate: none;
+  }
+  .card-link:hover > svg:first-child,
+  .leaflet-marker-icon.leaflet-interactive:hover svg {
+    scale: none;
+  }
+  :where(a, button):hover .panah,
+  .card-link:hover .panah,
+  .merek:hover svg {
+    translate: none;
+    rotate: none;
+  }
+
+  /* Geser dan perbesar peta langsung pindah, tanpa animasi Leaflet. */
+  .leaflet-container,
+  .leaflet-container * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes pudar {
+  from {
+    opacity: 0.4;
+  }
 }
