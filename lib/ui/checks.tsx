@@ -12,6 +12,7 @@ import {
   REASON_NEXT,
   angka,
   checkLabel,
+  measuredNumber,
   measuredSentence,
   reasonOf,
 } from "./copy";
@@ -116,9 +117,9 @@ function capitalize(s: string) {
 function flagSentence(c: CheckOutcome): string {
   const reason = reasonOf(c.code);
   if (reason === "GEO_TOO_FAR")
-    return `Jarak terukur ${c.measured ?? "?"} meter, lebih jauh dari radius lolos ${c.threshold ?? "?"} meter tapi masih di bawah batas tolak.`;
+    return `Jarak terukur ${measuredNumber(c.measured) ?? "?"} meter, lebih jauh dari radius lolos ${measuredNumber(c.threshold) ?? "?"} meter tapi masih di bawah batas tolak.`;
   if (reason === "DUPLICATE_IMAGE")
-    return `Foto ini mirip foto kontributor lain dari titik pandang yang sama (Hamming ${c.measured ?? "?"}). Itu wajar untuk penguatan; tandanya tetap dicatat.`;
+    return `Foto ini mirip foto kontributor lain dari titik pandang yang sama (Hamming ${measuredNumber(c.measured) ?? "?"}). Itu wajar untuk penguatan; tandanya tetap dicatat.`;
   return measuredSentence(c.code, c.measured, c.threshold) ?? checkLabel(c.code);
 }
 

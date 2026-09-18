@@ -270,7 +270,7 @@ function audit(p: FixturePlace, code: string) {
         ],
         before: null,
         after: null,
-        evidence: { id: "ev0", photo_url: null, distance_to_place_m: 214, client_accuracy_m: 22, captured_at: D(9), capture_method: "gallery", },
+        evidence: { id: "ev0", photo_url: null, distance_to_place_m: 214, client_accuracy_m: 22, captured_at: D(9), capture_method: "galeri" },
         is_demo_seed: false,
       },
       {
@@ -463,15 +463,15 @@ export async function fixtureFetch(path: string, init?: RequestInit): Promise<Re
     const place = FIXTURE_PLACES.find((x) => x.id === form.get("place_id"));
     const vantage = form.get("vantage") as Vantage;
     const scenario = String(form.get("ui_fixture_scenario") ?? "");
-    const image = form.get("image") as Blob | null;
+    const image = form.get("file") as Blob | null;
     const errors: ApiErrorBody[] = [];
-    if (form.get("capture_method") === "gallery")
+    if (form.get("capture_method") === "galeri")
       errors.push(err("FILE_METADATA_PRESENT", "Berkas ini tampak berasal dari galeri, bukan dari kamera aplikasi", "EXIF", null));
     if (!form.get("client_lat")) errors.push(err("GEO_MISSING", "Izin lokasi diperlukan untuk memverifikasi kontribusi"));
     if (scenario === "lokasi_lain")
-      errors.push(err("GEO_TOO_FAR", "Lokasi pengambilan terlalu jauh dari tempat yang dipilih", "214", "120"));
+      errors.push(err("GEO_TOO_FAR", "Lokasi pengambilan terlalu jauh dari tempat yang dipilih", "214 m", "120 m"));
     if (image && seenSizes.has(image.size))
-      errors.push(err("DUPLICATE_IMAGE", "Foto ini sudah pernah dikirim sebelumnya", "0", "2"));
+      errors.push(err("DUPLICATE_IMAGE", "Foto ini sudah pernah dikirim sebelumnya", "hamming 0", "hamming 2"));
     if (image) seenSizes.add(image.size);
     if (errors.length) return json({ errors }, 422);
 

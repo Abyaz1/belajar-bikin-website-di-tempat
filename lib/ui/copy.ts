@@ -276,12 +276,20 @@ export function checkLabel(code: string): string {
   return r ? CHECK_LABEL[r] : code;
 }
 
-function num(s: string | null): string | null {
-  if (s === null || s === "") return null;
-  const n = Number(s);
-  if (!Number.isFinite(n)) return s; // server sudah menyertakan satuan
+/**
+ * Angka dari `measured`/`threshold`. Server mengirimnya sebagai teks dan boleh
+ * menyertakan satuan — suite tests/rejection memakai "120 m" dan "hamming 4".
+ * Yang diambil angka pertamanya; satuannya ditulis ulang oleh kalimat di bawah.
+ * Teks tanpa angka sama sekali (misalnya "EXIF, tag GPS") dikembalikan apa adanya.
+ */
+export function measuredNumber(s: string | null): string | null {
+  if (s === null || s.trim() === "") return null;
+  const m = s.match(/-?\d+(?:[.,]\d+)?/);
+  if (!m) return s.trim();
+  const n = Number(m[0].replace(",", "."));
   return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 }).format(n);
 }
+const num = measuredNumber;
 
 /**
  * Kalimat nilai terukur dan ambangnya. "Jarak terukur 214 meter, batas 120
@@ -291,6 +299,10 @@ export function measuredSentence(code: string, measured: string | null, threshol
   const m = num(measured);
   const t = num(threshold);
   const r = reasonOf(code);
+  // Penjelasan metadata tetap tampil walau server tidak mengirim angka —
+  // contoh L9 di spek 30 menampilkannya.
+  if (r === "FILE_METADATA_PRESENT")
+    return `Ditemukan metadata berkas${measured ? ` (${measured.trim()})` : ""}; foto dari kamera aplikasi tidak pernah membawanya.`;
   if (m === null && t === null) return null;
   switch (r) {
     case "GEO_TOO_FAR":
@@ -305,8 +317,6 @@ export function measuredSentence(code: string, measured: string | null, threshol
       return `Jarak kemiripan dengan foto yang sudah ada ${m ?? "?"} (Hamming, 64 bit). Dianggap berkas yang sama bila ${t ?? "?"} atau kurang.`;
     case "RATE_LIMITED":
       return `${m ?? "?"} kiriman dalam satu jam terakhir dari sesi ini. Batas ${t ?? "?"} per jam.`;
-    case "FILE_METADATA_PRESENT":
-      return `Ditemukan metadata berkas${m ? ` (${m})` : ""}; foto dari kamera aplikasi tidak pernah membawanya.`;
     default:
       return `Nilai terukur ${m ?? "—"}. Ambang ${t ?? "—"}.`;
   }
@@ -323,6 +333,13 @@ export const REASON_NEXT: Record<ReasonCode, string> = {
   GEO_FIX_STALE: "Tunggu beberapa detik sampai posisi diperbarui, lalu ambil ulang.",
   GEO_TOO_FAR: "Ambil foto dari depan tempat yang dipilih, atau pilih tempat yang benar.",
   DUPLICATE_IMAGE: "Ambil foto baru dari posisi Anda sekarang.",
+};
+
+/** Galat 400 dari E4 yang bukan penolakan kontribusi, melainkan bentuk
+ *  permintaan yang cacat. Tidak ada di 00-KONTRAK §6; dipakai suite Trust. */
+export const REQUEST_ERROR_HINT: Record<string, string> = {
+  FILE_TYPE_INVALID:
+    "Berkas bukan JPEG. Pemeriksaan keaslian hanya berjalan untuk JPEG, jadi kiriman ini tidak dihitung sebagai kontribusi.",
 };
 
 export const CHECK_RESULT_LABEL = { pass: "Lolos", flag: "Ditandai", fail: "Tidak lolos" } as const;
