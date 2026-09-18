@@ -6,7 +6,7 @@
  */
 
 import type { ReactElement, SVGProps } from "react";
-import type { Verdict } from "./api/types";
+import type { ProfileCode, Verdict } from "./api/types";
 
 function Svg(props: SVGProps<SVGSVGElement>) {
   return (
@@ -114,3 +114,61 @@ export function IconFlag() {
     </Svg>
   );
 }
+
+// ── Ikon profil ─────────────────────────────────────────────────────────────
+// Dekoratif, selalu di samping nama profil. Digambar lebih besar dari ikon
+// teks supaya kartu profil mudah dikenali sekilas.
+
+function ProfileSvg(props: SVGProps<SVGSVGElement>) {
+  return <Svg width="2.5rem" height="2.5rem" strokeWidth={1.75} {...props} />;
+}
+
+export function IconWheelchair() {
+  return (
+    <ProfileSvg>
+      <circle cx="10" cy="3.8" r="1.8" />
+      <path d="M10 7v6h6l2.5 5.5" />
+      <path d="M10 10h5" />
+      <path d="M7.2 11.3a5.5 5.5 0 1 0 7.6 6.2" />
+    </ProfileSvg>
+  );
+}
+
+export function IconWalker() {
+  return (
+    <ProfileSvg>
+      <circle cx="9" cy="3.8" r="1.8" />
+      <path d="M9 7 7.5 13l2.5 3.5V21" />
+      <path d="m7.5 13-2 8" />
+      <path d="M9 8.5 13 11" />
+      <path d="M13 10h5.5l1 11M14.5 10 13 21" />
+    </ProfileSvg>
+  );
+}
+
+export function IconWhiteCane() {
+  return (
+    <ProfileSvg>
+      <circle cx="10" cy="3.8" r="1.8" />
+      <path d="M10 7v7l-2 7" />
+      <path d="m10 14 2 7" />
+      <path d="M10 9l3.5 2.5L20 21.5" />
+      <path d="M10 9 7 12" />
+    </ProfileSvg>
+  );
+}
+
+export function IconSearch() {
+  return (
+    <Svg>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m15.5 15.5 5 5" />
+    </Svg>
+  );
+}
+
+export const PROFILE_ICON: Record<ProfileCode, () => ReactElement> = {
+  kursi_roda_manual: IconWheelchair,
+  alat_bantu_jalan: IconWalker,
+  netra: IconWhiteCane,
+};
