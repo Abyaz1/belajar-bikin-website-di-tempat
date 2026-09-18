@@ -4,157 +4,469 @@
     {
       "berkas": "layak-01.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.26.jpeg",
       "label": {
-        "step_count": "3",
-        "ramp_wheelchair": "ada",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "layak-02.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 18.41.07 (1).jpeg",
       "label": {
-        "step_count": "",
-        "ramp_wheelchair": "3",
-        "tactile_paving": "ada"
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "layak-03.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "layak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.23.07.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "layak-04.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "layak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.27.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "layak-05.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "layak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.36.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "kurang-01.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.16 (1).jpeg",
       "label": {
-        "step_count": "5",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "kurang-02.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.21.jpeg",
       "label": {
-        "step_count": "2",
-        "ramp_wheelchair": "ada",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "kurang-03.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.26.jpeg",
       "label": {
-        "step_count": "",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "kurang-04.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.28.jpeg",
       "label": {
-        "step_count": "3",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "kurang-05.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "kurang_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.30.jpeg",
       "label": {
-        "step_count": "2",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-06.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.23.09.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-07.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.23.11.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-08.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.23.13.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-09.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.23.16.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-10.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.27.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-11.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.28.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-12.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.29.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-13.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.30.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-14.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.35 (1).jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-15.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.35 (2).jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-16.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.37 (1).jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-17.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.37 (2).jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-18.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.37.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "kurang-19.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "kurang",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.38.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "tidak-01.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.16.jpeg",
       "label": {
-        "step_count": "6",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "tidak-02.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.27.jpeg",
       "label": {
-        "step_count": "3",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "tidak-03.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.29 (1).jpeg",
       "label": {
-        "step_count": "6",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "tidak-04.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 15.42.29.jpeg",
       "label": {
-        "step_count": "6",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "yes",
+        "tactile_paving": "no"
       }
     },
     {
       "berkas": "tidak-05.jpg",
       "bagian": "ukur",
-      "pelabel": "",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
       "sumber": "koridor Dipatiukur",
       "kelompok_asal": "tidak_layak",
       "berkas_asal": "WhatsApp Image 2026-09-18 at 18.41.07.jpeg",
       "label": {
-        "step_count": "2",
-        "ramp_wheelchair": "",
-        "tactile_paving": ""
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-06.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.30 (1).jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-07.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.30 (2).jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-08.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.34 (1).jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-09.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.34.jpeg",
+      "label": {
+        "step_count": "tidak_ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-10.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.35.jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-11.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.36 (1).jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "berkas": "tidak-12.jpg",
+      "bagian": "ukur",
+      "pelabel": "Ghulam (Abyss yg ngasi krn Ghulam tepar)",
+      "sumber": "koridor Dipatiukur",
+      "kelompok_asal": "tidak",
+      "berkas_asal": "WhatsApp Image 2026-09-18 at 19.25.36 (2).jpeg",
+      "label": {
+        "step_count": "ada",
+        "ramp_wheelchair": "no",
+        "tactile_paving": "no"
       }
     }
   ]

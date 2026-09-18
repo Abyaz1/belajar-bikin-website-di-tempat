@@ -583,3 +583,110 @@ dasar apa", bukan hanya jejak di basis data. Batasnya diakui:
 - Kalau deteksi gagal atau lewat batas waktu, fotonya tidak tayang sama sekali.
   Menayangkan foto yang belum diperiksa wajahnya tidak pernah jadi cadangan.
 - Bukti demo tidak punya citra sungguhan, jadi tetap tanpa foto.
+
+---
+
+## 25. Usulan model untuk jalur pemandu dimatikan setelah precision-nya diukur
+
+**Kondisi di proposal:** Kamus atribut menetapkan tiga atribut yang boleh menerima
+usulan model — `step_count`, `ramp_wheelchair`, dan `tactile_paving` — dengan
+alasan bahwa ketiganya adalah yang precision-nya diukur. Kontrak §7 menetapkan
+ambang aktivasi 0,85 per atribut. Tabel `attribute_type` menyalakan ketiganya.
+
+**Yang diubah:** `tactile_paving` dimatikan, `ai_suggestable = false`. Dua atribut
+lainnya dibiarkan menyala. Perubahannya berupa migrasi
+`202609182330_verifikasi_gerbang_precision.sql`, sudah diterapkan ke basis data
+produksi.
+
+**Alasan perubahan:** Ambangnya diukur, bukan diperkirakan. Tiga puluh enam foto
+pintu masuk dilabeli manusia lebih dulu, prompt dibekukan di `2026-09-18.v1`
+sebelum foto-foto itu ada, lalu model gemini-3.8-flash ditanya satu per satu.
+Hasilnya: `step_count` precision 1,00 (n=3), `ramp_wheelchair` 1,00 (n=2),
+`tactile_paving` **tidak terdefinisi**. Model tidak pernah sekali pun mengusulkan
+"ada jalur pemandu", jadi tidak ada satu pun usulan yang bisa dinilai benar atau
+salah. Terpisah dari itu, himpunan ujinya sendiri tidak punya contoh positif: 36
+dari 36 citra dilabeli "tidak ada ubin pemandu". Dua alasan yang berdiri sendiri,
+dan keduanya soal bukti yang tidak ada — bukan soal model yang terbukti salah.
+
+Dua atribut lain dibiarkan menyala karena aturan gerbang yang dibekukan sebelum
+pengukuran memang terpenuhi, dan tidak ada satu pun salah positif. Tapi n-nya 3
+dan 2, dan batas bawah selang kepercayaan 95% ada di 0,44 dan 0,34 — jauh di
+bawah 0,85. Angka itu tidak boleh disebut tanpa menyebut n-nya. Memperketat
+ambang sesudah melihat hasil sama menyesatkannya dengan melonggarkannya, jadi
+aturannya diterapkan apa adanya dan ketidakpastiannya dilaporkan terbuka.
+
+**Dampak terhadap masalah inti:** Masalah inti kami adalah platform yang menyimpan
+klaim tanpa dasar. Kalau gerbang precision cuma angka di dokumen dan tidak pernah
+benar-benar mematikan apa pun, dia adalah janji, bukan pengaman — persis bentuk
+klaim tanpa dasar yang kami tuduhkan ke sistem lain, hanya saja tuduhannya
+mengarah ke diri sendiri. Satu atribut benar-benar mati hari ini karena tidak
+lolos, dan yang mematikannya adalah pengukuran, bukan pendapat. Perlu dicatat
+juga bahwa yang menahan nilai salah masuk ke basis data bukan gerbang ini,
+melainkan aturan 2: usulan model tidak pernah jadi nilai berlaku tanpa konfirmasi
+kontributor. Gerbang ini mengurangi usulan yang mengganggu; dia tidak sendirian
+menjaga pintunya.
+
+---
+
+## 26. Ambang pHash 6 ditetapkan final, dan pita penguatan diakui tidak terjangkau
+
+**Kondisi di proposal:** Entri 22 menyatakan ambang 6 berlaku **sementara** sampai
+kalibrasi ulang dijalankan dengan hash yang dihitung server. Pita penguatan C8
+(Hamming 3–6) dirancang menandai keadaan ketika dua kontributor berbeda memotret
+pintu yang sama di titik pandang yang sama.
+
+**Yang diubah:** Kalibrasi server dijalankan, dan ambang 6 ditetapkan **final** —
+tidak diturunkan ke 4, tidak pula dilebarkan. Yang berubah bukan angkanya,
+melainkan status pengetahuannya: dari asumsi yang menunggu bukti menjadi keputusan
+yang punya angka. Bersamaan dengan itu, pita penguatan 3–6 dinyatakan **tidak
+terjangkau** oleh tangkapan yang benar-benar terpisah, dan itu dicatat sebagai
+batasan yang diketahui, bukan sebagai sesuatu yang akan diperbaiki dengan
+melebarkan pita.
+
+Dua pengukuran, keduanya lewat modul yang persis menegakkan C8 di E4:
+
+| yang diukur | hasil |
+|---|---|
+| 66 pasangan pintu **berbeda** | jarak terdekat **24** — tidak satu pun salah dianggap duplikat |
+| dua HP, pintu **sama**, jarak 2 cm | **14** — hasil klasifikasi `none`, penguatan terlewat |
+
+**Alasan perubahan:** Sisi pintu-berbeda menjawab kekhawatiran lama. CLAUDE.md §17
+mengantisipasi "turunkan ke 4 kalau salah tolak"; dengan pasangan terdekat di 24
+dan ambang di 6, jarak amannya 18 dan kekhawatiran itu tidak terbukti. Ambangnya
+tidak perlu turun.
+
+Sisi pintu-sama justru menemukan hal yang tidak diantisipasi. Dua sentimeter
+praktis titik pandang yang sama — kasus paling menguntungkan yang bisa diatur —
+dan hasilnya sudah 14, jauh di atas pita 3–6. Dua kontributor sungguhan, dengan
+beda posisi dan waktu, akan lebih jauh lagi. Cabang "flag, bukan fail" karena itu
+tidak pernah menyala dalam pemakaian nyata.
+
+Pita **tidak** dilebarkan meski pengukurannya memperlihatkan celah 14–24 yang
+bersih. Alasannya ada di dalam kode: di dalam pita, `classifyDuplicate`
+mengembalikan `flag` hanya untuk kombinasi kontributor-beda-tempat-dan-vantage-sama;
+semua kombinasi lain berujung `fail`. Melebarkan pita ke 18 karena itu tidak cuma
+menyalakan penandaan — ia juga membuat **kontributor yang sama memotret ulang
+pintu yang sama** (menyumbang lagi setelah renovasi, misalnya) jatuh di sekitar 14
+dan langsung ditolak, dan membuat tempat berbeda di bawah 18 ikut ditolak padahal
+sisa ruang ke lantai pintu-berbeda cuma 6. Menukar satu penandaan di jejak audit
+dengan dua kelas penolakan salah adalah pertukaran yang merugikan. Ditambah lagi,
+angka pintu-sama itu baru satu pasang, dan menetapkan ambang dari satu kasus
+terbaik berarti menukar cacat yang diketahui dengan cacat yang tidak diketahui.
+
+**Dampak terhadap masalah inti:** Entri 22 sudah melaporkan batasan ini sebagai
+dugaan dari angka peramban. Sekarang batasan itu punya angka dari modul yang
+benar, dan kalimatnya bisa dipertanggungjawabkan: C8 menaikkan biaya mengirim
+ulang berkas yang sama, dan **tidak** mendeteksi dua orang yang memotret pintu
+yang sama. Yang perlu ditegaskan supaya tidak salah dibaca: penguatan sebagai
+fitur produk tidak ikut mati. `corroboration_count` di mesin status menghitung
+`contributor_id` berbeda yang nilai terkonfirmasinya sama — ukuran yang justru
+lebih tepat, karena yang menguatkan sebuah fakta adalah dua orang menyatakan hal
+yang sama, bukan dua foto yang terlihat mirip. Pita pHash sedari awal jalur kedua
+untuk sesuatu yang sudah punya jalur pertama yang lebih baik.
+
+Kami juga menemukan bahwa skrip kalibrasi kami sendiri sempat menyembunyikan
+temuan ini: ia hanya menganggap hasil `fail` sebagai masalah, sehingga pasangan
+yang justru tidak tertangkap sebagai penguatan dilaporkan sebagai "semua masuk
+pita penguatan" — sambil mencetak sisa ruang negatif di baris berikutnya. Sudah
+diperbaiki. Perkakas ukur yang salah baca lebih berbahaya daripada tidak punya
+perkakas, karena ia menghasilkan keyakinan.

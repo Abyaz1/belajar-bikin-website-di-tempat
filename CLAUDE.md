@@ -1,7 +1,7 @@
 # CLAUDE.md — Instruksi Repositori
 
 Tim: **belajar bikin website di tempat** · Hack Day IFEST 2026 · 18–19 September 2026
-Nama produk: `[DITETAPKAN PROBLEM OWNER JAM 10:00 — isi di sini, jangan biarkan kosong]`
+Nama produk: **Astara** (satu sumber di `lib/ui/brand.ts`, jangan ditulis ulang di tempat lain)
 
 Berkas ini adalah padatan dari PRD v2.1 dan TRD v2.1 untuk dibaca asisten koding dan manusia.
 **Kalau isi berkas ini bentrok dengan `docs/00-KONTRAK.md`, yang menang `docs/00-KONTRAK.md`.**
@@ -410,10 +410,10 @@ ini sebelum terisi — pakai env.**
 
 | Hal | Nilai | Diputuskan oleh | Dampak kalau berubah |
 |---|---|---|---|
-| Mekanisme kamera: `getUserMedia` atau input `capture` | **`getUserMedia`** (dibekukan) | Tes 3 HP | Kalau input `capture`, aturan `FILE_METADATA_PRESENT` berubah dari "ada EXIF apa pun" jadi "ada tag GPS", dan bobotnya turun jadi penanda |
-| Radius dasar | **75 m** (dibekukan) | Ukuran GPS di gedung | Naikkan kalau akurasi dalam gedung parah |
-| Ambang pHash | **6** (dibekukan) | Tes 2 orang foto pintu sama | Turunkan ke 4 kalau salah tolak |
-| Nama model | `TBD` | Blok 1 GCP | Env `VERTEX_MODEL` |
+| Mekanisme kamera: `getUserMedia` atau input `capture` | **`getUserMedia`** (dibekukan, terbukti di perangkat: Samsung Browser 30 / Android 10 menghasilkan JPEG 480×640 tanpa EXIF dan tanpa tag GPS) | Tes 3 HP | Kalau input `capture`, aturan `FILE_METADATA_PRESENT` berubah dari "ada EXIF apa pun" jadi "ada tag GPS", dan bobotnya turun jadi penanda |
+| Radius dasar | **75 m** (dibekukan, **terukur**) | Ukuran GPS di gedung | Diukur 18 Sep di Dipatiukur lewat /uji-kamera: 50 fix, fix pertama 2.167 ms, akurasi terbaik **4 m**, umur fix 0 detik. Radius efektif jadi `min(75+4, 120)` = 79 m. Tidak perlu dinaikkan. Catatan: pembacaan 0 fix sebelumnya berasal dari /uji-kamera yang hanya mencoba `enableHighAccuracy: true` dengan timeout 20 dtk tanpa fallback; alur kontribusi di `lib/ui/geo.tsx` turun ke akurasi rendah tanpa batas waktu, jadi lebih tahan |
+| Ambang pHash | **6** (dibekukan, **diukur dan dipertahankan**) | Tes 2 orang foto pintu sama | Sudah diuji 18 Sep: pintu berbeda terdekat 24 dari 66 pasangan, jadi 6 tidak salah tolak dan tidak perlu turun ke 4. Tapi dua HP memotret pintu yang sama dari 2 cm menghasilkan 14, di atas pita penguatan 3–6, sehingga cabang `flag` C8 tidak terjangkau. Pita **tidak** dilebarkan: di dalam pita, semua kombinasi selain kontributor-beda-tempat-sama berujung `fail`, jadi melebarkannya membuat kontributor yang sama memotret ulang pintu yang sama ikut ditolak. Lihat PROGRESS.md |
+| Nama model | **`gemini-3.8-flash`** (dibekukan, `VERTEX_LOCATION=global`) | Blok 1 GCP | Env `VERTEX_MODEL`. Mengganti model = ukur ulang precision; angka gerbang berlaku untuk pasangan model+prompt tertentu |
 
 ---
 
