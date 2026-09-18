@@ -33,3 +33,12 @@
 /app/(baca)/
 # Kontrak di docs/ dibekukan; perubahan butuh persetujuan tiga engineer: isi handle 1, 2, 3.
 /docs/
+# Fondasi bersama (dependency, koneksi DB, migrasi): isi handle 1, 2, 3.
+/package.json
+/package-lock.json
+/lib/db/
+/lib/env.ts
+/db/
+/scripts/db/
+# Kosakata kontrak dan bentuk respons E1–E8 dipakai UI dan backend: isi handle 1, 2, 3.
+/lib/ui/api/types.ts
