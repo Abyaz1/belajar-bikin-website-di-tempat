@@ -102,11 +102,11 @@ export const FIXTURE_PLACES: FixturePlace[] = [
   },
   {
     id: "contoh-perpustakaan",
-    name: "[Contoh] Perpustakaan Pusat",
+    name: "[Contoh] Kampus UNPAD Dipatiukur",
     category: "kampus",
-    address: "Jl. Contoh No. 5, Bandung",
-    lat: -6.8889,
-    lon: 107.6108,
+    address: "Jl. Dipati Ukur No. 35, Bandung",
+    lat: -6.8926,
+    lon: 107.6178,
     is_demo_seed: true,
     attrs: [
       verified("step_count", "0", 20, { corroboration_count: 2, is_demo_seed: true }),

@@ -11,6 +11,7 @@ import { PilihProfilVisual } from "@/lib/ui/pilih-profil";
 import { PlaceCard } from "@/lib/ui/place-card";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
+import { LatarDoodle } from "@/lib/ui/latar-doodle";
 
 // L2 daftar (tampilan utama) dan L3 peta (sekunder), satu rute.
 // Kenapa daftar yang utama: (1) peta bukan antarmuka yang bisa dibaca screen
@@ -60,7 +61,8 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
   if (!profile) {
     return (
       <div className="space-y-8">
-        <h1 className="text-[2rem] leading-tight font-bold md:text-[2.5rem]">Daftar tempat</h1>
+        <LatarDoodle />
+        <h1 className="text-screen">Daftar tempat</h1>
         <PilihProfilVisual
           hrefs={Object.fromEntries(PROFILES.map((p) => [p, href(p, "daftar", q)])) as Record<ProfileCode, string>}
         />
@@ -78,6 +80,7 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
 
   return (
     <div className="space-y-8">
+      <LatarDoodle />
       <div className="space-y-4">
         <h1 className="text-screen">Daftar tempat</h1>
         <ProfilePicker current={profile} hrefs={hrefs} />
@@ -189,12 +192,22 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
         {places.length === 0 ? (
           <div className="space-y-2 rounded-md border border-line p-4">
             <p>{q ? `Tidak ada tempat yang cocok dengan “${q}”.` : "Belum ada tempat di koridor ini."}</p>
-            {q ? <Link href={href(profile, view, "")}>Tampilkan semua tempat</Link> : null}
+            {q ? (
+              <Link href={href(profile, view, "")} className="inline-flex min-h-12 items-center">
+                Tampilkan semua tempat
+              </Link>
+            ) : null}
           </div>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
-            {places.map((p) => (
-              <PlaceCard key={p.id} place={p} profile={profile} href={`/tempat/${encodeURIComponent(p.id)}?profil=${profile}`} />
+            {places.map((p, i) => (
+              <PlaceCard
+                key={p.id}
+                place={p}
+                profile={profile}
+                href={`/tempat/${encodeURIComponent(p.id)}?profil=${profile}`}
+                urutan={i}
+              />
             ))}
           </ul>
         )}

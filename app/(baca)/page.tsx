@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getPlace, getPlaces } from "@/lib/ui/api/server";
@@ -21,11 +22,39 @@ const JENIS = [
   { value: "fasilitas kesehatan", label: "Fasilitas kesehatan" },
 ];
 
-/** Tempat unggulan: yang paling banyak kondisi fisiknya sudah diperiksa. */
+/**
+ * Tempat unggulan: kampus UNPAD Dipatiukur, tempat hackathon ini berlangsung.
+ * Kalau tidak ada di data, tempat yang paling banyak kondisi fisiknya diperiksa.
+ */
+const POLA_UNPAD = [/^universitas pad[j]?ad?jaran/i, /unpad|pad[j]?ad?jaran/i];
+
 function pilihUnggulan(places: PlaceSummary[]): PlaceSummary | null {
+  for (const pola of POLA_UNPAD) {
+    const kampus = places.find((p) => p.category === "kampus" && pola.test(p.name.replace(/^\[Contoh\]\s*/, "")));
+    if (kampus) return kampus;
+  }
   const diperiksa = (p: PlaceSummary) => (p.status_counts?.terverifikasi ?? 0) + (p.status_counts?.perlu_ditinjau_ulang ?? 0);
   return [...places].sort((a, b) => diperiksa(b) - diperiksa(a))[0] ?? null;
 }
+
+function adalahUnpad(nama: string): boolean {
+  return POLA_UNPAD[1].test(nama);
+}
+
+/**
+ * Foto ilustrasi kampus UNPAD Dipatiukur dari Wikimedia Commons. BUKAN foto
+ * bukti: tidak melewati pemeriksaan keaslian, jadi selalu dilabeli ilustrasi
+ * dan diberi atribusi sesuai lisensinya.
+ */
+const FOTO_UNPAD = {
+  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Unpad_Dipati_Ukur_Main_Campus.jpg/1280px-Unpad_Dipati_Ukur_Main_Campus.jpg",
+  alt: "Gedung kampus Universitas Padjadjaran di Jalan Dipati Ukur, Bandung",
+  diambil: "24 Februari 2017",
+  penulis: "Medelam",
+  sumber: "https://commons.wikimedia.org/wiki/File:Unpad_Dipati_Ukur_Main_Campus.jpg",
+  lisensi: "CC BY-SA 4.0",
+  lisensiUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+};
 
 const FIELD = "pilih block w-full min-h-12 appearance-none bg-transparent text-meta font-semibold text-ink sm:text-body";
 
@@ -53,33 +82,24 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const terverifikasi = places.reduce((n, p) => n + (p.status_counts?.terverifikasi ?? 0), 0);
   const nilai = (code: string) => unggulan?.attributes.find((a) => a.code === code)?.current_value ?? null;
   const foto = unggulan?.attributes.find((a) => a.photo_url);
+  const unpad = unggulan ? adalahUnpad(unggulan.name) : false;
 
   return (
+    <>
     <div className="space-y-16 md:space-y-24">
       {/* ── Hero di atas peta pudar ── */}
       {/* Hero setinggi sisa layar; petanya membentang selebar layar (bukan
           selebar kolom isi) dan memudar di tepi atas dan bawah. */}
       <section className="relative isolate flex min-h-[calc(100dvh-8rem)] flex-col">
         <div className="relative z-10 mx-auto max-w-3xl space-y-4 px-2 pt-2 text-center md:space-y-6 md:px-4 md:pt-10">
-          <Link
-            href="/cara-kerja"
-            className="inline-flex min-h-12 items-center gap-2 rounded-pill border border-line bg-surface px-3 text-meta font-semibold text-ink no-underline hover:bg-surface-alt"
-          >
-            <span aria-hidden="true" className="size-3 rounded-pill bg-tidak-line" />
-            Apa itu Astara?
-          </Link>
 
-          <h1 className="text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
-            Periksa kondisi tempat{" "}
-            <span className="inline-block h-[0.95em] w-[1.6em] translate-y-[0.12em] overflow-hidden rounded-pill align-baseline">
-              <IlustrasiKursiRoda className="h-full w-full" />
-            </span>{" "}
-            sebelum berangkat
+          <h1 style={{ "--i": 0 } as CSSProperties} className="masuk text-hero text-ink">
+            Periksa kondisi tempat sebelum berangkat
           </h1>
 
-          <p className="mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
+          <p style={{ "--i": 1 } as CSSProperties} className="masuk mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
             Anak tangga, ramp, lebar pintu, dan jalur pemandu, masing-masing dengan foto, tanggal foto diambil, dan hasil
-            pemeriksaan keasliannya.
+            pemeriksaan keasliannya. Dimulai dari koridor kampus UNPAD Dipatiukur, Bandung.
           </p>
         </div>
 
@@ -108,7 +128,8 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             action="/tempat"
             role="search"
             aria-label="Cari tempat"
-            className="relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
+            style={{ "--i": 2 } as CSSProperties}
+            className="masuk relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
           >
             <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
               <span className="block text-label font-normal text-ink-muted">Profil kebutuhan</span>
@@ -151,9 +172,12 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           {unggulan ? (
             <article className="card-link overflow-hidden rounded-lg border border-line bg-surface p-2">
               <div className="relative aspect-[16/10] overflow-hidden rounded-md bg-p4">
-                {foto?.photo_url ? (
+                {unpad ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={foto.photo_url} alt={foto.photo_alt ?? ""} className="h-full w-full object-cover" />
+                  <img src={FOTO_UNPAD.src} alt={FOTO_UNPAD.alt} decoding="async" className="h-full w-full object-cover" />
+                ) : foto?.photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={foto.photo_url} alt={foto.photo_alt ?? ""} decoding="async" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-1 text-ink-muted">
                     <IlustrasiKursiRoda className="h-2/3 w-auto" />
@@ -163,7 +187,19 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 {unggulan.is_demo_seed ? (
                   <span className="absolute end-2 top-2 rounded-sm bg-demo-bg px-2 py-1 text-label text-demo-ink">Demo</span>
                 ) : null}
+                {unpad ? (
+                  <span className="absolute start-2 top-2 rounded-sm bg-surface px-2 py-1 text-label text-ink">
+                    Foto ilustrasi
+                  </span>
+                ) : null}
               </div>
+              {unpad ? (
+                <p className="relative z-10 px-3 pt-2 text-start text-label font-normal text-ink-muted">
+                  Diambil {FOTO_UNPAD.diambil}. Foto:{" "}
+                  <a href={FOTO_UNPAD.sumber}>{FOTO_UNPAD.penulis}, Wikimedia Commons</a>,{" "}
+                  <a href={FOTO_UNPAD.lisensiUrl}>{FOTO_UNPAD.lisensi}</a>. Bukan foto bukti pemeriksaan.
+                </p>
+              ) : null}
               <div className="space-y-3 p-3 text-start">
                 <div>
                   <h2 className="text-card">
@@ -187,7 +223,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                   <VerdictBadge verdict={unggulan.verdict} profile={profile} />
                 </div>
                 <p className="text-label text-ink">
-                  Lihat laporan <span aria-hidden="true">›</span>
+                  Lihat laporan <span aria-hidden="true" className="panah">›</span>
                 </p>
               </div>
             </article>
@@ -209,8 +245,18 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
+      {/* Bagian bawah beranda: doodle samar selebar layar mengisi ruang kosong
+          sampai menyentuh kaki halaman (melewati padding bawah main dan margin
+          atas footer). Dekoratif. */}
+      <div className="relative isolate space-y-16 pb-8 md:space-y-24">
+        <div
+          aria-hidden="true"
+          className="absolute -top-8 -bottom-24 left-1/2 -z-10 m-0! w-screen -translate-x-1/2 bg-[url(/doodle-astara.svg)] bg-[length:240px_240px] md:-bottom-26 [mask-image:linear-gradient(to_bottom,transparent,black_10%)]"
+        />
       {/* ── Angka koridor ── */}
-      <section aria-label="Angka koridor" className="grid grid-cols-2 gap-y-8 border-y border-line py-10 md:grid-cols-4">
+      <section aria-labelledby="judul-angka" className="space-y-6">
+      <h2 id="judul-angka" className="sr-only">Angka koridor</h2>
+      <div className="grid grid-cols-2 gap-y-8 border-y border-line py-10 md:grid-cols-4">
         {[
           { angka: String(places.length), label: "Tempat di koridor Dipatiukur" },
           { angka: String(terverifikasi), label: "Kondisi fisik terverifikasi" },
@@ -218,20 +264,17 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           { angka: "3", label: "Profil kebutuhan" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-center gap-3">
-            <span className="text-[2.5rem] leading-none font-bold text-ink">{s.angka}</span>
+            <span className="text-stat text-ink">{s.angka}</span>
             <span className="max-w-[8rem] text-label font-normal text-ink-muted uppercase">{s.label}</span>
           </div>
         ))}
+      </div>
       </section>
 
       {/* ── Kenapa Astara ── */}
       <section aria-labelledby="kenapa" className="grid gap-10 md:grid-cols-[2fr_3fr] md:gap-12">
         <div className="flex flex-col gap-6">
-          <p className="flex items-center gap-2 text-label text-ink">
-            <span aria-hidden="true" className="size-2 rounded-pill bg-tidak-line" />
-            Kenapa Astara
-          </p>
-          <h2 id="kenapa" className="text-[2rem] leading-tight font-bold text-ink md:text-[2.5rem]">
+          <h2 id="kenapa" className="text-display text-ink">
             Fakta berbukti di balik setiap penilaian
           </h2>
           <div className="mt-auto space-y-6">
@@ -243,7 +286,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
               href="/cara-kerja"
               className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-6 font-semibold text-on-brand no-underline hover:opacity-90"
             >
-              Lihat cara kerja <span aria-hidden="true">›</span>
+              Lihat cara kerja <span aria-hidden="true" className="panah">›</span>
             </Link>
           </div>
         </div>
@@ -273,7 +316,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             </p>
           </article>
 
-          <article className="grid gap-4 overflow-hidden rounded-lg bg-surface p-5 sm:col-span-2 sm:grid-cols-2">
+          <article className="group grid gap-4 overflow-hidden rounded-lg bg-surface p-5 sm:col-span-2 sm:grid-cols-2">
             <div className="flex flex-col justify-end gap-2">
               <h3 className="text-card">Dinilai sesuai kebutuhan Anda</h3>
               <p className="text-meta text-ink-muted">
@@ -282,15 +325,26 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             </div>
             <div
               aria-hidden="true"
-              className="relative min-h-52 rounded-md [background-image:radial-gradient(var(--color-p2)_1.2px,transparent_1.2px)] [background-size:12px_12px]"
+              className="relative min-h-60 rounded-md [background-image:radial-gradient(var(--color-p2)_1.2px,transparent_1.2px)] [background-size:12px_12px]"
             >
+              {/* Tiga kartu menaik diagonal dari kiri bawah ke kanan atas.
+                  Kartu berikutnya selalu lebih tinggi dari label kartu di
+                  bawahnya (naik 2,75rem, cukup untuk label dua baris), jadi
+                  yang tertimpa hanya bagian gambar dan semua nama profil
+                  tetap terbaca. Lebar kartu tetap 7rem. */}
               {PROFILES.map((p, i) => {
                 const Ilustrasi = ILUSTRASI_PROFIL[p];
                 return (
                   <div
                     key={p}
-                    className="absolute w-28 rounded-md border border-line bg-surface p-1"
-                    style={{ right: `${8 + i * 20}%`, top: `${6 + i * 10}%` }}
+                    className="kipas absolute w-28 rounded-md border border-line bg-surface p-1"
+                    style={
+                      {
+                        left: `calc((100% - 8rem) * ${i / 2} + 0.5rem)`,
+                        bottom: `${0.75 + i * 2.75}rem`,
+                        "--k": i - 1,
+                      } as CSSProperties
+                    }
                   >
                     <Ilustrasi className="w-full rounded-sm" />
                     <p className="px-1 pt-1 text-label">{PROFILE_TITLE[p]}</p>
@@ -302,7 +356,12 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
-      <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
+      </div>
     </div>
+
+    {/* Di luar wadah berjarak: dialog tertutup tetap dihitung sebagai saudara
+        oleh space-y dan akan menambah celah di atas kaki halaman. */}
+    <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
+    </>
   );
 }

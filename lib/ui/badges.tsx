@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { AttributeStatus, ProfileCode, Verdict } from "./api/types";
 import { verdictWithProfile } from "./copy";
 import { cx } from "./cx";
@@ -8,28 +8,37 @@ import { IconArrowsOpposed, IconClock, IconShield, VERDICT_ICON } from "./icons"
 // ── Badge penilaian ─────────────────────────────────────────────────────────
 // Satu-satunya tempat warna semantik dipakai. Ikon berbentuk khas + teks +
 // NAMA PROFIL: tanpa nama profil, badge terbaca sebagai penilaian mutlak.
+// "Belum dapat dipastikan" bergaris putus-putus, sama dengan tepi kartu tempat
+// dan penanda peta, supaya pembedanya tetap terbaca tanpa warna.
 
 const VERDICT_CLASS: Record<Verdict, string> = {
   tidak_dapat_diakses: "text-tidak-ink bg-tidak-fill border-tidak-line",
   dengan_catatan: "text-catatan-ink bg-catatan-fill border-catatan-line",
   dapat_diakses: "text-dapat-ink bg-dapat-fill border-dapat-line",
-  belum_dapat_dipastikan: "text-belum-ink bg-belum-fill border-belum-line",
+  belum_dapat_dipastikan: "text-belum-ink bg-belum-fill border-belum-line border-dashed",
 };
 
 export function VerdictBadge({
   verdict,
   profile,
   size = "biasa",
+  stempel,
 }: {
   verdict: Verdict;
   profile: ProfileCode;
   size?: "biasa" | "besar";
+  /** Urutan dalam daftar untuk animasi "dicap" saat penilaian dihitung ulang
+   *  per profil. Pemanggil memberi `key={profile}` supaya badge dipasang ulang
+   *  dan animasinya berjalan lagi tiap ganti profil. */
+  stempel?: number;
 }) {
   const Icon = VERDICT_ICON[verdict];
   return (
     <span
+      style={stempel === undefined ? undefined : ({ "--i": stempel } as CSSProperties)}
       className={cx(
         "inline-flex items-center gap-2 rounded-pill border font-semibold",
+        stempel !== undefined && "stempel",
         size === "besar" ? "px-4 py-2 text-card border-2" : "px-3 py-1 text-label",
         VERDICT_CLASS[verdict],
       )}

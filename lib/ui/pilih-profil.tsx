@@ -1,29 +1,28 @@
 /**
  * Layar "pilih profil dulu" yang visual: tiga kartu profil berilustrasi
- * (seluruh kartu satu sasaran tekan) dan panduan membaca empat penilaian.
+ * (seluruh kartu satu sasaran tekan) dan legenda empat penilaian dalam bentuk
+ * badge yang sama dengan daftar tempat.
  * Dipakai di Daftar tempat saat URL belum membawa profil.
  */
 
 import Link from "next/link";
-import { PROFILES, VERDICTS, type ProfileCode, type Verdict } from "./api/types";
-import { PROFILE_HINT, PROFILE_TITLE, VERDICT_LABEL } from "./copy";
-import { cx } from "./cx";
-import { VERDICT_ICON } from "./icons";
+import { PROFILES, type ProfileCode, type Verdict } from "./api/types";
+import { VerdictBadge } from "./badges";
+import { PROFILE_HINT, PROFILE_TITLE } from "./copy";
 import { ILUSTRASI_PROFIL } from "./ilustrasi";
 
 const ARTI: Record<Verdict, string> = {
   tidak_dapat_diakses: "Ada hambatan tercatat untuk profil ini, misalnya anak tangga tanpa ramp.",
-  dengan_catatan: "Bisa dimasuki, tetapi ada kondisi yang perlu diperhatikan.",
-  dapat_diakses: "Kondisi penting untuk profil ini sudah diperiksa dan tidak ada hambatan.",
-  belum_dapat_dipastikan: "Kondisi penting belum diperiksa. Kami tidak menebak.",
+  dengan_catatan: "Tidak ada hambatan tercatat, tetapi ada kondisi yang perlu diperhatikan, misalnya permukaan rusak.",
+  dapat_diakses: "Semua kondisi yang dinilai untuk profil ini sudah diperiksa, dan tidak ada hambatan tercatat.",
+  belum_dapat_dipastikan: "Sebagian kondisi yang dinilai untuk profil ini belum diperiksa, jadi hasilnya belum bisa disimpulkan.",
 };
 
-const WARNA: Record<Verdict, string> = {
-  tidak_dapat_diakses: "bg-tidak-fill text-tidak-ink border-tidak-line",
-  dengan_catatan: "bg-catatan-fill text-catatan-ink border-catatan-line",
-  dapat_diakses: "bg-dapat-fill text-dapat-ink border-dapat-line",
-  belum_dapat_dipastikan: "bg-belum-fill text-belum-ink border-belum-line",
-};
+/** Urutan legenda: dari yang terbaik ke hambatan; "belum" dipisah di bawahnya. */
+const TIGA_PENILAIAN: Verdict[] = ["dapat_diakses", "dengan_catatan", "tidak_dapat_diakses"];
+
+/** Profil contoh untuk badge legenda (badge selalu menyebut profil). */
+const CONTOH: ProfileCode = "kursi_roda_manual";
 
 export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string> }) {
   return (
@@ -49,7 +48,7 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
                   </h3>
                   <p className="text-meta text-ink-muted">{PROFILE_HINT[p]}</p>
                   <p className="mt-auto pt-2 text-label text-ink">
-                    Lihat daftar <span aria-hidden="true">›</span>
+                    Lihat daftar <span aria-hidden="true" className="panah">›</span>
                   </p>
                 </div>
               </li>
@@ -58,32 +57,47 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
         </ul>
       </section>
 
+      {/* Legenda memakai badge yang SAMA dengan daftar tempat, supaya yang
+          dipelajari di sini persis yang nanti ditemui. "Belum dapat
+          dipastikan" dipisah: ia bukan tingkat keempat, tapi tanda belum ada
+          bukti. */}
       <section aria-labelledby="judul-arti" className="space-y-6 rounded-lg bg-surface p-6 md:p-8">
         <div className="space-y-2">
           <h2 id="judul-arti" className="text-section">
             Cara membaca penilaian
           </h2>
           <p className="text-ink-muted">
-            Setiap tempat mendapat satu dari empat penilaian, selalu dengan bentuk ikon, teks, dan nama profilnya.
+            Label yang sama muncul di setiap tempat pada daftar. Contoh di bawah untuk profil kursi roda manual.
           </p>
         </div>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {VERDICTS.map((v) => {
-            const Icon = VERDICT_ICON[v];
-            return (
-              <li key={v} className={cx("flex flex-col gap-3 rounded-md border-s-[6px] bg-canvas p-4", WARNA[v].split(" ")[2])}>
-                <span className={cx("inline-flex size-12 items-center justify-center rounded-pill border text-[1.5rem]", WARNA[v])}>
-                  <Icon />
-                </span>
-                <p className="text-card">{VERDICT_LABEL[v]}</p>
-                <p className="text-meta text-ink-muted">{ARTI[v]}</p>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="text-meta">
-          Aturan lengkap tiap profil ada di <Link href="/profil">aturan penilaian</Link>.
-        </p>
+        <dl className="divide-y divide-line border-y border-line">
+          {TIGA_PENILAIAN.map((v) => (
+            <div key={v} className="grid gap-2 py-4 lg:grid-cols-[27rem_1fr] lg:items-center lg:gap-8">
+              <dt className="min-w-0">
+                <VerdictBadge verdict={v} profile={CONTOH} />
+              </dt>
+              <dd className="text-ink-muted">{ARTI[v]}</dd>
+            </div>
+          ))}
+        </dl>
+        {/* Puncak legenda: kejujuran "belum tahu" adalah janji inti produk,
+            jadi ditaruh di Kertas Arsip, bidang yang sama dengan pernyataan
+            "Kami tidak menebak" di halaman Cara kerja. */}
+        <dl className="grid gap-3 rounded-md bg-accent p-5 md:p-6 lg:grid-cols-[calc(27rem-1.5rem)_1fr] lg:items-center lg:gap-8">
+          <dt className="min-w-0">
+            <VerdictBadge verdict="belum_dapat_dipastikan" profile={CONTOH} />
+          </dt>
+          <dd className="space-y-1">
+            <p className="text-card font-bold text-ink">Kami tidak menebak.</p>
+            <p className="text-ink">{ARTI.belum_dapat_dipastikan}</p>
+          </dd>
+        </dl>
+        <Link
+          href="/profil"
+          className="inline-flex min-h-12 items-center gap-2 rounded-pill border-2 border-line-control bg-surface px-5 font-semibold text-ink no-underline hover:border-brand hover:bg-surface-alt"
+        >
+          Lihat aturan tiap profil <span aria-hidden="true" className="panah">›</span>
+        </Link>
       </section>
     </div>
   );

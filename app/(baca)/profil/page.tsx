@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getProfiles } from "@/lib/ui/api/server";
 import type { RuleCondition } from "@/lib/ui/api/types";
 import { PROFILE_TITLE, attributeLabel, valueOption } from "@/lib/ui/copy";
+import { LatarDoodle } from "@/lib/ui/latar-doodle";
 
 export const metadata: Metadata = { title: "Aturan penilaian" };
 
@@ -37,6 +38,7 @@ export default async function Page() {
 
   return (
     <div className="max-w-3xl space-y-12">
+      <LatarDoodle />
       <header className="space-y-3">
         <h1 className="text-screen">Aturan penilaian</h1>
         <p>

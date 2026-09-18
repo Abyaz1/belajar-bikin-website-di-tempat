@@ -71,7 +71,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
   return (
     <div className="space-y-12">
       <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
-        <Link href={`/tempat?profil=${profile}`}>Daftar tempat</Link> <span aria-hidden="true">›</span>{" "}
+        <Link href={`/tempat?profil=${profile}`}>Daftar tempat</Link> <span aria-hidden="true" className="panah">›</span>{" "}
         <span aria-current="page">{place.name}</span>
       </nav>
 
@@ -96,7 +96,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
         <h2 id="judul-penilaian" className="text-section">
           Penilaian
         </h2>
-        <VerdictBadge verdict={place.verdict} profile={profile} size="besar" />
+        <VerdictBadge key={profile} verdict={place.verdict} profile={profile} size="besar" stempel={0} />
 
         {checkedCount === 0 ? (
           <div className="space-y-2 rounded-md border-2 border-dashed border-line-control p-4">
