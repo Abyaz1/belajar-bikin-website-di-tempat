@@ -52,6 +52,7 @@ DECLARE
   handle   text;
   a        jsonb;
   obs_id   uuid;
+  baru     int;
 BEGIN
   SELECT display_handle INTO handle FROM contributor WHERE id = p_contributor_id;
 
@@ -70,12 +71,21 @@ BEGIN
   SELECT
     p_evidence_id, p_place_id, p_vantage, p_contributor_id,
     tok, tok,
-    'demo/' || p_evidence_id || '.jpg', 'demo/pub/' || p_evidence_id || '.jpg', ph,
+    -- public_path sengaja NULL. Kolom itu untuk objek TAYANG hasil pengaburan
+    -- wajah, dan data benih ini tidak punya berkas citra sungguhan di baliknya.
+    -- Mengisinya dengan path karangan membuat antarmuka me-render <img> ke
+    -- berkas yang tidak ada, dan juri melihat ikon gambar rusak di halaman
+    -- yang paling sering dibuka. Kosong lebih jujur daripada rusak.
+    'demo/' || p_evidence_id || '.jpg', NULL, ph,
     p.lat, p.lon, 11.0,
     t - interval '8 seconds', t - interval '4 seconds', t,
     9.4, false, false, 'getusermedia', true
   FROM place p WHERE p.id = p_place_id
   ON CONFLICT DO NOTHING;
+  -- Bukti yang sudah ada dari jalan sebelumnya tidak dicatat ulang: tanpa
+  -- penjaga ini, setiap kali seed dijalankan ulang, audit_event
+  -- evidence_submitted bertambah satu baris kembar per bukti.
+  GET DIAGNOSTICS baru = ROW_COUNT;
 
   -- Kesembilan pemeriksaan, semuanya pass, dengan nilai terukur yang masuk akal.
   INSERT INTO provenance_check (evidence_id, check_code, result, measured, threshold, is_demo_seed)
@@ -91,6 +101,7 @@ BEGIN
     (p_evidence_id, 'C8',  'pass', NULL,                'hamming 6',                  true)
   ON CONFLICT DO NOTHING;
 
+  IF baru > 0 THEN
   INSERT INTO audit_event (entity_type, entity_id, action, actor, payload_snapshot, is_demo_seed)
   VALUES (
     'evidence', p_evidence_id, 'evidence_submitted', handle,
@@ -103,6 +114,7 @@ BEGIN
       )
     ), true
   );
+  END IF;
 
   FOR a IN SELECT * FROM jsonb_array_elements(p_attrs) LOOP
     IF a ? 'suggested' AND a->>'suggested' IS NOT NULL THEN
@@ -240,6 +252,40 @@ SELECT trust_seed_chain(
     {"code":"ramp_wheelchair","confirmed":"yes","suggested":"no","confidence":0.79}]'::jsonb
 );
 
+-- 3.3b Pelengkap supaya keempat penilaian muncul di demo (hasil rules engine):
+--     Stasiun   → dapat_diakses untuk ketiga profil
+--     Puskesmas → tidak_dapat_diakses (kursi roda), dengan_catatan (alat bantu, netra)
+--     Kelurahan → dapat_diakses (kursi roda, alat bantu), dengan_catatan (netra)
+--     Tanpa ini tiap tempat demo kurang satu atribut minimum, dan semuanya
+--     berhenti di belum_dapat_dipastikan untuk alat bantu dan netra.
+SELECT trust_seed_chain(
+  '33333333-3333-4333-8333-000000000008',
+  '11111111-1111-4111-8111-000000000001', 'entrance',
+  '22222222-2222-4222-8222-000000000903', 2,
+  '[{"code":"surface_condition","confirmed":"good"},
+    {"code":"door_width_band","confirmed":"gt90"},
+    {"code":"tactile_paving","confirmed":"yes","suggested":"yes","confidence":0.90}]'::jsonb
+);
+
+SELECT trust_seed_chain(
+  '33333333-3333-4333-8333-000000000009',
+  '11111111-1111-4111-8111-000000000002', 'entrance',
+  '22222222-2222-4222-8222-000000000901', 60,
+  '[{"code":"kerb","confirmed":"flush"},
+    {"code":"door_width_band","confirmed":"gt90"},
+    {"code":"tactile_paving","confirmed":"yes","suggested":"yes","confidence":0.88}]'::jsonb
+);
+
+SELECT trust_seed_chain(
+  '33333333-3333-4333-8333-000000000010',
+  '11111111-1111-4111-8111-000000000003', 'entrance',
+  '22222222-2222-4222-8222-000000000902', 4,
+  '[{"code":"kerb","confirmed":"lowered"},
+    {"code":"door_width_band","confirmed":"80_90"},
+    {"code":"surface_condition","confirmed":"good"},
+    {"code":"tactile_paving","confirmed":"no","suggested":"no","confidence":0.81}]'::jsonb
+);
+
 -- 3.4 Perpustakaan — TIDAK ADA kontribusi. Hanya klaim OSM.
 --     Ini justru masalah yang sedang dikerjakan produk ini: banyak tempat,
 --     atributnya kosong. Jangan ubah narasinya jadi "seeding gagal".
@@ -264,6 +310,9 @@ WITH terbaru AS (
   SELECT DISTINCT ON (o.place_id, o.attribute_code)
          o.place_id, o.attribute_code, o.confirmed_value, o.observed_at
     FROM observation o
+    -- Hanya observation dari bukti demo. Tanpa penyaring ini, atribut hasil
+    -- kontribusi NYATA ikut ditulis ulang dengan is_demo_seed = true.
+    JOIN evidence e ON e.id = o.evidence_id AND e.is_demo_seed
    WHERE o.confirmed_value <> 'not_visible'
    ORDER BY o.place_id, o.attribute_code, o.observed_at DESC, o.id DESC
 ),
@@ -312,6 +361,13 @@ tulis AS (
     next_review_at       = EXCLUDED.next_review_at,
     is_demo_seed         = true,
     updated_at           = now()
+  -- Baris yang tidak berubah tidak ditulis dan tidak dikembalikan, supaya
+  -- menjalankan ulang seed tidak menambah audit state_updated kembar.
+  WHERE (attribute_state.current_value, attribute_state.is_disputed, attribute_state.previous_value,
+         attribute_state.corroboration_count, attribute_state.last_verified_at, attribute_state.source)
+        IS DISTINCT FROM
+        (EXCLUDED.current_value, EXCLUDED.is_disputed, EXCLUDED.previous_value,
+         EXCLUDED.corroboration_count, EXCLUDED.last_verified_at, EXCLUDED.source)
   RETURNING place_id, attribute_code, current_value, is_disputed,
             corroboration_count, last_verified_at, next_review_at
 )

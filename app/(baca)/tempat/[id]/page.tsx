@@ -18,6 +18,8 @@ import {
 import { formatDate } from "@/lib/ui/format";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
+import { naskahLaporan } from "../../_bacakan/naskah";
+import { TombolBacakan } from "../../_bacakan/tombol-bacakan";
 
 // L4 — laporan kesiapan. Keadaan: lengkap, sebagian, semua belum terverifikasi.
 
@@ -87,6 +89,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
         {place.is_demo_seed ? <DemoLabel detail="sebagian riwayat tempat ini disemai untuk memperagakan penguatan, peluruhan, dan sengketa" /> : null}
         <ProfilePicker current={profile} hrefs={hrefs} />
         <ProfileAnnouncer profile={profile} message={announce} />
+        <TombolBacakan naskah={naskahLaporan(place, profile, ATTRIBUTE_ORDER)} />
       </header>
 
       <section aria-labelledby="judul-penilaian" className="space-y-4">

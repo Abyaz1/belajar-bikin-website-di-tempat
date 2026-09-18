@@ -130,12 +130,13 @@ describe("E2 rakitRincian", () => {
       TEMPAT,
       [state("step_count", "0")],
       TIPE,
-      [{ attribute_code: "step_count", public_path: "https://contoh/foto.jpg" }],
+      [{ attribute_code: "step_count", evidence_id: "ev9", public_path: "tayang/x/abc.jpg" }],
       "netra",
       ATURAN,
     );
     const tangga = r.attributes.find((a) => a.code === "step_count")!;
-    expect(tangga.photo_url).toBe("https://contoh/foto.jpg");
+    // Kunci objek bucket tidak pernah dikirim ke klien; yang dikirim rute penyajinya.
+    expect(tangga.photo_url).toBe(`/api/places/${TEMPAT.id}/photos/ev9`);
     expect(tangga.photo_alt).toContain("Gedung Uji");
     expect(tangga.photo_alt).toContain("anak tangga");
     expect(r.attributes.find((a) => a.code === "kerb")!.photo_alt).toBeNull();

@@ -257,6 +257,36 @@ terdekat pada kelompok kedua, dan rentang ambang yang memisahkan keduanya.
 Kalau celahnya sempit, sebut apa adanya sebagai batasan. Memilih satu angka di
 celah yang tidak memisahkan apa pun bukan kalibrasi.
 
+#### Kalau batas laju menyala saat latihan demo
+
+Satu sesi hanya boleh sepuluh kontribusi per jam, dan kontribusi yang ditolak
+ikut dihitung — jadi batas itu bisa menyala di tengah latihan. Jalan keluarnya
+satu, dan bukan membuka sesi anonim baru:
+
+```bash
+curl -X POST -b cookie.txt -H "x-demo-reset-token: $DEMO_RESET_TOKEN" \
+  http://localhost:3000/api/contributions/reset-rate-limit
+```
+
+Rute ini **membalas 404 selama `DEMO_RESET_TOKEN` kosong**, termasuk di
+deployment. Itu disengaja: endpoint reset yang terbuka membuat pembatas laju
+kehilangan artinya. Isi env-nya hanya selama latihan, lalu kosongkan lagi.
+
+Di Cloud Run, nyalakan untuk latihan lalu matikan lagi sesudahnya. Setiap
+perubahan env membuat revisi baru, dan tokennya tercetak sekali di layar:
+
+```bash
+T=$(openssl rand -hex 24) && echo "$T"
+gcloud run services update ifest --region "$GCP_REGION" --update-env-vars "DEMO_RESET_TOKEN=$T"
+# selesai latihan:
+gcloud run services update ifest --region "$GCP_REGION" --remove-env-vars DEMO_RESET_TOKEN
+```
+
+Resetnya tidak menghapus apa pun. Satu `audit_event` bertindakan
+`rate_limit_reset` ditulis beserta jumlah kontribusi sebelum reset, dan
+pemeriksaan C1 menghitung sejak reset terakhir itu. Jejaknya permanen dan
+terbaca publik di layar jejak audit — itu memang maksudnya.
+
 #### Mengulang satu jalan uji yang gagal
 
 Tabel `evidence` bersifat append-only dan memang tidak boleh dibersihkan, jadi
@@ -315,7 +345,7 @@ gcloud run deploy ifest \
   --region "$GCP_REGION" \
   --service-account "$SA" \
   --allow-unauthenticated \
-  --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,STORAGE_DRIVER=gcs,GCS_BUCKET=$GCS_BUCKET" \
+  --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,STORAGE_DRIVER=gcs,GCS_BUCKET=$GCS_BUCKET,VERTEX_TIMEOUT_MS=8000" \
   --set-secrets "DB_PASSWORD=db-password:latest,SESSION_SECRET=session-secret:latest"
 ```
 
