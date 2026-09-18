@@ -27,6 +27,8 @@ from conftest import (
     jpeg_bersih,
     jpeg_galeri,
     oracle_c8,
+    pasangan_hamming,
+    pasangan_penguatan,
 )
 
 
@@ -222,72 +224,80 @@ class TestKelas4BerkasDaurUlang:
         b = kontributor.kirim(jpeg_bersih(seed=44))
         assert b.status == 200, b.body
 
-    @pytest.mark.parametrize("geser", [1, 2, 3, 5, 8, 12])
-    def test_oracle_penguatan_dua_orang_satu_pintu(
-        self, kontributor: Kontributor, kontributor_lain: Kontributor, geser, record_property
+    @pytest.mark.parametrize("target", [0, 2, 4, 6, 8])
+    def test_oracle_menyusuri_batas_keputusan_c8(
+        self,
+        kontributor: Kontributor,
+        kontributor_lain: Kontributor,
+        target,
+        record_property,
     ):
         """
-        Yang diuji bukan "gambar X harus flag", tapi "apa pun jarak Hamming yang
-        dilaporkan server, klasifikasinya harus mengikuti matriks §2.2".
+        Susuri batas keputusan C8, bukan menebak-nebak di sekitarnya.
 
-        Ini menghindari tes yang rapuh terhadap implementasi pHash, dan tetap
-        menguji aturan yang sebenarnya.
+        Pasangannya dibangun pada jarak Hamming yang ditentukan, lalu
+        klasifikasi server dicocokkan dengan matriks docs/10-trust.md §2.2:
+
+            0, 2  -> fail   (identik, ambang <= 2)
+            4, 6  -> flag   (penguatan: kontributor beda, tempat+vantage sama)
+            8     -> pass   (di luar ambang mirip, bukan kecocokan sama sekali)
+
+        Hanya target genap yang dipakai; alasannya ada di pasangan_hamming().
         """
-        # Citra dasar harus berbeda per parametrisasi. Kalau tidak, parametrisasi
-        # kedua dan seterusnya mengirim ulang berkas yang sama persis, dan C8
-        # menolaknya sebagai duplikat sebelum tes sempat menguji apa pun.
-        #
-        # Pasangan miripnya dibuat dengan menggeser bingkai dan menaikkan
-        # kecerahan, bukan dengan menambah derau. Derau hilang saat pHash
-        # memperkecil citra ke 8x8; pergeseran bingkai tidak. Pergeseran juga
-        # model yang lebih jujur untuk "dua orang memotret pintu yang sama".
-        seed = 4500 + geser
-        dasar = jpeg_bersih(seed=seed)
-        mirip = jpeg_bersih(seed=seed, geser=geser, terang=geser * 2)
+        dasar, mirip, h_lokal = pasangan_hamming(seed=4500 + target, target=target)
+        assert h_lokal == target, (h_lokal, target)
+        record_property("hamming", h_lokal)
 
         assert kontributor.kirim(dasar).status == 200
         b = kontributor_lain.kirim(mirip)
 
-        h = hamming_terlapor(b)
-        if h is None:
-            record_property("hamming", "tanpa kecocokan")
-            assert b.status == 200
-            return
-
-        harap = oracle_c8(h, kontributor_sama=False, tempat_vantage_sama=True)
-        record_property("hamming", h)
+        harap = oracle_c8(target, kontributor_sama=False, tempat_vantage_sama=True)
         record_property("klasifikasi", harap)
 
         if harap == "fail":
-            assert b.status == 422 and "DUPLICATE_IMAGE" in b.kode_galat, (h, b.body)
+            assert b.status == 422, b.body
+            e = b.galat("DUPLICATE_IMAGE")
+            assert e is not None, b.body
+            assert e["measured"] == f"hamming {target}", e
         else:
-            assert b.status == 200, (h, b.body)
+            assert b.status == 200, b.body
             c8 = b.cek("C8")
-            assert c8 and c8["result"] == harap, (h, c8)
+            assert c8 is not None and c8["result"] == harap, c8
+            if harap == "flag":
+                assert hamming_terlapor(b) == target, b.body
 
-    def test_pita_penguatan_benar_benar_tercapai(self, kontributor: Kontributor):
-        """Pagar terhadap 'lulus tapi tidak menguji apa-apa': setidaknya satu
-        pasangan harus mendarat di pita 3-6, karena itulah kasus yang akan
-        terjadi di panggung ketika juri ikut memotret."""
-        dasar = jpeg_bersih(seed=46)
+    def test_pita_penguatan_benar_benar_tercapai(
+        self, kontributor: Kontributor, kontributor_lain: Kontributor
+    ):
+        """
+        Kasus yang paling menentukan di atas panggung: dua orang BERBEDA
+        memotret pintu yang sama harus ditandai sebagai penguatan, bukan
+        ditolak sebagai duplikat.
+
+        Pasangannya DICARI, bukan ditebak. Versi sebelumnya menyapu pergeseran
+        piksel dan berakhir skip ketika tidak ada yang mendarat di pita 3-6 —
+        jujur, tapi artinya kasus terpenting kita kadang tidak teruji sama
+        sekali. Sekarang conftest.pasangan_penguatan() menghitung pHash di sisi
+        Python dengan algoritma yang sama persis, lalu memilih pasangan yang
+        dijamin berada di pita itu. Tidak ada lagi jalur skip di sini.
+        """
+        dasar, mirip, h_lokal = pasangan_penguatan(seed=46)
+        assert 3 <= h_lokal <= 6, h_lokal
+
         assert kontributor.kirim(dasar).status == 200
 
-        teramati: list[int] = []
-        for geser in (1, 2, 3, 4, 6, 8, 10, 14):
-            orang = Kontributor()
-            b = orang.kirim(jpeg_bersih(seed=46, geser=geser, terang=geser))
-            h = hamming_terlapor(b)
-            if h is not None:
-                teramati.append(h)
-                if 3 <= h <= 6:
-                    assert b.status == 200, b.body
-                    assert (b.cek("C8") or {}).get("result") == "flag"
-                    return
+        b = kontributor_lain.kirim(mirip)
+        assert b.status == 200, b.body
 
-        pytest.skip(
-            "Tidak ada pasangan yang mendarat di pita 3-6. "
-            f"Hamming teramati: {sorted(set(teramati)) or 'tidak ada kecocokan sama sekali'}. "
-            "Ini bahan keputusan ambang jam 1, bukan kegagalan tes."
+        c8 = b.cek("C8")
+        assert c8 is not None and c8["result"] == "flag", c8
+
+        # Pagar tambahan: kalau angka server dan angka Python berbeda, berarti
+        # lib/trust/image.ts dan phash_lokal() sudah tidak menghitung hal yang
+        # sama lagi. Itu perlu ketahuan di sini, bukan saat demo.
+        h_server = hamming_terlapor(b)
+        assert h_server == h_lokal, (
+            f"server melaporkan hamming {h_server}, Python menghitung {h_lokal}"
         )
 
 
