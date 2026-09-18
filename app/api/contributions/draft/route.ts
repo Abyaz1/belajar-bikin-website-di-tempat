@@ -10,7 +10,7 @@ import { runProvenancePipeline } from '@/lib/trust/pipeline';
 import { SESSION_COOKIE, verifySession } from '@/lib/trust/session';
 import { putOriginal } from '@/lib/trust/storage';
 import type { Vantage } from '@/lib/trust/types';
-import { loadSuggestionPort } from '@/lib/trust/verification-port';
+import { mintaUsulan } from '@/lib/trust/verification-port';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -228,32 +228,36 @@ export async function POST(req: Request) {
     }
 
     // --- 200: baru di sini model dipanggil ----------------------------
-    const enabled = outcome.claimable.filter((a) => a.ai_suggestable);
-    const port = await loadSuggestionPort();
-    const raw = enabled.length
-      ? await port
-          .suggest({
-            imageBytes: bytes,
-            vantage,
-            attributeCodes: enabled.map((a) => a.code),
-            timeoutMs: Number(process.env.VERTEX_TIMEOUT_MS ?? 8000),
-          })
-          .catch(() => [])   // 8 detik, tanpa retry. Gagal = alur manual.
-      : [];
+    // Seluruh kamus vantage dikirim, bukan hanya yang ai_suggestable, karena
+    // penanda itu bagian dari masukan modul verifikasi — dia yang memutuskan
+    // atribut mana yang ditanyakan ke model. Batas waktu 8 detik juga miliknya.
+    const usulan = await mintaUsulan({
+      image: bytes,
+      mimeType: 'image/jpeg',
+      vantage,
+      attributes: outcome.claimable.map((a) => ({
+        attribute_code: a.code,
+        ai_suggestable: a.ai_suggestable,
+        allowed_values: a.allowed_values,
+      })),
+    });
 
     // Simpan usulan model apa adanya, termasuk confidence-nya, supaya E5
     // tidak perlu mempercayai klien soal apa yang diusulkan.
     // Transaksi terpisah: panggilan model ada di luar transaksi utama supaya
-    // 8 detik timeout-nya tidak menahan kunci baris apa pun.
-    if (raw.length > 0) {
+    // batas waktunya tidak menahan kunci baris apa pun.
+    const berconfidence = usulan.suggestions.filter(
+      (u) => u.value !== null && u.confidence !== null,
+    );
+    if (berconfidence.length > 0) {
       await withTx(async (c) => {
-        for (const s of raw) {
+        for (const u of berconfidence) {
           await c.query(
             `INSERT INTO draft_suggestion
                (evidence_id, attribute_code, ai_suggested_value, ai_confidence)
              VALUES ($1, $2, $3, $4)
              ON CONFLICT (evidence_id, attribute_code) DO NOTHING`,
-            [outcome.draftId, s.attribute_code, s.value, s.confidence],
+            [outcome.draftId, u.attribute_code, u.value, u.confidence],
           );
         }
       });
@@ -261,22 +265,34 @@ export async function POST(req: Request) {
 
     /*
      * ATURAN 5 DITEGAKKAN DI SINI.
-     * raw[] membawa confidence. Yang keluar dari fungsi ini TIDAK.
-     * Jangan pernah mengganti map() di bawah dengan spread objek raw.
+     * usulan.suggestions membawa confidence. Yang keluar dari fungsi ini TIDAK.
+     * Jangan pernah mengganti map() di bawah dengan spread objek usulan.
      * confidence-nya dipakai E5 untuk mengisi observation.ai_confidence,
      * lewat draft_suggestion yang dibaca ulang dari server — bukan lewat klien.
+     *
+     * Penegakan ini sengaja ada DI SINI dan tidak didelegasikan ke helper
+     * publicSuggestions() milik modul verifikasi. Aturan yang menjaga kita
+     * tidak boleh bergantung pada modul lain tetap benar.
      */
+    const bolehUsul = new Map(outcome.claimable.map((a) => [a.code, a.ai_suggestable]));
     const suggestions = outcome.claimable.map((a) => {
-      const hit = raw.find((s) => s.attribute_code === a.code);
+      const hit = usulan.suggestions.find((u) => u.attribute_code === a.code);
       return {
         attribute_code: a.code,
         value: hit?.value ?? null,
-        active: a.ai_suggestable && hit !== undefined,
+        // Gerbang precision dijaga dua kali: modul verifikasi menghitungnya, dan
+        // di sini dicocokkan ulang dengan tabel. Atribut yang usulannya dimatikan
+        // tidak boleh aktif karena bug di sisi mana pun.
+        active: (hit?.active ?? false) && bolehUsul.get(a.code) === true,
       };
     });
 
     return NextResponse.json({
       draft_id: outcome.draftId,
+      /** Membedakan "model bilang tidak ada yang terlihat" dari "model tidak
+       *  pernah menjawab". Tanpa ini antarmuka hanya melihat daftar kosong dan
+       *  tidak bisa menjelaskan sebabnya ke kontributor. */
+      model_status: usulan.status,
       checks: outcome.pipe.checks.map((k) => ({
         code: k.code,
         result: k.result,
