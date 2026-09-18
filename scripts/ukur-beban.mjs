@@ -68,7 +68,7 @@ try {
     process.exitCode = 1;
   } else {
     console.log(`\nBeban kontribusi — ${rows.length} kontribusi selesai, anggaran ${ANGGARAN} detik\n`);
-    console.log("  #   mulai     tempat                              siapkan+kirim  konfirmasi   TOTAL  atribut");
+    console.log("  #   mulai     titik pandang  tempat                    siapkan+kirim  konfirmasi   TOTAL  atribut");
     console.log("  " + "-".repeat(96));
     const total = [];
     rows.forEach((b, i) => {
@@ -78,10 +78,25 @@ try {
       total.push(t);
       const tanda = t > ANGGARAN ? " LEWAT" : "";
       console.log(
-        `  ${String(i + 1).padStart(2)}  ${jam(b.issued_at)}  ${String(b.tempat).slice(0, 34).padEnd(34)}` +
+        `  ${String(i + 1).padStart(2)}  ${jam(b.issued_at)}  ${String(b.vantage).padEnd(13)}  ${String(b.tempat).slice(0, 24).padEnd(24)}` +
         `${t1.toFixed(1).padStart(11)} dtk ${t2.toFixed(1).padStart(9)} dtk ${t.toFixed(1).padStart(7)} dtk${tanda}  ${b.atribut}${b.is_demo_seed ? "  [demo]" : ""}`,
       );
     });
+    // Titik pandang dipisah karena bebannya tidak sebanding. Pintu masuk
+    // menuntut enam atribut dan memanggil model; toilet dan interior masing-masing
+    // satu atribut, dan tidak satu pun atributnya ai_suggestable sehingga model
+    // tidak dipanggil sama sekali. Mencampurnya jadi satu rata-rata akan
+    // memperkecil angka tanpa ada yang berkontribusi lebih cepat.
+    const per = new Map();
+    for (const [i, b] of rows.entries()) per.set(b.vantage, [...(per.get(b.vantage) ?? []), total[i]]);
+    if (per.size > 1) {
+      console.log("\n  Per titik pandang");
+      for (const [v, xs] of [...per].sort()) {
+        console.log(`    ${v.padEnd(10)} n=${xs.length}  median ${p(xs, 0.5).toFixed(1)} dtk  terlama ${Math.max(...xs).toFixed(1)} dtk`);
+      }
+      console.log("    docs-40 §3 mengukur titik pandang WAJIB, yaitu pintu masuk (kontrak §4).");
+    }
+
     const lewat = total.filter((x) => x > ANGGARAN).length;
     console.log("\n  Ringkasan");
     console.log(`    n            : ${total.length}${total.length < 5 ? "  (docs-40 §3 minta 5 percobaan)" : ""}`);
