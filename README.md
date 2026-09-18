@@ -7,6 +7,30 @@ dihitung saat request dengan menerapkan profil kebutuhan pengguna ke fakta terse
 
 Dibuat untuk Hackathon IFEST UNPAD 2026, 18–19 September 2026.
 
+## Verifikasi oleh panitia
+
+- Aplikasi: https://ifest-760278352894.asia-southeast2.run.app
+- Panel uji penolakan: https://ifest-760278352894.asia-southeast2.run.app/uji-penolakan
+
+Alur kontribusi memakai kamera dan lokasi, jadi **buka di ponsel** (Chrome di
+Android atau Safari di iOS) lalu izinkan akses kamera dan lokasi. Di laptop tanpa
+kamera, alur kontribusi tidak bisa dijalankan, tetapi daftar tempat, laporan, dan
+jejak audit tetap bisa diperiksa. Tidak perlu akun.
+
+Langkah demo singkat:
+
+1. Buka aplikasi, lalu pilih profil kebutuhan: kursi roda manual, alat bantu jalan,
+   atau netra.
+2. Pilih satu tempat dari daftar untuk membuka laporan kesiapannya. Ganti profil
+   dan perhatikan penilaiannya ikut berubah.
+3. Di laporan tempat, pilih **Perbarui data ini**, pilih titik pandang pintu masuk,
+   ambil foto, periksa usulan sistem, konfirmasi nilainya, lalu kirim.
+4. Buka jejak audit salah satu atribut untuk melihat bukti dan hasil setiap
+   pemeriksaan keaslian.
+5. Di panel uji penolakan, jalankan tiga serangan: unggah dari galeri, kirim foto
+   lokasi lain, dan kirim ulang foto lama. Setiap penolakan menampilkan alasan dan
+   nilai terukurnya.
+
 ## Prerequisite Project
 
 ### Perangkat lunak
@@ -17,7 +41,7 @@ Dibuat untuk Hackathon IFEST UNPAD 2026, 18–19 September 2026.
 | npm | 11 (bawaan Node.js 24) | instal dependency dari `package-lock.json` |
 | Git | terbaru | clone repo |
 | Docker | terbaru | build dan run image container secara lokal (opsional) |
-| Google Cloud CLI (`gcloud`) | terbaru | deploy ke Cloud Run |
+| Google Cloud CLI (`gcloud`) | terbaru | deploy ke Cloud Run, dan kredensial lokal ke Google Cloud |
 
 Stack: Next.js 16.3 (App Router), React 19.2, TypeScript 5.9, Tailwind CSS 4.3.
 Tidak memakai component library; komponen UI ditulis sendiri di `lib/ui/`.
@@ -40,7 +64,7 @@ kutip** supaya terbaca sama oleh Next.js, Docker, dan bash.
 |---|---|
 | `GCP_PROJECT_ID` | ID project Google Cloud |
 | `GCP_REGION` | region Cloud Run, misalnya `asia-southeast2` (Jakarta) |
-| `VERTEX_LOCATION` | lokasi endpoint Vertex AI |
+| `VERTEX_LOCATION` | lokasi endpoint Vertex AI, misalnya `global` |
 | `VERTEX_MODEL` | nama model Vertex AI; tidak di-hardcode di kode |
 | `CLOUD_SQL_CONNECTION_NAME` | nama koneksi instance Cloud SQL, format `PROJECT:REGION:INSTANCE` |
 | `DB_NAME` | nama database |
@@ -64,6 +88,17 @@ npm run dev
 
 Buka http://localhost:3000.
 
+Akses ke Vertex AI dan Cloud Storage dari lokal memakai Application Default
+Credentials (ADC), jadi tidak perlu file kunci JSON. Login sekali:
+
+```bash
+gcloud auth application-default login
+```
+
+Untuk Cloud SQL: kalau aplikasi memakai library Cloud SQL Connector, ADC saja
+cukup; kalau terhubung lewat socket atau TCP biasa, jalankan Cloud SQL Auth Proxy
+di laptop.
+
 ### Build produksi
 
 ```bash
@@ -76,7 +111,6 @@ Untuk menjalankannya tanpa Docker, salin aset statis ke sana, lalu jalankan
 `server.js`. Env dibaca dari shell.
 
 ```bash
-mkdir -p public
 cp -r public .next/standalone/
 cp -r .next/static .next/standalone/.next/
 set -a && . ./.env.local && set +a
@@ -99,52 +133,39 @@ dan berjalan sebagai user non-root.
 
 ## How to deploy
 
-Aplikasi di-deploy ke Cloud Run. Cloud Build membangun image dari `Dockerfile`,
-lalu Cloud Run menjalankannya. Jalankan dari root repo memakai bash.
+Aplikasi berjalan di Cloud Run sebagai layanan `ifest`. Cloud Build membangun image
+dari `Dockerfile` dan menyimpannya di repository Artifact Registry `ifest`. Layanan
+memakai service account Compute Engine bawaan project, jadi tidak ada file kunci
+JSON. Semua perintah dijalankan dari root repo memakai bash.
 
-**1. Muat konfigurasi dan pilih project**
+**1. Muat konfigurasi**
 
 ```bash
 set -a && . ./.env.local && set +a
-SERVICE=astara
-SA="astara-runtime@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
 gcloud auth login
 gcloud config set project "$GCP_PROJECT_ID"
+PROJECT_NUMBER=$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')
+SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/ifest/ifest"
 ```
 
-**2. Persiapan, cukup sekali per project**
+**2. Simpan password database di Secret Manager** (sekali per project)
+
+Password diketik tanpa tampil di layar dan langsung dikirim ke Secret Manager, tanpa
+lewat file:
 
 ```bash
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
-  artifactregistry.googleapis.com aiplatform.googleapis.com \
-  sqladmin.googleapis.com storage.googleapis.com secretmanager.googleapis.com
-
-# Izin bagi Cloud Build untuk membangun image dari source
-PROJECT_NUMBER=$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')
-gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-  --member "serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --role roles/run.builder
-
-# Service account runtime dengan izin seperlunya
-gcloud iam service-accounts create astara-runtime --display-name "Astara runtime"
-for role in roles/aiplatform.user roles/cloudsql.client; do
-  gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-    --member "serviceAccount:$SA" --role "$role"
-done
-gcloud storage buckets add-iam-policy-binding "gs://$GCS_BUCKET" \
-  --member "serviceAccount:$SA" --role roles/storage.objectAdmin
-
-# Password database disimpan di Secret Manager, bukan di env biasa
-printf '%s' "$DB_PASSWORD" | gcloud secrets create db-password --data-file=-
+read -rsp "DB password: " P && printf '%s' "$P" | gcloud secrets create db-password --data-file=- && unset P
 gcloud secrets add-iam-policy-binding db-password \
   --member "serviceAccount:$SA" --role roles/secretmanager.secretAccessor
 ```
 
-**3. Deploy** (ulangi perintah ini setiap kali deploy)
+**3. Build dan deploy** (ulangi setiap kali rilis)
 
 ```bash
-gcloud run deploy "$SERVICE" \
-  --source . \
+gcloud builds submit --tag "$IMAGE"
+gcloud run deploy ifest \
+  --image "$IMAGE" \
   --region "$GCP_REGION" \
   --service-account "$SA" \
   --allow-unauthenticated \
@@ -153,14 +174,39 @@ gcloud run deploy "$SERVICE" \
   --set-secrets "DB_PASSWORD=db-password:latest"
 ```
 
-Setelah selesai, `gcloud` menampilkan URL HTTPS layanan.
+Deploy pertama membuat layanan `ifest`. Setelah selesai, `gcloud` menampilkan URL
+HTTPS layanan.
+
+### Menyiapkan project baru
+
+Di project tim, langkah ini sudah dikerjakan. Untuk project lain, jalankan setelah
+langkah 1 dan sebelum langkah 2:
+
+```bash
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com aiplatform.googleapis.com \
+  sqladmin.googleapis.com storage.googleapis.com secretmanager.googleapis.com
+
+gcloud artifacts repositories create ifest \
+  --repository-format=docker --location "$GCP_REGION"
+
+# Akses service account bawaan ke Vertex AI, Cloud SQL, dan bucket
+for role in roles/aiplatform.user roles/cloudsql.client; do
+  gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+    --member "serviceAccount:$SA" --role "$role"
+done
+gcloud storage buckets add-iam-policy-binding "gs://$GCS_BUCKET" \
+  --member "serviceAccount:$SA" --role roles/storage.objectAdmin
+```
+
+Kalau `gcloud builds submit` ditolak karena izin, beri service account yang sama
+peran `roles/cloudbuild.builds.builder`.
 
 Catatan:
 
-- Deploy pertama menawarkan pembuatan repository Artifact Registry
-  `cloud-run-source-deploy`. Jawab `Y`.
 - `PORT` diisi otomatis oleh Cloud Run. Jangan dimasukkan ke `--set-env-vars`.
-- File `.env*` tidak ikut ter-upload dan tidak masuk image (`.gitignore` dan
-  `.dockerignore`), jadi nilai env di Cloud Run hanya berasal dari flag di atas.
+- File `.env*` tidak ikut ter-upload ke Cloud Build dan tidak masuk image
+  (`.gitignore` dan `.dockerignore`), jadi nilai env di Cloud Run hanya berasal dari
+  flag di atas.
 - Variabel `NEXT_PUBLIC_*`, kalau nanti ada, dibaca saat build, bukan saat runtime,
   sehingga harus tersedia di tahap build image.
