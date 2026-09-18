@@ -27,7 +27,7 @@ const TAB: { href: string; label: string; pendek: string; aktif: (p: string) => 
 
 /**
  * Kepala halaman: satu kartu putih membulat. Kiri merek, tengah tab teks
- * (yang aktif bergaris bawah tebal), kanan dua tombol. Di halaman peta ia
+ * (yang aktif bergaris bawah tebal), kanan tombol Buka peta. Di halaman peta ia
  * melayang di atas peta layar penuh.
  */
 export function SiteHeader() {
@@ -43,12 +43,6 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center justify-end gap-2 md:order-3">
-          <Link
-            href="/uji-penolakan"
-            className="hidden min-h-12 items-center rounded-pill px-4 font-semibold text-ink no-underline hover:bg-surface-alt lg:inline-flex"
-          >
-            Uji penolakan
-          </Link>
           <Link
             href="/peta"
             aria-current={diPeta ? "page" : undefined}
@@ -109,7 +103,7 @@ export function SiteFooter() {
   const TAUTAN = "text-on-brand underline underline-offset-2 hover:decoration-2";
   return (
     <footer className="on-brand mt-16 bg-brand text-on-brand">
-      <div className="mx-auto grid max-w-6xl gap-8 px-3 py-10 text-meta md:grid-cols-[2fr_1fr_1fr] md:px-6">
+      <div className="mx-auto grid max-w-6xl gap-8 px-3 py-10 text-meta md:grid-cols-[2fr_1fr] md:px-6">
         <div className="space-y-3">
           <p className="flex items-center gap-3 text-card font-bold">
             <span className="rounded-[0.6rem] ring-2 ring-on-brand/40">
@@ -131,13 +125,6 @@ export function SiteFooter() {
             <li><Link className={TAUTAN} href="/cara-kerja">Cara kerja</Link></li>
           </ul>
         </nav>
-        <div className="space-y-3">
-          <p className="font-bold">Untuk pengujian</p>
-          <p>
-            <Link className={TAUTAN} href="/uji-penolakan">Perkakas uji penolakan</Link>: coba kirim foto yang tidak
-            sah dan lihat alasan penolakannya.
-          </p>
-        </div>
       </div>
       <div className="border-t border-on-brand/20">
         <div className="mx-auto max-w-6xl px-3 py-4 md:px-6">
