@@ -19,29 +19,48 @@ function BrandMark() {
 
 // `pendek` tampil di layar sempit supaya keempat tab muat tanpa digulir.
 const TAB: { href: string; label: string; pendek: string; aktif: (p: string) => boolean }[] = [
-  { href: "/", label: "Peta", pendek: "Peta", aktif: (p) => p === "/" },
+  { href: "/", label: "Beranda", pendek: "Beranda", aktif: (p) => p === "/" },
   { href: "/tempat", label: "Daftar tempat", pendek: "Daftar", aktif: (p) => p.startsWith("/tempat") },
   { href: "/profil", label: "Aturan penilaian", pendek: "Aturan", aktif: (p) => p.startsWith("/profil") },
   { href: "/cara-kerja", label: "Cara kerja", pendek: "Cara kerja", aktif: (p) => p.startsWith("/cara-kerja") },
 ];
 
 /**
- * Kepala halaman: satu kartu putih membulat yang mengambang. Di beranda ia
- * melayang di atas peta layar penuh; di halaman lain ia duduk di atas isi.
+ * Kepala halaman: satu kartu putih membulat. Kiri merek, tengah tab teks
+ * (yang aktif bergaris bawah tebal), kanan dua tombol. Di halaman peta ia
+ * melayang di atas peta layar penuh.
  */
 export function SiteHeader() {
   const path = usePathname() ?? "/";
-  const diPeta = path === "/";
+  const diPeta = path === "/peta";
 
   return (
     <header className={cx("z-[1100] px-3 pt-3 md:px-6 md:pt-4", diPeta ? "fixed inset-x-0 top-0" : "relative")}>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-line bg-surface px-3 py-2 md:flex-nowrap md:px-4">
-        <Link href="/" className="inline-flex min-h-12 shrink-0 items-center gap-3 rounded-md px-1 text-card font-bold text-ink no-underline">
+      <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 md:grid-cols-[auto_1fr_auto] md:px-5">
+        <Link href="/" className="inline-flex min-h-12 items-center gap-3 rounded-md px-1 text-card font-bold text-ink no-underline">
           <BrandMark />
           {PRODUCT_NAME}
         </Link>
-        <nav aria-label="Navigasi utama" className="w-full md:w-auto md:flex-1">
-          <ul className="grid grid-cols-4 gap-1 md:flex md:justify-center">
+
+        <div className="flex items-center justify-end gap-2 md:order-3">
+          <Link
+            href="/uji-penolakan"
+            className="hidden min-h-12 items-center rounded-pill px-4 font-semibold text-ink no-underline hover:bg-surface-alt lg:inline-flex"
+          >
+            Uji penolakan
+          </Link>
+          <Link
+            href="/peta"
+            aria-current={diPeta ? "page" : undefined}
+            className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-5 font-semibold text-on-brand no-underline hover:opacity-90"
+          >
+            Buka peta
+            <span aria-hidden="true">›</span>
+          </Link>
+        </div>
+
+        <nav aria-label="Navigasi utama" className="col-span-2 md:order-2 md:col-span-1">
+          <ul className="grid grid-cols-4 md:flex md:justify-center md:gap-2">
             {TAB.map((t) => {
               const aktif = t.aktif(path);
               return (
@@ -50,8 +69,8 @@ export function SiteHeader() {
                     href={t.href}
                     aria-current={aktif ? "page" : undefined}
                     className={cx(
-                      "flex min-h-12 items-center justify-center whitespace-nowrap rounded-pill px-1 text-center text-label no-underline md:px-4 md:text-body md:font-semibold",
-                      aktif ? "bg-action text-on-brand" : "text-ink hover:bg-surface-alt",
+                      "flex min-h-12 items-center justify-center whitespace-nowrap border-b-2 px-1 text-label no-underline md:px-3 md:text-meta",
+                      aktif ? "border-action font-bold text-ink" : "border-transparent font-normal text-ink-muted hover:text-ink",
                     )}
                   >
                     <span className="md:hidden">{t.pendek}</span>
@@ -69,7 +88,7 @@ export function SiteHeader() {
 
 export function FixtureBanner() {
   const path = usePathname() ?? "/";
-  if (!UI_FIXTURES || path === "/") return null;
+  if (!UI_FIXTURES || path === "/peta") return null;
   return (
     // Lebar, jarak tepi, dan sudutnya sama dengan kepala halaman supaya sejajar.
     <div className="px-3 pt-2 md:px-6">
@@ -80,10 +99,10 @@ export function FixtureBanner() {
   );
 }
 
-/** Kaki halaman. Tidak tampil di beranda: di sana peta memenuhi layar dan atribusinya ada di peta. */
+/** Kaki halaman. Tidak tampil di halaman peta: di sana peta memenuhi layar dan atribusinya ada di peta. */
 export function SiteFooter() {
   const path = usePathname() ?? "/";
-  if (path === "/") return null;
+  if (path === "/peta") return null;
   return (
     <footer className="mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-6 px-3 py-8 text-meta text-ink-muted md:grid-cols-2 md:px-6">
