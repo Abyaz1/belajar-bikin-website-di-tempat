@@ -71,6 +71,18 @@ sistem sejenis, dan di sini ada buktinya.
 | Tempat di produksi | 44 (39 OSM, 5 demo) | Cloud SQL |
 | Atribut terverifikasi tanpa jejak audit | 0 | pemeriksaan di akhir skrip benih |
 | Build produksi | berhasil, tanpa peringatan | `npm run build` |
+| Jarak pHash antar pintu berbeda | terdekat 24, ambang 6, jarak aman 18 | `npm run phash:kalibrasi` atas 12 foto koridor, 66 pasangan |
+
+Kalibrasi pHash itu baru separuh. Yang terjawab: ambang 6 **tidak** salah menolak
+foto pintu yang berbeda — 66 pasangan diuji, yang terdekat pun masih 24, jadi
+kekhawatiran "turunkan ke 4 kalau salah tolak" di CLAUDE.md §17 tidak terbukti
+dari sisi ini dan ambangnya dibiarkan 6.
+
+Yang **belum** terjawab, dan lebih penting: dua orang memotret pintu yang sama
+jatuh di jarak berapa. Pita penguatan C8 cuma 3–6. Kalau dua pemotret berbeda
+ternyata jatuh di atas 6, cabang "flag, bukan fail" itu tidak pernah menyala dan
+penguatan lintas kontributor tidak pernah tertangkap. Butuh dua foto pintu yang
+sama dari dua orang untuk mengukurnya; belum ada bahannya.
 
 ---
 
