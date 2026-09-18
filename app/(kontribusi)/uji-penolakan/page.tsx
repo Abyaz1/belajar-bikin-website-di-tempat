@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getPlaces } from "@/lib/ui/api/server";
+import { captureLimits } from "@/lib/ui/capture-config";
 import { GeoWatch } from "@/lib/ui/geo";
 import { PanelUji } from "./panel-uji";
 
@@ -34,7 +35,7 @@ export default async function Page() {
         </div>
       </header>
       <GeoWatch>
-        <PanelUji places={places.map((p) => ({ id: p.id, name: p.name, lat: p.lat, lon: p.lon }))} />
+        <PanelUji places={places.map((p) => ({ id: p.id, name: p.name, lat: p.lat, lon: p.lon }))} limits={captureLimits()} />
       </GeoWatch>
     </div>
   );

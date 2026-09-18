@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { captureLimits } from "@/lib/ui/capture-config";
 import { UjiKamera } from "./uji-kamera";
 
 // Rutenya /uji-kamera-produk, bukan /uji-kamera: /uji-kamera dipakai halaman
@@ -24,7 +25,7 @@ export default function Page() {
           persis dengan layar kontribusi, jadi resolusinya adalah resolusi yang nanti dikirim ke server.
         </p>
       </div>
-      <UjiKamera />
+      <UjiKamera limits={captureLimits()} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type { ApiErrorBody, CheckOutcome } from "@/lib/ui/api/types";
 import { useAnnounce } from "@/lib/ui/announcer";
 import { Button } from "@/lib/ui/button";
 import { CAMERA_PROBLEM, useCamera } from "@/lib/ui/camera";
+import type { CaptureLimits } from "@/lib/ui/capture-config";
 import { ChecksTable, FlagNotice, ReasonBlock } from "@/lib/ui/checks";
 import { REQUEST_ERROR_HINT } from "@/lib/ui/copy";
 import { formatMeters } from "@/lib/ui/format";
@@ -32,10 +33,10 @@ type Outcome =
   | { kind: "diterima"; attack: Attack; checks: CheckOutcome[] }
   | { kind: "galat"; attack: Attack; message: string; code: string | null };
 
-export function PanelUji({ places }: { places: Target[] }) {
+export function PanelUji({ places, limits }: { places: Target[]; limits: CaptureLimits }) {
   const geo = useGeo();
   const announce = useAnnounce();
-  const { videoRef, state: cameraState, detail, start, stop, capture } = useCamera();
+  const { videoRef, state: cameraState, detail, start, stop, capture } = useCamera(limits);
   const [targetId, setTargetId] = useState(places[0]?.id ?? "");
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [lastSent, setLastSent] = useState<Blob | null>(null);
