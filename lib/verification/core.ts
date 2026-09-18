@@ -15,11 +15,13 @@
  */
 
 import type { Vantage } from "@/lib/ui/api/types";
+import { verificationConfig } from "./config";
 
 /** Satu-satunya atribut yang precision-nya diukur. Penjaga keras: walau tabel
- *  keliru menyalakan ai_suggestable untuk atribut lain, atribut itu tidak ditanyakan. */
+ *  keliru menyalakan ai_suggestion_enabled untuk atribut lain, atribut itu tidak ditanyakan. */
 export const MEASURED = ["step_count", "ramp_wheelchair", "tactile_paving"] as const;
-export const TIMEOUT_MS = 8_000;
+/** Dari env VERTEX_TIMEOUT_MS (kontrak: 8 detik, tanpa retry). */
+export const TIMEOUT_MS = verificationConfig.vertexTimeoutMs;
 const NOT_VISIBLE = "not_visible";
 
 /**
@@ -32,7 +34,8 @@ export const PROMPT_VERSION = "2026-09-18.v1";
 /** Satu atribut yang boleh diklaim dari titik pandang ini, dengan penanda tabelnya. */
 export interface AttributeFlag {
   attribute_code: string;
-  ai_suggestable: boolean;
+  /** Kolom attribute_type.ai_suggestion_enabled — gerbang precision per atribut. */
+  ai_suggestion_enabled: boolean;
   allowed_values: string[];
 }
 
@@ -135,9 +138,9 @@ export async function suggestAttributes(
   const now = deps.now ?? Date.now;
   const timeoutMs = deps.timeoutMs ?? TIMEOUT_MS;
   const measured = input.attributes.filter((a) => (MEASURED as readonly string[]).includes(a.attribute_code));
-  const asked = measured.filter((a) => a.ai_suggestable);
+  const asked = measured.filter((a) => a.ai_suggestion_enabled);
   const gated: Suggestion[] = measured
-    .filter((a) => !a.ai_suggestable)
+    .filter((a) => !a.ai_suggestion_enabled)
     .map((a) => ({ attribute_code: a.attribute_code, value: null, confidence: null, active: false }));
   const base = { model: deps.model, prompt_version: PROMPT_VERSION };
 

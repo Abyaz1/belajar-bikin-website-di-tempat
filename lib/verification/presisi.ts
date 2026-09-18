@@ -16,9 +16,11 @@
  */
 
 import type { ModelStatus } from "./core";
+import { verificationConfig } from "./config";
 import { MEASURED } from "./core";
 
-export const AMBANG_GERBANG = 0.85;
+/** Dari env SUGGESTION_PRECISION_GATE (kontrak: 0,85 per atribut). */
+export const AMBANG_GERBANG = verificationConfig.precisionGate;
 export const SAMPEL_MINIMUM = 20;
 const NOT_VISIBLE = "not_visible";
 
@@ -217,7 +219,7 @@ export function hitungPresisi(labels: EntriLabel[], jawaban: JawabanModel[]): Ha
 export function sqlGerbang(per_atribut: HasilAtribut[]): string[] {
   return per_atribut
     .filter((h) => !h.lolos_gerbang)
-    .map((h) => `update attribute_type set ai_suggestable = false where code = '${h.attribute_code}';`);
+    .map((h) => `update attribute_type set ai_suggestion_enabled = false where code = '${h.attribute_code}';`);
 }
 
 const persen = (x: number | null) => (x === null ? "—" : `${(x * 100).toFixed(1).replace(".", ",")}%`);

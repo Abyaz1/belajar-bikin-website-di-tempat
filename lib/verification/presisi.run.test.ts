@@ -31,7 +31,7 @@
  *
  *   UJI_PRESISI_DIR=tools/metrics/testset UJI_PRESISI_JAWABAN=tools/metrics/testset/hasil/<berkas>.json npx vitest run lib/verification/presisi.run.test.ts
  *
- * Citra diperkecil ke sisi terpanjang 1600 px dan disandikan ulang JPEG 85
+ * Citra diperkecil ke sisi terpanjang CAPTURE_MAX_EDGE_PX (1600) dan disandikan ulang JPEG 85
  * dengan sharp — sama seperti yang dikirim kamera produksi. Citra "penyetelan"
  * tidak pernah dikirim ke model.
  */
@@ -40,7 +40,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ATTRIBUTE_TYPES } from "@/lib/rules/reference";
+import { ATTRIBUTE_TYPES, nilaiSah } from "@/lib/rules/reference";
+import { verificationConfig } from "./config";
 import { MEASURED, PROMPT_VERSION, TIMEOUT_MS, suggestAttributes } from "./core";
 import {
   hitungPresisi,
@@ -60,14 +61,14 @@ const PARALEL = 3;
 /** Ketiga atribut terukur SELALU ditanyakan saat mengukur, apa pun status gerbangnya sekarang. */
 const ATRIBUT_UKUR = ATTRIBUTE_TYPES.filter((a) => (MEASURED as readonly string[]).includes(a.code)).map((a) => ({
   attribute_code: a.code,
-  ai_suggestable: true,
-  allowed_values: a.allowed_values,
+  ai_suggestion_enabled: true,
+  allowed_values: nilaiSah(a),
 }));
 
 async function sepertiKameraProduksi(berkas: string): Promise<Buffer> {
   return sharp(readFileSync(berkas))
     .rotate()
-    .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+    .resize({ width: verificationConfig.captureMaxEdgePx, height: verificationConfig.captureMaxEdgePx, fit: "inside", withoutEnlargement: true })
     .jpeg({ quality: 85 })
     .toBuffer();
 }
@@ -129,7 +130,7 @@ describe.skipIf(!DIR)("pengukuran precision (pelaksana, bukan tes biasa)", () =>
       const md = [
         laporanMarkdown(hasil, { model, prompt_version: PROMPT_VERSION, tanggal }),
         "",
-        "## Latensi (syarat 00-KONTRAK §10: di bawah 8 detik)",
+        `## Latensi (syarat 00-KONTRAK §10: di bawah ${TIMEOUT_MS / 1000} detik)`,
         "",
         latensi
           ? `n=${latensi.n} · median ${latensi.median} ms · p95 ${latensi.p95} ms · maks ${latensi.maks} ms · ${latensi.lewat_batas} panggilan mencapai batas ${TIMEOUT_MS / 1000} detik`

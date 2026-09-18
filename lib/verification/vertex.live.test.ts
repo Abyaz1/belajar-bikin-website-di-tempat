@@ -14,7 +14,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { ATTRIBUTE_TYPES } from "@/lib/rules/reference";
+import { ATTRIBUTE_TYPES, nilaiSah } from "@/lib/rules/reference";
 import { PROMPT_VERSION, TIMEOUT_MS, suggestAttributes } from "./core";
 import { vertexCaller } from "./vertex-caller";
 
@@ -32,8 +32,8 @@ describe.skipIf(!siap)("Vertex AI langsung (syarat §10)", () => {
           vantage: "entrance",
           attributes: ATTRIBUTE_TYPES.filter((a) => a.vantage === "entrance").map((a) => ({
             attribute_code: a.code,
-            ai_suggestable: a.ai_suggestable,
-            allowed_values: a.allowed_values,
+            ai_suggestion_enabled: a.ai_suggestion_enabled,
+            allowed_values: nilaiSah(a),
           })),
         },
         { call: vertexCaller({ project: GCP_PROJECT_ID!, location: VERTEX_LOCATION! }), model: VERTEX_MODEL! },

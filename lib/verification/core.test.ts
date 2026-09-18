@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { ATTRIBUTE_TYPES } from "@/lib/rules/reference";
+import { ATTRIBUTE_TYPES, nilaiSah } from "@/lib/rules/reference";
 import { buildPrompt, publicSuggestions, responseSchema, suggestAttributes, type AttributeFlag, type ModelCaller } from "./core";
 
 const IMAGE = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
@@ -14,8 +14,8 @@ const IMAGE = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 /** Atribut pintu masuk persis seperti di tabel attribute_type. */
 const ENTRANCE: AttributeFlag[] = ATTRIBUTE_TYPES.filter((a) => a.vantage === "entrance").map((a) => ({
   attribute_code: a.code,
-  ai_suggestable: a.ai_suggestable,
-  allowed_values: a.allowed_values,
+  ai_suggestion_enabled: a.ai_suggestion_enabled,
+  allowed_values: nilaiSah(a),
 }));
 
 const jawab = (obj: unknown): ModelCaller => vi.fn(async () => JSON.stringify(obj));
@@ -33,15 +33,15 @@ describe("hanya tiga atribut terukur yang ditanyakan", () => {
     expect(prompt).not.toMatch(/kerb|door_width|surface/);
   });
 
-  it("walau tabel keliru menyalakan ai_suggestable untuk atribut lain, atribut itu tetap tidak ditanyakan", async () => {
-    const keliru = ENTRANCE.map((a) => (a.attribute_code === "kerb" ? { ...a, ai_suggestable: true } : a));
+  it("walau tabel keliru menyalakan ai_suggestion_enabled untuk atribut lain, atribut itu tetap tidak ditanyakan", async () => {
+    const keliru = ENTRANCE.map((a) => (a.attribute_code === "kerb" ? { ...a, ai_suggestion_enabled: true } : a));
     const call = jawab({});
     await jalankan(call, keliru);
     expect(Object.keys((vi.mocked(call).mock.calls[0][0].schema as { properties: object }).properties)).not.toContain("kerb");
   });
 
   it("gerbang precision: atribut terukur yang dimatikan tidak ditanyakan dan dikembalikan active=false", async () => {
-    const tanpaPemandu = ENTRANCE.map((a) => (a.attribute_code === "tactile_paving" ? { ...a, ai_suggestable: false } : a));
+    const tanpaPemandu = ENTRANCE.map((a) => (a.attribute_code === "tactile_paving" ? { ...a, ai_suggestion_enabled: false } : a));
     const r = await jalankan(jawab({ step_count: { value: "2", confidence: 0.9 }, ramp_wheelchair: { value: "no", confidence: 0.8 } }), tanpaPemandu);
     expect(r.suggestions).toContainEqual({ attribute_code: "tactile_paving", value: null, confidence: null, active: false });
   });
@@ -49,7 +49,7 @@ describe("hanya tiga atribut terukur yang ditanyakan", () => {
   it("tidak ada yang boleh ditanyakan → model tidak dipanggil sama sekali", async () => {
     const call = jawab({});
     const r = await suggestAttributes(
-      { image: IMAGE, mimeType: "image/jpeg", vantage: "toilet", attributes: [{ attribute_code: "toilets_wheelchair", ai_suggestable: false, allowed_values: ["yes", "no"] }] },
+      { image: IMAGE, mimeType: "image/jpeg", vantage: "toilet", attributes: [{ attribute_code: "toilets_wheelchair", ai_suggestion_enabled: false, allowed_values: ["yes", "no"] }] },
       { call, model: "m" },
     );
     expect(call).not.toHaveBeenCalled();
