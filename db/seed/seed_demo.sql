@@ -70,7 +70,12 @@ BEGIN
   SELECT
     p_evidence_id, p_place_id, p_vantage, p_contributor_id,
     tok, tok,
-    'demo/' || p_evidence_id || '.jpg', 'demo/pub/' || p_evidence_id || '.jpg', ph,
+    -- public_path sengaja NULL. Kolom itu untuk objek TAYANG hasil pengaburan
+    -- wajah, dan data benih ini tidak punya berkas citra sungguhan di baliknya.
+    -- Mengisinya dengan path karangan membuat antarmuka me-render <img> ke
+    -- berkas yang tidak ada, dan juri melihat ikon gambar rusak di halaman
+    -- yang paling sering dibuka. Kosong lebih jujur daripada rusak.
+    'demo/' || p_evidence_id || '.jpg', NULL, ph,
     p.lat, p.lon, 11.0,
     t - interval '8 seconds', t - interval '4 seconds', t,
     9.4, false, false, 'getusermedia', true
