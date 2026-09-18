@@ -44,9 +44,11 @@ export function useCamera() {
   const [detail, setDetail] = useState<string | null>(null);
 
   const stop = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    if (!streamRef.current) return;
+    streamRef.current.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
+    setState("idle");
   }, []);
 
   const start = useCallback(async () => {

@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Tombol — varian utama / sekunder / teks.
  * Keadaan: diam, hover, fokus, ditekan, nonaktif, memuat.
