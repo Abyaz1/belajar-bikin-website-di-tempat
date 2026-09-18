@@ -49,7 +49,7 @@ export function PanduanAwal({ terbuka, profilAktif }: { terbuka: boolean; profil
 
   function pilih(p: ProfileCode) {
     tutup();
-    router.replace(`/?profil=${p}`, { scroll: false });
+    router.push(`/peta?profil=${p}`);
   }
 
   return (
@@ -115,7 +115,7 @@ export function PanduanAwal({ terbuka, profilAktif }: { terbuka: boolean; profil
             <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-[1.75rem] leading-tight font-bold">
               Pilih profil kebutuhan
             </h2>
-            <p className="text-ink-muted">Penilaian tiap tempat berbeda untuk tiap profil. Bisa diganti kapan saja di peta.</p>
+            <p className="text-ink-muted">Penilaian tiap tempat berbeda untuk tiap profil. Bisa diganti kapan saja.</p>
             <ul className="grid gap-3 sm:grid-cols-3">
               {PROFILES.map((p) => {
                 const Ilustrasi = ILUSTRASI_PROFIL[p];

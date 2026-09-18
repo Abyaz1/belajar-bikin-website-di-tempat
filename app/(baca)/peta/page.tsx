@@ -1,18 +1,14 @@
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { getPlaces } from "@/lib/ui/api/server";
 import { PROFILES, VERDICTS, isProfile, type PlaceSummary, type ProfileCode } from "@/lib/ui/api/types";
-import { COOKIE_PANDUAN } from "@/lib/ui/cara-kerja";
 import { PROFILE_LABEL, PROFILE_TITLE, VERDICT_LABEL, verdictWithProfile } from "@/lib/ui/copy";
 import { cx } from "@/lib/ui/cx";
 import { VERDICT_ICON } from "@/lib/ui/icons";
 import { ILUSTRASI_PROFIL } from "@/lib/ui/ilustrasi";
 import { MapView } from "@/lib/ui/map-view";
-import { PanduanAwal } from "@/lib/ui/panduan-awal";
 
-// L1 beranda: peta layar penuh dengan kepala halaman mengambang di atasnya.
-// Kunjungan pertama membuka panduan tiga langkah (cara kerja dan pilih
-// profil); sesudahnya layar hanya berisi peta dan kendalinya.
+// Peta layar penuh dengan kepala halaman mengambang di atasnya. Layar hanya
+// berisi peta dan kendalinya; penjelasan ada di beranda dan tab Cara kerja.
 //
 // Peta bukan satu-satunya jalan: tab "Daftar tempat" dan tombol "Daftar" di
 // panel bawah membuka daftar yang setara untuk profil yang sama (A4).
@@ -24,13 +20,14 @@ const PENDEK: Record<ProfileCode, string> = {
   netra: "Netra",
 };
 
-export default async function Page({ searchParams }: PageProps<"/">) {
+export const metadata = { title: "Peta" };
+
+export default async function Page({ searchParams }: PageProps<"/peta">) {
   const raw = (await searchParams).profil;
   const dipilih = isProfile(raw) ? raw : null;
   // Tanpa profil di URL, peta tetap dinilai untuk profil pertama, dan panel
   // bawah menyebutnya dengan jelas supaya tidak terbaca sebagai penilaian mutlak.
   const profile = dipilih ?? PROFILES[0];
-  const sudahPanduan = (await cookies()).get(COOKIE_PANDUAN)?.value === "1";
 
   let places: PlaceSummary[] = [];
   let gagal = false;
@@ -96,7 +93,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 return (
                   <li key={p}>
                     <Link
-                      href={`/?profil=${p}`}
+                      href={`/peta?profil=${p}`}
                       scroll={false}
                       aria-current={aktif ? "true" : undefined}
                       className={cx(
@@ -125,7 +122,6 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </div>
 
-      <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
     </>
   );
 }
