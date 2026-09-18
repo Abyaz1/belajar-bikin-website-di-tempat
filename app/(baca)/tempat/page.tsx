@@ -62,7 +62,7 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
     return (
       <div className="space-y-8">
         <LatarDoodle />
-        <h1 className="text-[2rem] leading-tight font-bold md:text-[2.5rem]">Daftar tempat</h1>
+        <h1 className="text-screen">Daftar tempat</h1>
         <PilihProfilVisual
           hrefs={Object.fromEntries(PROFILES.map((p) => [p, href(p, "daftar", q)])) as Record<ProfileCode, string>}
         />

@@ -140,11 +140,13 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-on-brand/20">
-        <p className="mx-auto max-w-6xl px-3 py-4 text-label font-normal md:px-6">
-          Daftar lokasi bersumber dari{" "}
-          <a className={TAUTAN} href="https://www.openstreetmap.org/copyright">© kontributor OpenStreetMap</a>,
-          dilisensikan ODbL. Kondisi fisik tiap lokasi berasal dari kontribusi berfoto yang lolos pemeriksaan.
-        </p>
+        <div className="mx-auto max-w-6xl px-3 py-4 md:px-6">
+          <p className="max-w-[72ch] text-label font-normal">
+            Daftar lokasi bersumber dari{" "}
+            <a className={TAUTAN} href="https://www.openstreetmap.org/copyright">© kontributor OpenStreetMap</a>,
+            dilisensikan ODbL. Kondisi fisik tiap lokasi berasal dari kontribusi berfoto yang lolos pemeriksaan.
+          </p>
+        </div>
       </div>
     </footer>
   );
