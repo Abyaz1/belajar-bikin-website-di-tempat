@@ -17,18 +17,26 @@ export const PROFILE_LABELS: Record<ProfileCode, string> = {
   netra: "Netra",
 };
 
-const ANGKA_0_SAMPAI_20 = Array.from({ length: 21 }, (_, i) => String(i));
-
+/** Isi persis INSERT attribute_type di db/migrations/001_trust_schema.sql,
+ *  ditambah label_id dari migrasi Verification. */
 export const ATTRIBUTE_TYPES: AttributeType[] = [
-  { code: "step_count", value_type: "integer", allowed_values: ANGKA_0_SAMPAI_20, vantage: "entrance", is_required_at_vantage: true, review_interval_days: 365, ai_suggestable: true, label_id: "Anak tangga di pintu masuk" },
-  { code: "ramp_wheelchair", value_type: "enum", allowed_values: ["yes", "no"], vantage: "entrance", is_required_at_vantage: true, review_interval_days: 365, ai_suggestable: true, label_id: "Ramp di pintu masuk" },
-  { code: "kerb", value_type: "enum", allowed_values: ["flush", "lowered", "raised"], vantage: "entrance", is_required_at_vantage: false, review_interval_days: 365, ai_suggestable: false, label_id: "Tepi trotoar di depan pintu masuk" },
-  { code: "door_width_band", value_type: "enum", allowed_values: ["lt80", "80_90", "gt90"], vantage: "entrance", is_required_at_vantage: false, review_interval_days: 365, ai_suggestable: false, label_id: "Lebar pintu masuk" },
-  { code: "surface_condition", value_type: "enum", allowed_values: ["good", "uneven", "damaged"], vantage: "entrance", is_required_at_vantage: false, review_interval_days: 365, ai_suggestable: false, label_id: "Permukaan menuju pintu masuk" },
-  { code: "tactile_paving", value_type: "enum", allowed_values: ["yes", "no"], vantage: "entrance", is_required_at_vantage: false, review_interval_days: 365, ai_suggestable: true, label_id: "Jalur pemandu" },
-  { code: "elevator_status", value_type: "enum", allowed_values: ["none", "working", "not_working"], vantage: "interior", is_required_at_vantage: false, review_interval_days: 90, ai_suggestable: false, label_id: "Lift" },
-  { code: "toilets_wheelchair", value_type: "enum", allowed_values: ["yes", "no"], vantage: "toilet", is_required_at_vantage: false, review_interval_days: 365, ai_suggestable: false, label_id: "Toilet kursi roda" },
+  { code: "step_count", value_type: "integer", allowed_values: null, min_value: 0, max_value: 20, vantage: "entrance", is_required: true, ai_suggestion_enabled: true, review_interval_days: 365, sort_order: 10, label_id: "Anak tangga di pintu masuk" },
+  { code: "ramp_wheelchair", value_type: "enum", allowed_values: ["yes", "no"], min_value: null, max_value: null, vantage: "entrance", is_required: true, ai_suggestion_enabled: true, review_interval_days: 365, sort_order: 20, label_id: "Ramp di pintu masuk" },
+  { code: "kerb", value_type: "enum", allowed_values: ["flush", "lowered", "raised"], min_value: null, max_value: null, vantage: "entrance", is_required: false, ai_suggestion_enabled: false, review_interval_days: 365, sort_order: 30, label_id: "Tepi trotoar di depan pintu masuk" },
+  { code: "door_width_band", value_type: "enum", allowed_values: ["lt80", "80_90", "gt90"], min_value: null, max_value: null, vantage: "entrance", is_required: false, ai_suggestion_enabled: false, review_interval_days: 365, sort_order: 40, label_id: "Lebar pintu masuk" },
+  { code: "surface_condition", value_type: "enum", allowed_values: ["good", "uneven", "damaged"], min_value: null, max_value: null, vantage: "entrance", is_required: false, ai_suggestion_enabled: false, review_interval_days: 365, sort_order: 50, label_id: "Permukaan menuju pintu masuk" },
+  { code: "tactile_paving", value_type: "enum", allowed_values: ["yes", "no"], min_value: null, max_value: null, vantage: "entrance", is_required: false, ai_suggestion_enabled: true, review_interval_days: 365, sort_order: 60, label_id: "Jalur pemandu" },
+  { code: "elevator_status", value_type: "enum", allowed_values: ["none", "working", "not_working"], min_value: null, max_value: null, vantage: "interior", is_required: false, ai_suggestion_enabled: false, review_interval_days: 90, sort_order: 70, label_id: "Lift" },
+  { code: "toilets_wheelchair", value_type: "enum", allowed_values: ["yes", "no"], min_value: null, max_value: null, vantage: "toilet", is_required: false, ai_suggestion_enabled: false, review_interval_days: 365, sort_order: 80, label_id: "Toilet kursi roda" },
 ];
+
+/** Semua nilai sah sebuah atribut sebagai teks: enum apa adanya, integer min..max. */
+export function nilaiSah(a: Pick<AttributeType, "value_type" | "allowed_values" | "min_value" | "max_value">): string[] {
+  if (a.value_type === "enum") return a.allowed_values ?? [];
+  const min = a.min_value ?? 0;
+  const max = a.max_value ?? min;
+  return Array.from({ length: max - min + 1 }, (_, i) => String(min + i));
+}
 
 // ── Kondisi yang dipakai bersama beberapa profil ────────────────────────────
 

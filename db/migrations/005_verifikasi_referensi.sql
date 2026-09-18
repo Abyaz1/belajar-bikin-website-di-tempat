@@ -1,60 +1,50 @@
--- Tabel milik Verification (docs-20 §1): place, attribute_type,
--- profile_rule_group, profile_rule_condition, profile_minimum_attribute.
+-- Bagian Verification dari skema (docs-20 §1), di atas skema jalur tulis
+-- milik Trust (001_trust_schema.sql).
 --
--- Isi referensi di bagian bawah DIBANGKITKAN dari lib/rules/reference.ts
+-- Bernama 005 mengikuti penomoran 001–004 milik Trust: scripts/setup_db.sh
+-- hanya menjalankan db/migrations/00*.sql. Migrasi berikutnya mulai 006.
+--
+-- Trust sudah membuat `place` (minimal) dan `attribute_type` beserta isinya
+-- supaya jalur tulis bisa diuji berdiri sendiri. Dua tabel itu milik
+-- Verification, tapi E4, E5, dan data benih sudah memakai kolomnya. Karena itu
+-- migrasi ini MELENGKAPI tabel yang ada, tidak membuat ulang:
+--   * place          + kolom yang dibutuhkan jalur baca dan aturan profil
+--   * attribute_type + label_id (nama kolom lain mengikuti 001: is_required,
+--                      ai_suggestion_enabled, min_value/max_value)
+--   * tiga tabel aturan profil, baru
+--
+-- Isi di bagian bawah DIBANGKITKAN dari lib/rules/reference.ts
 -- (referenceInsertSql di lib/rules/sql.ts). Tes lib/rules/sql.test.ts gagal
 -- kalau berkas ini bergeser dari reference.ts. Mengubah aturan = ubah
--- reference.ts, bangkitkan ulang, lalu tulis migrasi baru — jangan sunting
+-- reference.ts, bangkitkan ulang, lalu tulis migrasi BARU — jangan sunting
 -- migrasi yang sudah diterapkan.
 --
 -- Tidak ada kolom penilaian, skor, atau status di mana pun (00-KONTRAK §2
 -- aturan 1 dan 3). Penilaian dihitung saat request oleh lib/rules/engine.ts.
 
--- Tipe bersama. Dibuat idempoten karena tabel Trust (capture_session,
--- evidence) juga memakai `vantage`.
 do $$ begin create type profile_code as enum ('kursi_roda_manual', 'alat_bantu_jalan', 'netra'); exception when duplicate_object then null; end $$;
-do $$ begin create type vantage as enum ('entrance', 'interior', 'toilet'); exception when duplicate_object then null; end $$;
 do $$ begin create type place_source as enum ('osm_seed', 'manual'); exception when duplicate_object then null; end $$;
 do $$ begin create type rule_verdict as enum ('blocker', 'caution'); exception when duplicate_object then null; end $$;
 do $$ begin create type rule_subject_type as enum ('attribute', 'place_property'); exception when duplicate_object then null; end $$;
 do $$ begin create type rule_operator as enum ('eq', 'neq', 'gte', 'lte', 'in', 'not_in'); exception when duplicate_object then null; end $$;
 
-create table place (
-  id uuid primary key default gen_random_uuid(),
-  osm_type text,
-  osm_id bigint,
-  name text not null,
-  category text,
-  lat numeric(9, 6) not null,
-  lon numeric(9, 6) not null,
-  address text,
-  -- Wajib tampil sebagai atribusi (OSM: ODbL, atribusi + share-alike).
-  source place_source not null,
-  -- Dipakai aturan lift dan himpunan minimum bersyarat.
-  layanan_di_atas_lantai_dasar boolean not null default false,
-  -- Tag OSM yang berupa penilaian (misal wheelchair). Hanya tampil di audit,
-  -- tidak pernah menggerakkan penilaian.
-  third_party_claims jsonb,
-  is_demo_seed boolean not null default false,
-  unique (osm_type, osm_id)
-);
+-- ── place: kolom docs-20 §1 yang belum ada di versi minimal 001 ──────────
+alter table place add column if not exists category text;
+alter table place add column if not exists address text;
+-- Wajib tampil sebagai atribusi (OSM: ODbL, atribusi + share-alike). Baris
+-- yang sudah ada (data benih demo) menjadi 'manual'; hasil seeding OSM 'osm_seed'.
+alter table place add column if not exists source place_source not null default 'manual';
+-- Dipakai aturan lift dan himpunan minimum bersyarat.
+alter table place add column if not exists layanan_di_atas_lantai_dasar boolean not null default false;
+-- Tag OSM yang berupa penilaian (misal wheelchair). Hanya tampil di audit,
+-- tidak pernah menggerakkan penilaian.
+alter table place add column if not exists third_party_claims jsonb;
+create unique index if not exists place_osm_unik on place (osm_type, osm_id);
 
--- Kamus atribut 00-KONTRAK §3. Disimpan di tabel, bukan di kode.
-create table attribute_type (
-  code text primary key,
-  value_type text not null check (value_type in ('integer', 'enum')),
-  allowed_values text[] not null,
-  vantage vantage not null,
-  is_required_at_vantage boolean not null,
-  review_interval_days integer not null check (review_interval_days > 0),
-  -- Gerbang precision: bisa dimatikan tanpa deploy ulang, misalnya
-  --   update attribute_type set ai_suggestable = false where code = 'tactile_paving';
-  -- Hanya tiga atribut yang precision-nya diukur yang boleh menyala.
-  ai_suggestable boolean not null default false
-    check (not ai_suggestable or code in ('step_count', 'ramp_wheelchair', 'tactile_paving')),
-  label_id text not null
-);
+-- ── attribute_type: label untuk manusia ─────────────────────────────────
+alter table attribute_type add column if not exists label_id text;
 
+-- ── Aturan profil ───────────────────────────────────────────────────────
 -- Tidak ada verdict `irrelevant`: "tidak berpengaruh" = tidak ada baris.
 create table profile_rule_group (
   id text primary key,
@@ -85,16 +75,19 @@ create table profile_minimum_attribute (
   check ((required_when_property is null) = (required_when_value is null))
 );
 
+-- Hak akses: 001 mencabut semua hak dari PUBLIC. Peran aplikasi hanya membaca
+-- aturan; mengubah aturan lewat migrasi, bukan lewat aplikasi.
+grant select on profile_rule_group, profile_rule_condition, profile_minimum_attribute to app_rw;
+
 -- ── Data acuan, dibangkitkan dari lib/rules/reference.ts ──────────────────
-insert into attribute_type (code, value_type, allowed_values, vantage, is_required_at_vantage, review_interval_days, ai_suggestable, label_id) values
-  ('step_count', 'integer', array['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']::text[], 'entrance', true, 365, true, 'Anak tangga di pintu masuk'),
-  ('ramp_wheelchair', 'enum', array['yes', 'no']::text[], 'entrance', true, 365, true, 'Ramp di pintu masuk'),
-  ('kerb', 'enum', array['flush', 'lowered', 'raised']::text[], 'entrance', false, 365, false, 'Tepi trotoar di depan pintu masuk'),
-  ('door_width_band', 'enum', array['lt80', '80_90', 'gt90']::text[], 'entrance', false, 365, false, 'Lebar pintu masuk'),
-  ('surface_condition', 'enum', array['good', 'uneven', 'damaged']::text[], 'entrance', false, 365, false, 'Permukaan menuju pintu masuk'),
-  ('tactile_paving', 'enum', array['yes', 'no']::text[], 'entrance', false, 365, true, 'Jalur pemandu'),
-  ('elevator_status', 'enum', array['none', 'working', 'not_working']::text[], 'interior', false, 90, false, 'Lift'),
-  ('toilets_wheelchair', 'enum', array['yes', 'no']::text[], 'toilet', false, 365, false, 'Toilet kursi roda');
+update attribute_type set label_id = 'Anak tangga di pintu masuk' where code = 'step_count';
+update attribute_type set label_id = 'Ramp di pintu masuk' where code = 'ramp_wheelchair';
+update attribute_type set label_id = 'Tepi trotoar di depan pintu masuk' where code = 'kerb';
+update attribute_type set label_id = 'Lebar pintu masuk' where code = 'door_width_band';
+update attribute_type set label_id = 'Permukaan menuju pintu masuk' where code = 'surface_condition';
+update attribute_type set label_id = 'Jalur pemandu' where code = 'tactile_paving';
+update attribute_type set label_id = 'Lift' where code = 'elevator_status';
+update attribute_type set label_id = 'Toilet kursi roda' where code = 'toilets_wheelchair';
 
 insert into profile_rule_group (id, profile_code, verdict, message_id, priority) values
   ('kursi_tangga_tanpa_ramp', 'kursi_roda_manual', 'blocker', 'tangga_tanpa_ramp', 10),
@@ -143,3 +136,6 @@ insert into profile_minimum_attribute (profile_code, attribute_code, required_wh
   ('netra', 'kerb', null, null),
   ('netra', 'tactile_paving', null, null),
   ('netra', 'surface_condition', null, null);
+
+-- Semua atribut sudah berlabel; atribut baru wajib membawa label.
+alter table attribute_type alter column label_id set not null;

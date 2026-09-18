@@ -37,15 +37,23 @@ export interface MinimumAttribute {
   required_when_value: string | null;
 }
 
-/** Baris `attribute_type` — isi persis 00-KONTRAK §3. */
+/**
+ * Baris `attribute_type` — isi 00-KONTRAK §3, dengan bentuk kolom persis tabel
+ * yang dibuat migrasi Trust 001_trust_schema.sql (integer memakai min/max,
+ * enum memakai allowed_values tanpa not_visible). `label_id` ditambahkan migrasi
+ * Verification.
+ */
 export interface AttributeType {
   code: string;
   value_type: "integer" | "enum";
-  allowed_values: string[];
+  allowed_values: string[] | null;
+  min_value: number | null;
+  max_value: number | null;
   vantage: Vantage;
-  is_required_at_vantage: boolean;
+  is_required: boolean;
+  ai_suggestion_enabled: boolean;
   review_interval_days: number;
-  ai_suggestable: boolean;
+  sort_order: number;
   label_id: string;
 }
 
