@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/tempat/[id]/atrib
   const { id, kode } = await params;
   const facts = await getPlaceFacts(id).catch(() => null);
   const a = facts?.attributes.find((x) => x.code === kode);
-  return { title: facts && a ? `${attributeLabel(kode, a.label)} — ${facts.name}` : "Rincian atribut" };
+  return { title: facts && a ? `${attributeLabel(kode, a.label)} · ${facts.name}` : "Rincian atribut" };
 }
 
 export default async function Page({ params, searchParams }: PageProps<"/tempat/[id]/atribut/[kode]">) {

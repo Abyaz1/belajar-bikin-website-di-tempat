@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/tempat/[id]/atrib
   const { id, kode } = await params;
   const trail = await getAudit(id, kode).catch(() => null);
   return {
-    title: trail ? `Jejak audit: ${attributeLabel(kode, trail.attribute.label)} — ${trail.place.name}` : "Jejak audit",
+    title: trail ? `Jejak audit: ${attributeLabel(kode, trail.attribute.label)} · ${trail.place.name}` : "Jejak audit",
   };
 }
 

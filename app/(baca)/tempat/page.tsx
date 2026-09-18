@@ -42,7 +42,7 @@ function href(profile: ProfileCode, view: "daftar" | "peta", q: string) {
 
 export async function generateMetadata({ searchParams }: PageProps<"/tempat">): Promise<Metadata> {
   const { profile } = parse(await searchParams);
-  return { title: profile ? `Daftar tempat — ${PROFILE_LABEL[profile]}` : "Daftar tempat" };
+  return { title: profile ? `Daftar tempat · ${PROFILE_LABEL[profile]}` : "Daftar tempat" };
 }
 
 function summarize(places: PlaceSummary[], profile: ProfileCode): string {

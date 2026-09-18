@@ -46,10 +46,10 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   belum_dapat_dipastikan: "Belum dapat dipastikan",
 };
 
-/** "Tidak dapat diakses — kursi roda manual". Tanpa nama profil, badge
+/** "Tidak dapat diakses untuk kursi roda manual". Tanpa nama profil, badge
  *  penilaian terbaca sebagai penilaian mutlak. */
 export function verdictWithProfile(v: Verdict, p: ProfileCode): string {
-  return `${VERDICT_LABEL[v]} — ${PROFILE_LABEL[p]}`;
+  return `${VERDICT_LABEL[v]} untuk ${PROFILE_LABEL[p]}`;
 }
 
 // ── Status bukti ────────────────────────────────────────────────────────────

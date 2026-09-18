@@ -28,7 +28,7 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/tem
   const raw = (await searchParams).profil;
   const facts = await getPlaceFacts(id).catch(() => null);
   if (!facts) return { title: "Tempat" };
-  return { title: isProfile(raw) ? `${facts.name} — ${PROFILE_LABEL[raw]}` : facts.name };
+  return { title: isProfile(raw) ? `${facts.name} · ${PROFILE_LABEL[raw]}` : facts.name };
 }
 
 function orderIndex(code: string) {
