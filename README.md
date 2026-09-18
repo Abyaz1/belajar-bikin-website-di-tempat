@@ -55,6 +55,25 @@ Tidak memakai component library; komponen UI ditulis sendiri di `lib/ui/`.
   di [How to deploy](#how-to-deploy).
 - Instance Cloud SQL beserta database dan user-nya, serta satu bucket Cloud Storage.
 
+### Dependency opsional
+
+`@google-cloud/storage` **tidak** ada di `package.json` dan tidak terpasang oleh
+`npm ci`. Paket itu hanya dibutuhkan ketika penyimpanan bukti dipindah ke Cloud
+Storage. Impornya dinamis, jadi selama `STORAGE_DRIVER=local` aplikasi berjalan
+normal tanpanya; `npm run build` hanya memunculkan satu peringatan
+`Module not found`, bukan galat.
+
+**Sebelum mengubah `STORAGE_DRIVER` menjadi `gcs`, paket itu wajib dipasang:**
+
+```bash
+npm install @google-cloud/storage
+```
+
+Tanpa itu, setiap unggahan bukti membalas HTTP 500 dengan pesan
+`STORAGE_DRIVER=gcs tetapi paket @google-cloud/storage belum terpasang`.
+Tidak ada baris `evidence` yang tertulis saat itu terjadi, jadi basis data tidak
+meninggalkan bukti separuh jadi.
+
 ### Variabel lingkungan
 
 Daftarnya ada di `.env.example`. Salin menjadi `.env.local`, lalu isi **tanpa tanda
@@ -70,9 +89,33 @@ kutip** supaya terbaca sama oleh Next.js, Docker, dan bash.
 | `DB_NAME` | nama database |
 | `DB_USER` | user database |
 | `DB_PASSWORD` | password user database; di Cloud Run diambil dari Secret Manager |
-| `GCS_BUCKET` | nama bucket Cloud Storage untuk foto bukti |
+| `GCS_BUCKET` | nama bucket Cloud Storage untuk foto bukti; wajib saat `STORAGE_DRIVER=gcs` |
+| `GOOGLE_APPLICATION_CREDENTIALS` | path file kunci service account; kosongkan kalau memakai ADC atau berjalan di Cloud Run |
+| `DATABASE_URL` | string koneksi Postgres. **Seluruh jalur tulis membaca ini**, bukan `DB_NAME`/`DB_USER`/`DB_PASSWORD` |
+| `SESSION_SECRET` | kunci penandatangan cookie sesi anonim, **minimal 32 karakter** |
+| `STORAGE_DRIVER` | `local` (bawaan) atau `gcs` |
+| `STORAGE_LOCAL_ROOT` | direktori penyimpanan saat `STORAGE_DRIVER=local`; bawaan `.storage` |
 
 `.env` dan semua turunannya diabaikan git. Hanya `.env.example` yang di-commit.
+
+#### Dua variabel yang tidak punya nilai bawaan
+
+Keduanya akan mematikan fitur, bukan menurunkan kualitasnya, jadi periksa dua kali
+sebelum menyerahkan `.env` ke panitia.
+
+- **`SESSION_SECRET` wajib diisi, minimal 32 karakter.** Kalau kosong atau lebih
+  pendek, `lib/trust/session.ts` melempar galat, endpoint sesi (E7) mati, dan
+  seluruh alur kontribusi berkamera ikut mati karena tidak ada sesi yang bisa
+  dipakai meminta token penangkapan. Bangkitkan dengan:
+
+  ```bash
+  openssl rand -base64 48
+  ```
+
+- **`DATABASE_URL` wajib diisi.** Peran koneksinya harus **bukan superuser**:
+  penegakan append-only pada `audit_event`, `provenance_check`, dan `observation`
+  bersandar pada Row Level Security, dan RLS tidak berlaku untuk superuser maupun
+  peran ber-`BYPASSRLS`. Pakai `app_rw` yang dibuat `scripts/setup_db.sh --init-role`.
 
 ## How to build/run
 
@@ -82,11 +125,20 @@ Semua perintah dijalankan dari root repo memakai bash (di Windows: Git Bash).
 
 ```bash
 npm ci
+npm run build                # WAJIB sekali, lihat catatan di bawah
 cp .env.example .env.local   # lalu isi nilainya
 npm run dev
 ```
 
 Buka http://localhost:3000.
+
+**`npm run build` wajib dijalankan setidaknya sekali setelah `npm ci`,** bahkan
+kalau yang dituju cuma mode pengembangan. Next.js membangkitkan tipe rute
+(`PageProps`, `LayoutProps`) ke `.next/types/`, dan `tsconfig.json` memasukkan
+direktori itu. Di clone yang bersih direktori itu belum ada, sehingga
+`npx tsc --noEmit` gagal dengan belasan galat `Cannot find name 'PageProps'`
+yang terlihat seperti kode rusak padahal cuma tipe yang belum dibangkitkan.
+`npm run dev` juga membangkitkannya, tapi baru setelah server menyala.
 
 Akses ke Vertex AI dan Cloud Storage dari lokal memakai Application Default
 Credentials (ADC), jadi tidak perlu file kunci JSON. Login sekali:
@@ -130,6 +182,51 @@ docker run --rm -p 8080:8080 --env-file .env.local astara
 
 Buka http://localhost:8080. Container membaca port dari env `PORT` (bawaan `8080`)
 dan berjalan sebagai user non-root.
+
+### Uji penolakan (pytest)
+
+Himpunan uji penolakan menembak API lewat HTTP dari luar proses, jadi butuh
+server yang hidup dan basis data yang sudah dimigrasi serta di-seed.
+
+```bash
+./scripts/setup_db.sh                        # migrasi + data benih demo
+
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r tests/rejection/requirements.txt
+
+TRUST_BASE_URL=http://localhost:3000 pytest tests/rejection -v
+```
+
+Seluruh uji menembak tempat latihan terpisah (`Gedung Latihan Uji Penolakan`),
+supaya jejak audit empat tempat demo tidak kotor oleh percobaan yang gagal.
+
+#### Arahkan ke `next dev` atau ke deployment HTTPS — jangan ke `next start` di http
+
+`next start` memaksa `NODE_ENV=production`, dan pada mode itu cookie sesi
+kontributor dikirim dengan flag `Secure`. Lewat `http://` cookie ber-flag `Secure`
+disimpan klien tapi tidak pernah dikirim balik, sehingga endpoint sesi (E7)
+berhasil tetapi setiap permintaan sesudahnya membalas `SESSION_REQUIRED` dan
+**seluruh** uji gagal.
+
+Itu perilaku cookie yang benar, bukan bug. Yang salah adalah menjalankan produksi
+di atas http. Dua sasaran yang sah:
+
+| Sasaran | Perintah | Kenapa jalan |
+|---|---|---|
+| `next dev` lokal | `npm run dev` lalu `TRUST_BASE_URL=http://localhost:3000` | `NODE_ENV=development`, cookie tanpa flag `Secure` |
+| Deployment Cloud Run | `TRUST_BASE_URL=https://<url-cloud-run>` | HTTPS, jadi cookie `Secure` terkirim normal |
+
+#### Mengulang satu jalan uji yang gagal
+
+Tabel `evidence` bersifat append-only dan memang tidak boleh dibersihkan, jadi
+foto dari jalan uji sebelumnya tetap tersimpan selamanya dan akan ditolak C8
+sebagai duplikat kalau dikirim ulang. Karena itu citra ujinya dibangkitkan dengan
+garam per jalan. Untuk mengulang satu jalan persis seperti sebelumnya, set
+garamnya — nilainya dicetak di kepala keluaran pytest:
+
+```bash
+TRUST_RUN_SALT=1758170000000000000 pytest tests/rejection -v
+```
 
 ## How to deploy
 
