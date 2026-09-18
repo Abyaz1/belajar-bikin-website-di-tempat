@@ -50,7 +50,7 @@ export function SiteHeader() {
                     href={t.href}
                     aria-current={aktif ? "page" : undefined}
                     className={cx(
-                      "flex min-h-12 items-center justify-center rounded-pill px-2 text-center text-meta font-semibold no-underline md:px-4 md:text-body",
+                      "flex min-h-12 items-center justify-center whitespace-nowrap rounded-pill px-1 text-center text-label no-underline md:px-4 md:text-body md:font-semibold",
                       aktif ? "bg-action text-on-brand" : "text-ink hover:bg-surface-alt",
                     )}
                   >
@@ -71,10 +71,10 @@ export function FixtureBanner() {
   const path = usePathname() ?? "/";
   if (!UI_FIXTURES || path === "/") return null;
   return (
-    <div className="mx-3 mt-3 rounded-md border-2 border-ink bg-surface md:mx-6">
-      <p className="mx-auto max-w-6xl px-4 py-2 text-meta">
-        <strong>Mode data contoh (NEXT_PUBLIC_UI_FIXTURES=1).</strong> Semua isi halaman ini fiktif,
-        dibuat untuk mengembangkan antarmuka sebelum server siap. Jangan dipakai untuk demo atau video.
+    // Lebar, jarak tepi, dan sudutnya sama dengan kepala halaman supaya sejajar.
+    <div className="px-3 pt-2 md:px-6">
+      <p className="mx-auto max-w-6xl rounded-lg border border-line bg-accent px-4 py-2 text-meta">
+        <strong>Mode data contoh.</strong> Isi halaman ini fiktif; jangan dipakai untuk demo atau video.
       </p>
     </div>
   );
@@ -86,7 +86,7 @@ export function SiteFooter() {
   if (path === "/") return null;
   return (
     <footer className="mt-16 border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-meta text-ink-muted md:grid-cols-2 md:px-6">
+      <div className="mx-auto grid max-w-6xl gap-6 px-3 py-8 text-meta text-ink-muted md:grid-cols-2 md:px-6">
         <div className="space-y-2">
           <p className="font-semibold text-ink">{PRODUCT_NAME}</p>
           <p>
