@@ -43,7 +43,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Jejak halaman" className="text-meta">
+      <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat${profileQuery}`}>Daftar tempat</Link> <span aria-hidden="true">›</span>{" "}
         <Link href={placeHref}>{facts.name}</Link> <span aria-hidden="true">›</span>{" "}
         <span aria-current="page">{label}</span>
