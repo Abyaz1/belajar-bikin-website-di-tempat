@@ -72,7 +72,17 @@ export interface BarisTipeAtribut {
 /** Foto di balik nilai berlaku sebuah atribut: evidence.public_path, bukan storage_path. */
 export interface BarisFoto {
   attribute_code: string;
+  evidence_id: string;
   public_path: string | null;
+}
+
+/**
+ * URL foto tayang. public_path adalah kunci objek di bucket privat, bukan URL,
+ * jadi yang dikirim ke klien adalah rute penyaji milik jalur baca. Tanpa foto
+ * tayang (belum dikaburkan, atau data demo tanpa citra) → null, bukan tautan rusak.
+ */
+export function urlFoto(placeId: string, evidenceId: string, publicPath: string | null): string | null {
+  return publicPath ? `/api/places/${placeId}/photos/${evidenceId}` : null;
 }
 
 export interface BarisBukti {
@@ -269,7 +279,8 @@ export function rakitRincian(
 
   const attributes: AttributeDetail[] = tipe.map((t) => {
     const s = petaState.get(t.code);
-    const photoUrl = petaFoto.get(t.code)?.public_path ?? null;
+    const f = petaFoto.get(t.code);
+    const photoUrl = f ? urlFoto(tempat.id, f.evidence_id, f.public_path) : null;
     return {
       code: t.code,
       label: t.label_id,
@@ -386,7 +397,7 @@ export function rakitJejakAudit(m: MasukanJejak): AuditTrail {
         evidence: b
           ? {
               id: b.id,
-              photo_url: b.public_path,
+              photo_url: urlFoto(m.tempat.id, b.id, b.public_path),
               distance_to_place_m: angka(b.distance_to_place_m),
               client_accuracy_m: angka(b.client_accuracy_m),
               captured_at: iso(b.client_captured_at),

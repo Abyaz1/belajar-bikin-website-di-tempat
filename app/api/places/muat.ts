@@ -64,14 +64,16 @@ export async function muatTipeAtribut(): Promise<BarisTipeAtribut[]> {
 /** Foto terbaru di balik nilai berlaku tiap atribut. Hanya public_path (hasil blur), tidak pernah storage_path. */
 export async function muatFoto(placeId: string): Promise<BarisFoto[]> {
   const { rows } = await (await db()).query<BarisFoto>(
-    `select distinct on (o.attribute_code) o.attribute_code, e.public_path
+    `select distinct on (o.attribute_code) o.attribute_code, e.id as evidence_id, e.public_path
        from observation o
        join attribute_state s
          on s.place_id = o.place_id and s.attribute_code = o.attribute_code
         and s.current_value = o.confirmed_value
        join evidence e on e.id = o.evidence_id
       where o.place_id = $1
-      order by o.attribute_code, o.observed_at desc, o.id desc`,
+      -- Bukti yang punya foto tayang didahulukan: nilai yang sama dari bukti lebih
+      -- lama tetap sah sebagai fotonya kalau bukti terbaru tidak punya foto.
+      order by o.attribute_code, (e.public_path is null), o.observed_at desc, o.id desc`,
     [placeId],
   );
   return rows;
