@@ -205,7 +205,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
                 <h3 id={`judul-${v}`} className="text-card">
                   {VANTAGE_LABEL[v]}
                 </h3>
-                <Link href={`/kontribusi/${encodeURIComponent(id)}/${v}?profil=${profile}`} className="inline-flex min-h-11 items-center text-meta">
+                <Link href={`/kontribusi/${encodeURIComponent(id)}/${v}?profil=${profile}`} className="inline-flex min-h-12 items-center text-meta">
                   Kirim foto {VANTAGE_LABEL[v].toLowerCase()}
                 </Link>
               </div>

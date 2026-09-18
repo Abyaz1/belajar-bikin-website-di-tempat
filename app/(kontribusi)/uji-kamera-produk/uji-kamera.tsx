@@ -213,7 +213,7 @@ function CaraB({
           type="file"
           accept="image/*"
           capture="environment"
-          className="mt-2 block min-h-11 w-full rounded-md border border-line-control p-2"
+          className="mt-2 block min-h-12 w-full rounded-md border border-line-control p-2"
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;

@@ -443,7 +443,7 @@ function Konfirmasi({
           className="h-40 w-full max-w-xs rounded-md border border-line object-cover"
         />
         <details className="min-w-0 flex-1 basis-64">
-          <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-action underline">
+          <summary className="inline-flex min-h-12 cursor-pointer items-center font-semibold text-action underline">
             Lihat hasil tiap pemeriksaan
           </summary>
           <ChecksTable checks={draft.checks} caption="Hasil pemeriksaan keaslian foto ini" />
