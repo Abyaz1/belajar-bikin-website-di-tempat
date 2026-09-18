@@ -21,11 +21,39 @@ const JENIS = [
   { value: "fasilitas kesehatan", label: "Fasilitas kesehatan" },
 ];
 
-/** Tempat unggulan: yang paling banyak kondisi fisiknya sudah diperiksa. */
+/**
+ * Tempat unggulan: kampus UNPAD Dipatiukur, tempat hackathon ini berlangsung.
+ * Kalau tidak ada di data, tempat yang paling banyak kondisi fisiknya diperiksa.
+ */
+const POLA_UNPAD = [/^universitas pad[j]?ad?jaran/i, /unpad|pad[j]?ad?jaran/i];
+
 function pilihUnggulan(places: PlaceSummary[]): PlaceSummary | null {
+  for (const pola of POLA_UNPAD) {
+    const kampus = places.find((p) => p.category === "kampus" && pola.test(p.name.replace(/^\[Contoh\]\s*/, "")));
+    if (kampus) return kampus;
+  }
   const diperiksa = (p: PlaceSummary) => (p.status_counts?.terverifikasi ?? 0) + (p.status_counts?.perlu_ditinjau_ulang ?? 0);
   return [...places].sort((a, b) => diperiksa(b) - diperiksa(a))[0] ?? null;
 }
+
+function adalahUnpad(nama: string): boolean {
+  return POLA_UNPAD[1].test(nama);
+}
+
+/**
+ * Foto ilustrasi kampus UNPAD Dipatiukur dari Wikimedia Commons. BUKAN foto
+ * bukti: tidak melewati pemeriksaan keaslian, jadi selalu dilabeli ilustrasi
+ * dan diberi atribusi sesuai lisensinya.
+ */
+const FOTO_UNPAD = {
+  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Unpad_Dipati_Ukur_Main_Campus.jpg/1280px-Unpad_Dipati_Ukur_Main_Campus.jpg",
+  alt: "Gedung kampus Universitas Padjadjaran di Jalan Dipati Ukur, Bandung",
+  diambil: "24 Februari 2017",
+  penulis: "Medelam",
+  sumber: "https://commons.wikimedia.org/wiki/File:Unpad_Dipati_Ukur_Main_Campus.jpg",
+  lisensi: "CC BY-SA 4.0",
+  lisensiUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+};
 
 const FIELD = "pilih block w-full min-h-12 appearance-none bg-transparent text-meta font-semibold text-ink sm:text-body";
 
@@ -53,6 +81,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const terverifikasi = places.reduce((n, p) => n + (p.status_counts?.terverifikasi ?? 0), 0);
   const nilai = (code: string) => unggulan?.attributes.find((a) => a.code === code)?.current_value ?? null;
   const foto = unggulan?.attributes.find((a) => a.photo_url);
+  const unpad = unggulan ? adalahUnpad(unggulan.name) : false;
 
   return (
     <div className="space-y-16 md:space-y-24">
@@ -79,7 +108,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
 
           <p className="mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
             Anak tangga, ramp, lebar pintu, dan jalur pemandu, masing-masing dengan foto, tanggal foto diambil, dan hasil
-            pemeriksaan keasliannya.
+            pemeriksaan keasliannya. Dimulai dari koridor kampus UNPAD Dipatiukur, Bandung.
           </p>
         </div>
 
@@ -151,7 +180,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           {unggulan ? (
             <article className="card-link overflow-hidden rounded-lg border border-line bg-surface p-2">
               <div className="relative aspect-[16/10] overflow-hidden rounded-md bg-p4">
-                {foto?.photo_url ? (
+                {unpad ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={FOTO_UNPAD.src} alt={FOTO_UNPAD.alt} className="h-full w-full object-cover" />
+                ) : foto?.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={foto.photo_url} alt={foto.photo_alt ?? ""} className="h-full w-full object-cover" />
                 ) : (
@@ -163,7 +195,19 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 {unggulan.is_demo_seed ? (
                   <span className="absolute end-2 top-2 rounded-sm bg-demo-bg px-2 py-1 text-label text-demo-ink">Demo</span>
                 ) : null}
+                {unpad ? (
+                  <span className="absolute start-2 top-2 rounded-sm bg-surface px-2 py-1 text-label text-ink">
+                    Foto ilustrasi
+                  </span>
+                ) : null}
               </div>
+              {unpad ? (
+                <p className="relative z-10 px-3 pt-2 text-start text-label font-normal text-ink-muted">
+                  Diambil {FOTO_UNPAD.diambil}. Foto:{" "}
+                  <a href={FOTO_UNPAD.sumber}>{FOTO_UNPAD.penulis}, Wikimedia Commons</a>,{" "}
+                  <a href={FOTO_UNPAD.lisensiUrl}>{FOTO_UNPAD.lisensi}</a>. Bukan foto bukti pemeriksaan.
+                </p>
+              ) : null}
               <div className="space-y-3 p-3 text-start">
                 <div>
                   <h2 className="text-card">
@@ -209,8 +253,16 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
+      {/* Bagian bawah beranda: doodle samar selebar layar mengisi ruang kosong. Dekoratif. */}
+      <div className="relative isolate space-y-16 pb-8 md:space-y-24">
+        <div
+          aria-hidden="true"
+          className="absolute -top-8 bottom-0 left-1/2 -z-10 w-screen -translate-x-1/2 bg-[url(/doodle-astara.svg)] bg-[length:240px_240px] [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]"
+        />
       {/* ── Angka koridor ── */}
-      <section aria-label="Angka koridor" className="grid grid-cols-2 gap-y-8 border-y border-line py-10 md:grid-cols-4">
+      <section aria-labelledby="judul-angka" className="space-y-6">
+      <h2 id="judul-angka" className="sr-only">Angka koridor</h2>
+      <div className="grid grid-cols-2 gap-y-8 border-y border-line py-10 md:grid-cols-4">
         {[
           { angka: String(places.length), label: "Tempat di koridor Dipatiukur" },
           { angka: String(terverifikasi), label: "Kondisi fisik terverifikasi" },
@@ -222,6 +274,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             <span className="max-w-[8rem] text-label font-normal text-ink-muted uppercase">{s.label}</span>
           </div>
         ))}
+      </div>
+      <p className="mx-auto max-w-2xl text-center text-meta text-ink-muted">
+        Angka ini sengaja kecil. Kami mulai dari satu koridor, karena lima puluh titik yang bisa dipertanggungjawabkan lebih
+        berguna daripada sepuluh ribu titik yang tidak bisa dipercaya.
+      </p>
       </section>
 
       {/* ── Kenapa Astara ── */}
@@ -301,6 +358,8 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </article>
         </div>
       </section>
+
+      </div>
 
       <PanduanAwal terbuka={!sudahPanduan} profilAktif={profile} />
     </div>
