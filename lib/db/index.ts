@@ -10,6 +10,11 @@ import { envWajib } from "@/lib/env";
 const penyimpan = globalThis as typeof globalThis & { poolAstara?: Promise<Pool> };
 
 async function buatPool() {
+  // Postgres biasa (lokal, Docker, suite tes) lewat DATABASE_URL. Di Cloud Run
+  // variabel ini kosong, jadi jalurnya tetap Cloud SQL Connector di bawah.
+  const url = process.env.DATABASE_URL?.trim();
+  if (url) return new Pool({ connectionString: url, max: 5 });
+
   const connector = new Connector();
   const opsi = await connector.getOptions({
     instanceConnectionName: envWajib("CLOUD_SQL_CONNECTION_NAME"),
