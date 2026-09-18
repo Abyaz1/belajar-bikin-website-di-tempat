@@ -49,6 +49,17 @@ const APP1_XMP = segmen(0xffe1, Buffer.concat([
   Buffer.from('<x:xmpmeta/>', 'latin1'),
 ]));
 
+/** APP2 ICC — Chrome menyisipkan ini pada keluaran canvas.toBlob(). */
+const APP2_ICC = segmen(0xffe2, Buffer.concat([
+  Buffer.from('ICC_PROFILE\0', 'latin1'),
+  Buffer.from([0x01, 0x01]),
+  Buffer.alloc(128, 0x00),
+]));
+
+/** APP13 Photoshop IRB dan APP14 Adobe — jejak perkakas penyunting. */
+const APP13_PHOTOSHOP = segmen(0xffed, Buffer.from('Photoshop 3.0\0 jejak', 'latin1'));
+const APP14_ADOBE = segmen(0xffee, Buffer.from('Adobe\0 jejak', 'latin1'));
+
 const TAG_MAKE = 0x010f;
 const TAG_GPS_IFD = 0x8825;
 
@@ -116,6 +127,45 @@ describe('scanJpegMetadata', () => {
     expect(scanJpegMetadata(Buffer.from('bukan gambar', 'latin1'))).toEqual({
       exifPresent: false,
       exifGpsPresent: false,
+    });
+  });
+
+  /**
+   * Catatan review: JPEG hasil kanvas Chrome membawa segmen APP2 ICC.
+   *
+   * C3 harus menolak berdasarkan EXIF secara spesifik, bukan berdasarkan
+   * adanya segmen metadata apa pun. Kalau tidak, kontribusi yang sah dari
+   * kamera aplikasi ikut tertolak, dan penolakan itu akan terlihat seperti
+   * sistem yang galak padahal cuma salah baca.
+   *
+   * Perilakunya sudah benar sejak awal, tetapi tidak ada yang menguncinya.
+   * Keempat kasus di bawah ini yang menguncinya.
+   */
+  describe('segmen non-EXIF tidak boleh memicu penolakan', () => {
+    it('APP2 ICC saja bukan EXIF', () => {
+      expect(scanJpegMetadata(jpeg(APP0_JFIF, APP2_ICC))).toEqual({
+        exifPresent: false,
+        exifGpsPresent: false,
+      });
+    });
+
+    it('APP13 Photoshop dan APP14 Adobe juga bukan EXIF', () => {
+      // Dicatat apa adanya: keduanya jejak perkakas penyunting, tapi kontrak
+      // menyebut EXIF. Memperluas gerbang ke sini akan menambah risiko salah
+      // tolak tanpa dasar kontrak.
+      expect(scanJpegMetadata(jpeg(APP0_JFIF, APP13_PHOTOSHOP, APP14_ADOBE)).exifPresent).toBe(false);
+    });
+
+    it('EXIF tetap tertangkap walau berdampingan dengan ICC', () => {
+      // Urutan segmen tidak boleh membuat pemindai berhenti lebih awal.
+      expect(scanJpegMetadata(jpeg(APP0_JFIF, APP2_ICC, app1Exif(TAG_MAKE))).exifPresent).toBe(true);
+      expect(scanJpegMetadata(jpeg(APP0_JFIF, app1Exif(TAG_MAKE), APP2_ICC)).exifPresent).toBe(true);
+      expect(scanJpegMetadata(jpeg(APP2_ICC, app1Exif(TAG_GPS_IFD))).exifGpsPresent).toBe(true);
+    });
+
+    it('APP1 yang bukan Exif maupun XMP diabaikan', () => {
+      const app1Asing = segmen(0xffe1, Buffer.from('SesuatuYangLain\0', 'latin1'));
+      expect(scanJpegMetadata(jpeg(APP0_JFIF, app1Asing)).exifPresent).toBe(false);
     });
   });
 });
