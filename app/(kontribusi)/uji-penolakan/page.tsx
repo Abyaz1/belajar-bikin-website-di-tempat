@@ -29,7 +29,7 @@ export default async function Page() {
           </p>
           <p className="text-meta">
             Yang dibuktikan: penolakan terjadi di server, bukan karena antarmuka menyembunyikan tombol. Yang tidak
-            dibuktikan: bahwa pemalsuan mustahil — lapisan ini menaikkan biaya pemalsuan, bukan menutup celahnya.
+            dibuktikan: bahwa pemalsuan mustahil. Lapisan ini menaikkan biaya pemalsuan, bukan menutup celahnya.
           </p>
         </div>
       </header>

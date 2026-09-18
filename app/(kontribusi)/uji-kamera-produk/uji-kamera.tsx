@@ -72,7 +72,7 @@ export function UjiKamera() {
         {env ? (
           <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-[max-content_1fr]">
             <dt className="font-semibold">Secure context (HTTPS)</dt>
-            <dd>{env.secure ? "Ya" : "Tidak — kamera pasti gagal di alamat ini"}</dd>
+            <dd>{env.secure ? "Ya" : "Tidak. Kamera pasti gagal di alamat ini"}</dd>
             <dt className="font-semibold">getUserMedia tersedia</dt>
             <dd>{env.mediaDevices ? "Ya" : "Tidak"}</dd>
             <dt className="font-semibold">Geolocation tersedia</dt>
@@ -151,10 +151,10 @@ function CaraA({
   return (
     <section aria-labelledby="h-a" className="space-y-3">
       <h2 id="h-a" className="text-section">
-        Cara A — kamera dalam aplikasi (getUserMedia → kanvas)
+        Cara A: kamera dalam aplikasi (getUserMedia → kanvas)
       </h2>
       <p className="text-meta text-ink-muted">
-        Cara yang dipakai alur kontribusi — sudah diputuskan di 00-KONTRAK §10. Kode yang sama persis dengan layar
+        Cara yang dipakai alur kontribusi, sudah diputuskan di 00-KONTRAK §10. Kode yang sama persis dengan layar
         kamera produk (<code className="font-mono">lib/ui/camera.tsx</code>): meminta aliran 1920×1440, lalu sisi
         terpanjang dikecilkan ke {TARGET_SISI} px. Harapan: JPEG tanpa EXIF, sisi terpanjang sekitar {TARGET_SISI} px.
       </p>
@@ -199,10 +199,10 @@ function CaraB({
   return (
     <section aria-labelledby="h-b" className="space-y-3">
       <h2 id="h-b" className="text-section">
-        Cara B — input berkas dengan atribut capture
+        Cara B: input berkas dengan atribut capture
       </h2>
       <p className="text-meta text-ink-muted">
-        Cara cadangan. Di banyak HP, berkas hasilnya membawa EXIF — termasuk foto yang sah.
+        Cara cadangan. Di banyak HP, berkas hasilnya membawa EXIF, termasuk foto yang sah.
       </p>
       <div>
         <label htmlFor="cara-b" className="block font-semibold">
@@ -240,15 +240,15 @@ function ReportView({ report: hasil }: { report: Hasil }) {
         </strong>
         {hasil.sw !== undefined
           ? sisi >= TARGET_SISI - 16
-            ? ` — sisi terpanjang ${sisi} px, sesuai target ${TARGET_SISI} px.`
-            : ` — sisi terpanjang ${sisi} px, DI BAWAH target ${TARGET_SISI} px.`
+            ? `, sisi terpanjang ${sisi} px, sesuai target ${TARGET_SISI} px.`
+            : `, sisi terpanjang ${sisi} px, DI BAWAH target ${TARGET_SISI} px.`
           : null}
       </dd>
       {hasil.sw !== undefined ? (
         <>
           <dt className="font-semibold">Aliran kamera</dt>
           <dd>
-            {hasil.sw}×{hasil.sh} px{sisi < TARGET_SISI - 16 ? " — kamera memberi resolusi lebih kecil dari yang diminta; kanvas tidak memperbesar." : ""}
+            {hasil.sw}×{hasil.sh} px{sisi < TARGET_SISI - 16 ? ". Kamera memberi resolusi lebih kecil dari yang diminta; kanvas tidak memperbesar." : ""}
           </dd>
         </>
       ) : null}
@@ -267,13 +267,13 @@ function ReportView({ report: hasil }: { report: Hasil }) {
       <dt className="font-semibold">XMP</dt>
       <dd>{report.xmp ? "Ada" : "Tidak ada"}</dd>
       <dt className="font-semibold">Perangkat (EXIF)</dt>
-      <dd>{[report.make, report.model].filter(Boolean).join(" ") || "—"}</dd>
+      <dd>{[report.make, report.model].filter(Boolean).join(" ") || "tidak ada"}</dd>
       <dt className="font-semibold">Waktu asli (EXIF)</dt>
-      <dd>{report.dateTimeOriginal ?? "—"}</dd>
+      <dd>{report.dateTimeOriginal ?? "tidak ada"}</dd>
       <dt className="font-semibold">Orientasi</dt>
-      <dd>{report.orientation ?? "—"}</dd>
+      <dd>{report.orientation ?? "tidak ada"}</dd>
       <dt className="font-semibold">Segmen</dt>
-      <dd className="font-mono text-meta">{report.segments.join(" · ") || "—"}</dd>
+      <dd className="font-mono text-meta">{report.segments.join(" · ") || "tidak ada"}</dd>
     </dl>
   );
 }
@@ -320,11 +320,11 @@ function GeoReadout({ onLine }: { onLine: (s: string) => void }) {
       <dd>
         {geo.latest
           ? `akurasi ${Math.round(geo.latest.accuracy)} m, ${Math.max(0, Math.round((now - geo.latest.at) / 1000))} dtk lalu`
-          : "—"}
+          : "belum ada"}
       </dd>
       <dt className="font-semibold">Koordinat</dt>
       <dd className="font-mono text-meta">
-        {geo.latest ? `${geo.latest.lat.toFixed(6)}, ${geo.latest.lon.toFixed(6)}` : "—"}
+        {geo.latest ? `${geo.latest.lat.toFixed(6)}, ${geo.latest.lon.toFixed(6)}` : "belum ada"}
       </dd>
     </dl>
   );

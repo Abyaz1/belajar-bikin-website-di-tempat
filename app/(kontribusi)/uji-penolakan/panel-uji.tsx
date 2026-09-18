@@ -250,7 +250,7 @@ export function PanelUji({ places }: { places: Target[] }) {
         {outcome?.kind === "diterima" ? (
           <>
             <p>
-              Server menerima kiriman ini. Kalau percobaan ini seharusnya ditolak, catat sebagai temuan — itu batas
+              Server menerima kiriman ini. Kalau percobaan ini seharusnya ditolak, catat sebagai temuan: itu batas
               sistem yang harus disebut jujur, bukan disembunyikan. Draft ini tidak dikonfirmasi, jadi tidak ada atribut
               yang berubah.
             </p>

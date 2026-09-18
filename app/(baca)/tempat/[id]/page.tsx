@@ -181,7 +181,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
                   <th scope="row" className="py-3 pe-3 text-start font-semibold">
                     {PROFILE_TITLE[p]}
                   </th>
-                  <td className="py-3">{r ? <VerdictBadge verdict={r.verdict} profile={p} /> : "—"}</td>
+                  <td className="py-3">{r ? <VerdictBadge verdict={r.verdict} profile={p} /> : "Tidak tersedia"}</td>
                 </tr>
               );
             })}

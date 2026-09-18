@@ -44,7 +44,7 @@ export default async function Page() {
           yang sudah diperiksa. Kondisi yang belum diperiksa tidak pernah dianggap memenuhi aturan.
         </p>
         <p>
-          Kalau ada kondisi yang menentukan tapi belum diperiksa, hasilnya &ldquo;belum dapat dipastikan&rdquo; — bukan
+          Kalau ada kondisi yang menentukan tapi belum diperiksa, hasilnya &ldquo;belum dapat dipastikan&rdquo;, bukan
           &ldquo;dapat diakses&rdquo;. Tempat tanpa bukti tidak pernah dinilai dapat diakses untuk profil mana pun.
         </p>
         <p className="text-meta text-ink-muted">
@@ -70,7 +70,7 @@ export default async function Page() {
                   <li key={m.attribute_code}>
                     {attributeLabel(m.attribute_code)}
                     {m.required_when_property === "layanan_di_atas_lantai_dasar"
-                      ? " — hanya bila layanan tempat ini ada di atas lantai dasar"
+                      ? " (hanya bila layanan tempat ini ada di atas lantai dasar)"
                       : ""}
                   </li>
                 ))}
