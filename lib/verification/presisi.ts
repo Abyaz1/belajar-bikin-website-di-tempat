@@ -211,6 +211,20 @@ export function hitungPresisi(labels: EntriLabel[], jawaban: JawabanModel[]): Ha
     return h;
   });
 
+  // Panggilan yang gagal dilewati di atas, jadi citranya tidak masuk hitungan mana
+  // pun. Efeknya menyerupai model yang menolak menebak: n mengecil, cakupan turun,
+  // dan gerbang tetap memberi keputusan yang terlihat berwibawa. Peringatan ini
+  // mengikat kegagalan itu ke angkanya, bukan membiarkannya jadi satu kalimat
+  // terpisah di kepala laporan yang mudah terlewat.
+  const gagalTotal = Object.values(gagal_model).reduce((a, b) => a + b, 0);
+  if (gagalTotal > 0) {
+    const pesan =
+      `${gagalTotal} dari ${diukur.length} citra tidak menghasilkan jawaban model. ` +
+      "Citra itu tidak masuk hitungan mana pun, sehingga n, cakupan, dan recall mengecil " +
+      "tanpa itu berarti model menolak menebak. Periksa penyebabnya sebelum angka ini dipakai.";
+    for (const h of per_atribut) h.peringatan.push(pesan);
+  }
+
   const penyetelan = new Set(labels.filter((l) => l.bagian === "penyetelan").map((l) => l.berkas));
   return { per_atribut, dilewati_penyetelan: penyetelan.size, gagal_model, citra_diukur: diukur.length };
 }
