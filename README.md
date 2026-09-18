@@ -7,6 +7,30 @@ dihitung saat request dengan menerapkan profil kebutuhan pengguna ke fakta terse
 
 Dibuat untuk Hackathon IFEST UNPAD 2026, 18–19 September 2026.
 
+## Verifikasi oleh panitia
+
+- Aplikasi: https://ifest-760278352894.asia-southeast2.run.app
+- Panel uji penolakan: https://ifest-760278352894.asia-southeast2.run.app/uji-penolakan
+
+Alur kontribusi memakai kamera dan lokasi, jadi **buka di ponsel** (Chrome di
+Android atau Safari di iOS) lalu izinkan akses kamera dan lokasi. Di laptop tanpa
+kamera, alur kontribusi tidak bisa dijalankan, tetapi daftar tempat, laporan, dan
+jejak audit tetap bisa diperiksa. Tidak perlu akun.
+
+Langkah demo singkat:
+
+1. Buka aplikasi, lalu pilih profil kebutuhan: kursi roda manual, alat bantu jalan,
+   atau netra.
+2. Pilih satu tempat dari daftar untuk membuka laporan kesiapannya. Ganti profil
+   dan perhatikan penilaiannya ikut berubah.
+3. Di laporan tempat, pilih **Perbarui data ini**, pilih titik pandang pintu masuk,
+   ambil foto, periksa usulan sistem, konfirmasi nilainya, lalu kirim.
+4. Buka jejak audit salah satu atribut untuk melihat bukti dan hasil setiap
+   pemeriksaan keaslian.
+5. Di panel uji penolakan, jalankan tiga serangan: unggah dari galeri, kirim foto
+   lokasi lain, dan kirim ulang foto lama. Setiap penolakan menampilkan alasan dan
+   nilai terukurnya.
+
 ## Prerequisite Project
 
 ### Perangkat lunak
