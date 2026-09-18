@@ -1138,3 +1138,122 @@ akan jadi satu-satunya atribut yang tidak didukung foto.
 
 **Dampak terhadap masalah inti:** Kecil. Pengguna tahu ada toilet yang bisa dimasuki
 kursi roda beserta foto dan tanggalnya, tetapi harus menanyakan letaknya di lokasi.
+
+---
+
+## 39. Metrik penolakan dilaporkan, dan kelas uji keempat ditambahkan
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4) menetapkan kurang dari 5 persen
+kontribusi bermasalah lolos, diuji pada tiga kelas: unggahan dari galeri, foto
+lokasi lain, dan berkas daur ulang. Metrik itu dinyatakan tidak berlaku untuk
+kelas serangan di luar ketiganya.
+
+**Yang diubah:**
+- Uji penolakan dijalankan sebagai suite otomatis (`tests/rejection`) yang
+  menembak E4 sungguhan. Isinya 55 kasus: 11 unggahan galeri, 14 lokasi di luar
+  radius, 10 berkas daur ulang, **11 unggahan bersih lewat API langsung**, ditambah
+  6 kasus sesi dan waktu serta 3 pagar aturan. Pada jalan terakhir yang tercatat,
+  55 dari 55 sesuai harapan.
+- Di tiga kelas Exsum, setiap kiriman yang dirancang bermasalah ditolak, jadi yang
+  lolos 0 persen. Suite yang sama juga memuat kasus kendali yang **harus** diterima,
+  misalnya foto berbeda di tempat yang sama, dan kasus itu memang diterima.
+- Kelas keempat, unggahan bersih tanpa EXIF lewat API langsung, ditambahkan
+  walaupun tidak ada di Exsum. Di kelas ini pemeriksaan **diharapkan lolos**:
+  JPEG yang di-encode ulang lolos C3, dan koordinat yang dikarang tepat di titik
+  tempat lolos C7.
+
+**Alasan perubahan:** Angka 0 persen di tiga kelas itu sebagian besar benar menurut
+konstruksi. Berkas galeri selalu membawa EXIF, jadi selalu ditolak C3, dan angka
+itu tidak berarti apa-apa kalau berdiri sendiri. Kelas keempat adalah serangan yang
+paling murah dan paling jujur untuk dilaporkan, jadi diukur dan dicatat sebagai
+batasan yang terukur, bukan disembunyikan di luar cakupan metrik.
+
+**Dampak terhadap masalah inti:** Batas dari tiga kelas itu ikut dinyatakan:
+- "Foto lokasi lain" hanya tertolak kalau koordinat yang dikirim jujur.
+- "Berkas daur ulang" hanya tertolak sampai jarak Hamming 6. Salinan yang diubah
+  lebih jauh lolos sebagai berkas berbeda (entri 26).
+
+Lapisan provenans menaikkan biaya pemalsuan, dan menutupnya tidak. Suite ini
+menunjukkan persis di mana batas itu berada.
+
+---
+
+## 40. Beban kontribusi dilaporkan: 2 dari 8 kontribusi lewat 60 detik
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4): beban kontribusi di bawah 60
+detik per lokasi, diuji pada anggota tim dan peserta lain di lokasi acara, dan
+angkanya dinyatakan bersifat awal.
+
+**Yang diubah:** Beban diukur dari jam server, bukan stopwatch (`npm run ukur:beban`):
+dari layar titik pandang dibuka (`capture_session.issued_at`) sampai konfirmasi
+tersimpan (`observation.observed_at`). Hasil atas 8 kontribusi yang selesai sampai
+konfirmasi di basis data produksi:
+
+| titik pandang | n | median | terlama | lewat 60 dtk |
+|---|---|---|---|---|
+| pintu masuk | 3 | 30,6 dtk | 61,2 dtk | 1 |
+| dalam gedung | 2 | 26,6 dan 71,2 dtk | 71,2 dtk | 1 |
+| toilet | 3 | 7,6 dtk | 28,9 dtk | 0 |
+| semua | 8 | 30,1 dtk | 71,2 dtk | **2** |
+
+**Alasan perubahan:** Exsum menjanjikan angka ini tanpa menyebut cara mengukurnya.
+Jam server tidak bisa salah tekan dan bisa diulang siapa pun dari basis data yang
+sama. Jam klien sengaja tidak dipakai karena bisa dinyatakan apa saja.
+
+**Dampak terhadap masalah inti:** Target 60 detik tercapai di median, tetapi tidak
+di setiap kontribusi. Dua kontribusi melewatinya dan tetap dihitung, tidak dibuang.
+Pintu masuk, satu-satunya titik pandang wajib, menuntut enam atribut dan satu
+panggilan model, jadi paling berat. Sampelnya kecil dan pesertanya anggota tim,
+bukan pengguna sasaran, sesuai batas yang sudah dinyatakan Exsum.
+
+---
+
+## 41. Kode atribut tidak lagi sama persis dengan tag OpenStreetMap
+
+**Kondisi di proposal:** Exsum 3.1 menyatakan penamaan atribut mengikuti konvensi
+tag OpenStreetMap, supaya data awal bisa disemai lewat Overpass API dan kontribusi
+bisa dikembalikan ke ekosistem terbuka.
+
+**Yang diubah:**
+- Kode atribut ditulis sebagai pengenal yang aman untuk basis data dan kode
+  (`ramp_wheelchair`, `toilets_wheelchair`), bukan tag bertitik dua
+  (`ramp:wheelchair`).
+- Tiga atribut tidak lagi berpadanan satu-satu dengan tag OSM:
+  - `door_width_band` berupa pita, bukan meter (entri 3);
+  - `elevator_status` berupa status fungsi, bukan keberadaan lift (entri 21);
+  - `surface_condition` tidak punya padanan tag di node tempat (entri 2).
+- Pemetaan tag ke atribut dikerjakan satu fungsi (`scripts/seed/osm.ts`), dan
+  hanya berjalan satu arah: dari OSM ke sistem ini.
+
+**Alasan perubahan:** Tag OSM dirancang untuk memetakan dunia, bukan untuk menyimpan
+fakta yang bisa dibuktikan dari foto. Setiap kali keduanya berbeda, bentuk yang
+bisa dibuktikan dari foto yang dipilih.
+
+**Dampak terhadap masalah inti:** Penyemaian tetap berjalan (39 tempat di koridor
+Dipatiukur). Pengembalian kontribusi ke OSM memang sudah ditunda di Exsum
+Lampiran 8, tetapi sekarang jaraknya lebih jauh dari yang dibayangkan: pita lebar
+pintu dan status lift tidak bisa ditulis balik ke tag OSM tanpa kehilangan makna.
+
+---
+
+## 42. Pilihan "tidak terlihat dari sini" untuk model dan kontributor
+
+**Kondisi di proposal:** Exsum 3.2 tahap 3: model mengusulkan nilai atribut, dan
+kontributor wajib mengonfirmasi atau mengoreksinya. Tidak disebut apa yang terjadi
+kalau atributnya tidak tampak di foto.
+
+**Yang diubah:** Nilai `not_visible` sah untuk atribut mana pun:
+- model boleh menjawab `not_visible`, dan jawaban itu diteruskan apa adanya;
+- kontributor punya pilihan "Tidak terlihat dari sini" di setiap atribut;
+- `not_visible` dicatat di observasi dan jejak audit, tetapi **tidak pernah**
+  membentuk nilai berlaku sebuah atribut.
+
+**Alasan perubahan:** Tanpa pilihan itu, model dan kontributor dipaksa memilih nilai
+untuk sesuatu yang tidak tampak di foto. Justru itu jalan paling pendek menuju
+halusinasi model yang dikonfirmasi kontributor yang terburu-buru.
+
+**Dampak terhadap masalah inti:** "Belum diketahui" tetap berbeda dari "terverifikasi
+tidak ada" sampai ke level data. Foto yang tidak memperlihatkan ramp tidak
+menghasilkan catatan "tidak ada ramp". Akibatnya tercatat terbuka: sebagian
+jawaban model adalah `not_visible`, sehingga usulan yang bisa dinilai jadi lebih
+sedikit (entri 30).
