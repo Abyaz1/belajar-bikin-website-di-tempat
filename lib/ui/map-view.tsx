@@ -50,7 +50,7 @@ const SHAPE: Record<Verdict, { fill: string; line: string; path: string }> = {
   belum_dapat_dipastikan: {
     fill: "#f0f2f5",
     line: "#767d86",
-    path: '<circle cx="12" cy="12" r="9.5"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6v.5"/><path d="M12 17v.1" stroke-width="3"/>',
+    path: '<circle cx="12" cy="12" r="9.5" stroke-dasharray="3 2.2"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6v.5"/><path d="M12 17v.1" stroke-width="3"/>',
   },
 };
 

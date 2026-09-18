@@ -8,12 +8,14 @@ import { IconArrowsOpposed, IconClock, IconShield, VERDICT_ICON } from "./icons"
 // ── Badge penilaian ─────────────────────────────────────────────────────────
 // Satu-satunya tempat warna semantik dipakai. Ikon berbentuk khas + teks +
 // NAMA PROFIL: tanpa nama profil, badge terbaca sebagai penilaian mutlak.
+// "Belum dapat dipastikan" bergaris putus-putus, sama dengan tepi kartu tempat
+// dan penanda peta, supaya pembedanya tetap terbaca tanpa warna.
 
 const VERDICT_CLASS: Record<Verdict, string> = {
   tidak_dapat_diakses: "text-tidak-ink bg-tidak-fill border-tidak-line",
   dengan_catatan: "text-catatan-ink bg-catatan-fill border-catatan-line",
   dapat_diakses: "text-dapat-ink bg-dapat-fill border-dapat-line",
-  belum_dapat_dipastikan: "text-belum-ink bg-belum-fill border-belum-line",
+  belum_dapat_dipastikan: "text-belum-ink bg-belum-fill border-belum-line border-dashed",
 };
 
 export function VerdictBadge({

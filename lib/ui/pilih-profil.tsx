@@ -73,7 +73,7 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
         <dl className="divide-y divide-line border-y border-line">
           {TIGA_PENILAIAN.map((v) => (
             <div key={v} className="grid gap-2 py-4 lg:grid-cols-[27rem_1fr] lg:items-center lg:gap-8">
-              <dt>
+              <dt className="min-w-0">
                 <VerdictBadge verdict={v} profile={CONTOH} />
               </dt>
               <dd className="text-ink-muted">{ARTI[v]}</dd>
@@ -84,7 +84,7 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
             jadi ditaruh di Kertas Arsip, bidang yang sama dengan pernyataan
             "Kami tidak menebak" di halaman Cara kerja. */}
         <dl className="grid gap-3 rounded-md bg-accent p-5 md:p-6 lg:grid-cols-[calc(27rem-1.5rem)_1fr] lg:items-center lg:gap-8">
-          <dt>
+          <dt className="min-w-0">
             <VerdictBadge verdict="belum_dapat_dipastikan" profile={CONTOH} />
           </dt>
           <dd className="space-y-1">
