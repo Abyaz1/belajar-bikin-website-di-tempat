@@ -1,0 +1,35 @@
+# Pemetaan folder ke 4 pemilik, mengikuti pembagian peran di docs/.
+#
+# Handle GitHub sengaja dikosongkan. Cara mengisi: tambahkan @handle pemilik di
+# akhir setiap baris pada bagiannya, misalnya "/lib/trust/ @handle-trust".
+# Baris tanpa handle tetap sah bagi GitHub; path itu hanya belum punya pemilik.
+#
+#   1. Trust Engineer        :
+#   2. Verification Engineer :
+#   3. Product Engineer      :
+#   4. Problem Owner         :
+
+# 1. Trust Engineer: jalur tulis
+/app/api/contributions/
+/lib/trust/
+
+# 2. Verification Engineer: jalur baca + model
+/app/api/places/
+/lib/rules/
+/lib/verification/
+/scripts/seed/
+
+# 3. Product Engineer: antarmuka
+/app/(kontribusi)/
+/lib/ui/
+
+# 4. Problem Owner
+/tools/metrics/
+/PERUBAHAN.md
+/README.md
+
+# Bersama
+# app/(baca)/ dipegang Product sampai jam 12, lalu Verification: isi handle 2 dan 3.
+/app/(baca)/
+# Kontrak di docs/ dibekukan; perubahan butuh persetujuan tiga engineer: isi handle 1, 2, 3.
+/docs/
