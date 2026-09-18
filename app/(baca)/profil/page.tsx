@@ -36,7 +36,7 @@ export default async function Page() {
   const profiles = await getProfiles();
 
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="max-w-3xl space-y-12">
       <header className="space-y-3">
         <h1 className="text-screen">Aturan penilaian</h1>
         <p>

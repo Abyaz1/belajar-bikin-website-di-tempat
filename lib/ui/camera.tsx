@@ -6,8 +6,11 @@
  * Kenapa bukan <input capture>: berkas hasil penyandian ulang kanvas tidak
  * pernah membawa EXIF. Karena itu "ada EXIF" jadi sinyal tajam bahwa berkas
  * datang dari galeri (FILE_METADATA_PRESENT). Dengan input capture, foto yang
- * SAH pun umumnya membawa EXIF, dan seluruh aturan itu harus diubah — lihat
- * 00-KONTRAK §10. Keputusan final menunggu hasil tes 3 HP di /uji-kamera.
+ * SAH pun umumnya membawa EXIF, dan seluruh aturan itu harus diubah.
+ *
+ * Diputuskan di 00-KONTRAK §10 (18 Sep 2026): getUserMedia jalan di 3/3 HP
+ * Android tanpa EXIF, sedangkan input capture membawa EXIF di 3/3 dengan tag
+ * GPS yang tidak konsisten. iPhone (Safari) belum diuji.
  *
  * Yang TIDAK dijamin: bahwa bitnya benar dari kamera. Kamera virtual tetap bisa.
  */
@@ -31,8 +34,13 @@ export const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface Capture {
   blob: Blob;
+  /** Ukuran berkas yang dikirim, setelah sisi terpanjang dibatasi 1600 px. */
   width: number;
   height: number;
+  /** Ukuran asli aliran kamera. Kalau di bawah 1600, berkasnya juga di bawah
+   *  1600 — kanvas tidak pernah memperbesar. */
+  sourceWidth: number;
+  sourceHeight: number;
   /** Waktu tombol ditekan, jam perangkat. Dikirim sebagai client_captured_at. */
   capturedAt: Date;
 }
@@ -113,7 +121,7 @@ export function useCamera() {
       quality -= 0.1;
       blob = await toJpeg(canvas, quality);
     }
-    return { blob, width, height, capturedAt };
+    return { blob, width, height, sourceWidth: video.videoWidth, sourceHeight: video.videoHeight, capturedAt };
   }, []);
 
   return { videoRef, state, detail, start, stop, capture };
