@@ -34,9 +34,10 @@ pintu masuk memperlihatkan apakah ada lift di lantai dua atau apakah toilet di
 belakang gedung bisa dimasuki kursi roda. Membiarkan kontributor mencentang kondisi
 lift dari foto gerbang luar memaksa mereka mengarang fakta.
 
-**Dampak terhadap masalah inti:** Memastikan setiap fakta yang tersimpan di basis data
-didukung oleh bukti visual langsung dari sudut pandang yang masuk akal. Tidak ada lagi
-klaim fasilitas yang tidak terlihat di foto bukti.
+**Dampak terhadap masalah inti:** API menolak klaim atribut yang berada di luar titik
+pandang fotonya, jadi foto pintu masuk tidak bisa lagi mendasari klaim lift atau
+toilet. Yang tidak dijamin: isi foto itu sendiri tetap dinyatakan kontributor, dan
+kebenarannya bersandar pada konfirmasi manusia serta pemeriksaan provenans.
 
 ---
 
@@ -188,9 +189,11 @@ kepatuhan (*compliance bias* / kecenderungan orang malas mengubah pilihan *defau
 bukan kebenaran model terhadap realitas fisik. Menjadikan tingkat koreksi sebagai
 dasar gerbang AI adalah penalaran melingkar (*circular logic*).
 
-**Dampak terhadap masalah inti:** Memastikan bahwa hak AI untuk memberikan usulan
-hanya aktif jika model terbukti berpresisi tinggi secara objektif, melindungi
-kontributor dari halusinasi model yang meyakinkan.
+**Dampak terhadap masalah inti:** Hak AI memberikan usulan kini digerbangi angka yang
+diukur pada citra berlabel manusia, bukan pada tingkat persetujuan kontributor. Yang
+tidak dijamin: dengan sampel sekecil yang akhirnya tersedia (entri 28 dan 29), angka
+itu indikatif. Yang benar-benar menahan halusinasi model masuk ke basis data adalah
+konfirmasi wajib kontributor, bukan gerbang ini.
 
 ---
 
