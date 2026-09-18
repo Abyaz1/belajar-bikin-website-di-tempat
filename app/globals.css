@@ -335,3 +335,14 @@
 .panduan::backdrop {
   background: rgb(54 59 88 / 0.6);
 }
+
+/* Peta latar hero beranda: ubin dipudarkan dan diabukan supaya teks di atasnya
+   tetap terbaca; penanda tetap berwarna. */
+.peta-latar .leaflet-tile-pane {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.peta-latar.leaflet-container {
+  background: var(--color-p5);
+  cursor: default;
+}
