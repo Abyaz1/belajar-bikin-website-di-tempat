@@ -14,7 +14,7 @@ Format tiap entri, persis:
 -->
 
 > **Belum lengkap.** Entri di bawah baru mencakup penyimpangan jalur tulis
-> (1–5) serta jalur baca dan model (6–8) yang ditemukan saat implementasi. Entri
+> (1–5) serta jalur baca dan model (6–9) yang ditemukan saat implementasi. Entri
 > himpunan uji precision menunggu hasil gerbang di `DRAF_PERUBAHAN_VERIFICATION.md`. Lima belas perubahan terhadap proposal penyisihan
 > yang sudah disepakati di dokumen perencanaan belum dipindahkan ke sini, dan itu
 > pekerjaan problem owner. Penomoran ini sementara; susun ulang saat keduanya
@@ -181,9 +181,11 @@ tes dua orang memotret pintu yang sama di jam 0. Hasilnya menentukan ambang C8.
 - Tes jam 0 dijalankan di halaman uji kamera, yang menghitung hash **di peramban**.
   Hasilnya: jarak Hamming 16 dari satu pasang foto.
 - Hasil itu dinyatakan tidak berlaku untuk C8. Ambang tetap 6 **sementara**.
-- Kalibrasi ulang dijalankan dengan hash yang dihitung server
-  (`npm run phash:kalibrasi`), memakai modul yang sama dengan yang menegakkan C8
-  di E4.
+- Kalibrasi ulang dijalankan dengan hash yang dihitung server, memakai modul
+  yang sama dengan yang menegakkan C8 di E4. Ada dua jalan: dari berkas foto
+  (`npm run phash:kalibrasi`), atau langsung dari hash bukti nyata yang sudah
+  tersimpan (`npm run phash:dari-bukti`) setelah dua orang mengirim foto pintu
+  yang sama lewat alur kontribusi.
 
 **Alasan perubahan:** Hash peramban dan hash server berbeda karena dua hal. Basis
 mediannya berbeda (peramban menyertakan koefisien DC, server membuangnya), dan
@@ -229,3 +231,40 @@ yang sama tetap berlaku di jalur suara: kata "dapat diakses" tidak pernah
 terdengar tanpa nama profilnya, dan "belum ada bukti" tidak pernah terdengar
 seperti "tidak ada". Fitur ini pelengkap pembaca layar, bukan penggantinya, dan
 uji TalkBack/VoiceOver di jam 18 tetap berlaku.
+
+---
+
+## 9. Pengaburan wajah otomatis dikerjakan dengan Cloud Vision, gagal tertutup
+
+**Kondisi di proposal:** Foto bukti ditayangkan setelah wajah dikaburkan
+otomatis (`evidence.public_path`). Di daftar pemotongan, pengaburan otomatis
+ada di urutan pertama untuk dipotong, dengan pengganti peringatan dan alat
+kabur manual.
+
+**Yang diubah:**
+- Pengaburan otomatis tidak dipotong.
+- Setiap bukti yang lolos kesembilan pemeriksaan dibuatkan turunan tayang:
+  dikecilkan ke 1200 px, wajah dideteksi Cloud Vision API, area wajah dipikselkan
+  lalu dikaburkan, dan metadatanya dibuang.
+- Prosesnya berjalan bersamaan dengan panggilan model, jadi tidak menambah waktu
+  tunggu kontributor.
+- Foto tayang disajikan lewat rute baca aplikasi. Bucket bukti tetap privat, dan
+  rute itu menolak apa pun di luar objek tayang.
+- Bukti yang ditolak tidak pernah punya foto tayang.
+
+**Alasan perubahan:** Saat diperiksa malam hari, tidak satu pun bukti punya foto
+tayang. Tidak ada jalur yang mengisi `public_path`, dan kolom `photo_url` di API
+berisi kunci objek bucket, bukan URL. Artinya klaim "tiap atribut membawa
+buktinya" tidak bisa dilihat di layar mana pun. Memakai detektor wajah terkelola
+lebih cepat dan lebih andal daripada alat kabur manual yang bergantung pada
+ketelitian kontributor di trotoar.
+
+**Dampak terhadap masalah inti:** Foto kembali jadi bagian dari jawaban "atas
+dasar apa", bukan hanya jejak di basis data. Batasnya diakui:
+- Pengaburan tidak dijamin menangkap semua wajah. Wajah kecil di kejauhan, wajah
+  dari samping, dan wajah tertutup bisa lolos. Pelat nomor tidak dideteksi.
+- Yang dilakukan sistem adalah mengurangi kemungkinan orang yang kebetulan lewat
+  dapat dikenali.
+- Kalau deteksi gagal atau lewat batas waktu, fotonya tidak tayang sama sekali.
+  Menayangkan foto yang belum diperiksa wajahnya tidak pernah jadi cadangan.
+- Bukti demo tidak punya citra sungguhan, jadi tetap tanpa foto.

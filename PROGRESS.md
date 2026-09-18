@@ -70,10 +70,10 @@ kedua baru boleh dibawa ke deck setelah pengukuran pada himpunan uji berlabel.
 
 ### Batasan yang diakui
 
-- **Tidak ada satu pun bukti yang punya foto tayang.** Pengaburan wajah adalah
-  butir 1 daftar pemotongan dan belum dikerjakan, jadi kolom foto tayang kosong
-  untuk semua baris termasuk data demo. Fotonya tersimpan, hanya tidak
-  ditampilkan. Ini perlu keputusan: dipotong resmi dan dicatat, atau dikerjakan.
+- **Foto tayang baru berlaku untuk kontribusi berikutnya.** Pengaburan wajah
+  otomatis (Cloud Vision) dikerjakan malam ini dan tidak dipotong; lihat
+  PERUBAHAN.md entri 9. Bukti yang masuk sebelumnya dan data demo tetap tanpa
+  foto tayang. Detektor tidak dijamin menangkap semua wajah.
 - Penolakan Row Level Security bersifat senyap: nol baris, tanpa galat.
 - Unggahan bersih lewat API langsung tidak tertangkap pemeriksaan metadata, dan
   koordinat yang dikarang lolos pemeriksaan jarak. Keduanya punya tes sendiri
