@@ -58,6 +58,13 @@ export interface JawabanModel {
   status: ModelStatus;
   suggestions: { attribute_code: string; value: string | null }[];
   latency_ms?: number;
+  /**
+   * Sebab panggilan gagal, apa adanya dari modul usulan. Tanpa ini, laporan cuma
+   * bisa bilang "16 gagal" dan siapa pun yang membacanya harus menebak apakah
+   * itu kuota, skema, atau jaringan -- padahal ketiganya menuntut tindakan yang
+   * berbeda, dan angka precision tidak boleh dipakai sebelum sebabnya diketahui.
+   */
+  reason?: string;
 }
 
 export interface HasilAtribut {

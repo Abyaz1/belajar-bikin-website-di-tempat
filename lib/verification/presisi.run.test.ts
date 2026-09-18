@@ -56,7 +56,26 @@ import {
 import { vertexCaller } from "./vertex-caller";
 
 const { UJI_PRESISI_DIR: DIR, UJI_PRESISI_JAWABAN: JAWABAN, GCP_PROJECT_ID, VERTEX_LOCATION, VERTEX_MODEL } = process.env;
-const PARALEL = 3;
+const PARALEL = 2;
+
+/**
+ * Mundur-dan-coba-lagi KHUSUS kuota (HTTP 429), dan KHUSUS pengukur ini.
+ *
+ * Kontrak §7 melarang retry di jalur produksi: E4 memanggil model sekali, dan
+ * kalau gagal kontributor tetap dapat formulir kosong yang bisa diisi. Aturan itu
+ * tidak berlaku di sini karena yang diukur adalah ketepatan model, bukan
+ * perilaku E4 saat sibuk. Satu sesi pengukuran menembak 36 panggilan beruntun
+ * dan menguras kuota; tanpa penanganan ini, dua pertiga citra gagal karena 429
+ * lalu dikeluarkan dari hitungan, dan angka precision-nya terlihat baik justru
+ * karena sebagian besar citra tidak terjawab.
+ */
+const COBA_ULANG_KUOTA = 4;
+const JEDA_AWAL_MS = 4000;
+
+const kuotaHabis = (r: { status: string; reason?: string | null }) =>
+  r.status === "failed" && /\b429\b|RESOURCE_EXHAUSTED|Resource exhausted/i.test(r.reason ?? "");
+
+const tidur = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Ketiga atribut terukur SELALU ditanyakan saat mengukur, apa pun status gerbangnya sekarang. */
 const ATRIBUT_UKUR = ATTRIBUTE_TYPES.filter((a) => (MEASURED as readonly string[]).includes(a.code)).map((a) => ({
@@ -82,12 +101,22 @@ async function tanyaModel(dir: string, berkas: string[]): Promise<JawabanModel[]
   async function pekerja() {
     while (i < berkas.length) {
       const b = berkas[i++];
-      const r = await suggestAttributes(
-        { image: await sepertiKameraProduksi(path.join(dir, b)), mimeType: "image/jpeg", vantage: "entrance", attributes: ATRIBUT_UKUR },
+      const citra = await sepertiKameraProduksi(path.join(dir, b));
+      let r = await suggestAttributes(
+        { image: citra, mimeType: "image/jpeg", vantage: "entrance", attributes: ATRIBUT_UKUR },
         { call, model: VERTEX_MODEL! },
       );
-      hasil.push({ berkas: b, status: r.status, latency_ms: r.latency_ms, suggestions: r.suggestions.map(({ attribute_code, value }) => ({ attribute_code, value })) });
-      console.log(`  ${hasil.length}/${berkas.length} ${b}: ${r.status} ${r.latency_ms} ms`);
+      for (let coba = 0; coba < COBA_ULANG_KUOTA && kuotaHabis(r); coba++) {
+        const jeda = JEDA_AWAL_MS * 2 ** coba;
+        console.log(`  kuota habis pada ${b}, menunggu ${jeda / 1000} dtk lalu mengulang (${coba + 1}/${COBA_ULANG_KUOTA})`);
+        await tidur(jeda);
+        r = await suggestAttributes(
+          { image: citra, mimeType: "image/jpeg", vantage: "entrance", attributes: ATRIBUT_UKUR },
+          { call, model: VERTEX_MODEL! },
+        );
+      }
+      hasil.push({ berkas: b, status: r.status, latency_ms: r.latency_ms, reason: r.reason ?? undefined, suggestions: r.suggestions.map(({ attribute_code, value }) => ({ attribute_code, value })) });
+      console.log(`  ${hasil.length}/${berkas.length} ${b}: ${r.status} ${r.latency_ms} ms${r.reason ? ` -- ${r.reason}` : ""}`);
     }
   }
   await Promise.all(Array.from({ length: PARALEL }, pekerja));
