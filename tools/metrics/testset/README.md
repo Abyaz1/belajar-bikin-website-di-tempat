@@ -1,7 +1,7 @@
 # Himpunan uji berlabel — pengukuran precision
 
 Dipakai `lib/verification/presisi.run.test.ts` untuk mengukur precision usulan
-model (docs-20 §5). Angka dari sini adalah **satu-satunya yang sah** menjadi
+model (Exsum Lampiran 6, Tabel L4). Angka dari sini adalah **satu-satunya yang sah** menjadi
 gerbang 0,85.
 
 Citranya tidak ikut ter-commit (lihat `.gitignore` di folder ini) karena foto
@@ -23,13 +23,14 @@ sebagai konteks, tidak dipakai menghitung.
 
 ## Kenapa labelnya harus diisi manusia
 
-docs-20 §5: label ditetapkan manusia **sebelum** model melihat citranya. Kalau
+Aturannya: label ditetapkan manusia **sebelum** model melihat citranya. Kalau
 label diisi model lain — termasuk asisten koding — maka yang diukur adalah
 kesepakatan antar model, bukan ketepatan terhadap kenyataan. Angkanya akan
 terlihat sama, tapi tidak berarti apa-apa, dan itu justru angka yang paling
 mungkin ditanyakan juri.
 
-Karena itu `label` di `labels.json` sengaja dibiarkan kosong.
+Karena itu label tidak pernah diisi asisten koding. Siapa yang melabeli tercatat
+di kolom `pelabel` tiap citra.
 
 ---
 
@@ -70,11 +71,12 @@ UJI_PRESISI_DIR=tools/metrics/testset UJI_PRESISI_JAWABAN=tools/metrics/testset/
 
 ## Soal ukuran sampel
 
-Ada 12 citra. docs-20 §5 meminta 60–90, dan `presisi.ts` memperingatkan di bawah
-20. Pengukuran tetap bisa dijalankan dan **harus dilaporkan apa adanya**, tetapi
-dengan 12 citra intervalnya lebar dan angkanya indikatif.
+Ada 36 citra. Exsum Lampiran 6 menetapkan 60–90, dan `presisi.ts` memperingatkan
+di bawah 20. Pengukuran tetap dijalankan dan **dilaporkan apa adanya**, tetapi
+dengan 36 citra intervalnya lebar dan angkanya indikatif. Penyimpangan ini dicatat
+di `PERUBAHAN.md`.
 
-Artinya untuk gerbang 0,85: angka dari 12 citra belum cukup kuat untuk menyatakan
+Artinya untuk gerbang 0,85: angka dari 36 citra belum cukup kuat untuk menyatakan
 sebuah atribut lolos. Dia cukup untuk menyatakan sebuah atribut **jelas gagal**,
 dan itu tetap berguna — mematikan usulan lebih aman daripada menyalakannya.
 Sebutkan ukuran sampelnya setiap kali menyebut angkanya.

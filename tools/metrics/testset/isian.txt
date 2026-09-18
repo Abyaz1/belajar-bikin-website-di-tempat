@@ -12,7 +12,7 @@
 # Baris yang masih ada titiknya akan DIKELUARKAN dari pengukuran, bukan bikin
 # gagal. Jadi isi sebanyak yang sempat saja; 20 citra sudah cukup.
 #
-# pelabel: Ghulam (Abyss yg ngasi krn Ghulam tepar)  <- isi namamu di sini
+# pelabel: Abyaz
 
 # berkas          tangga  ramp  tactile
 layak-01.jpg        A      Y       N
