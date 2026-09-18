@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     "@google-cloud/storage",
     "@google/genai",
   ],
+  // Sementara untuk uji kamera lewat tunnel cloudflared; hanya berlaku di next dev.
+  allowedDevOrigins: ["*.trycloudflare.com"],
 };
 
 export default nextConfig;
