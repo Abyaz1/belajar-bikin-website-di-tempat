@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getPlace, getPlaces } from "@/lib/ui/api/server";
@@ -92,11 +93,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
       <section className="relative isolate flex min-h-[calc(100dvh-8rem)] flex-col">
         <div className="relative z-10 mx-auto max-w-3xl space-y-4 px-2 pt-2 text-center md:space-y-6 md:px-4 md:pt-10">
 
-          <h1 className="text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
+          <h1 style={{ "--i": 0 } as CSSProperties} className="masuk text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
             Periksa kondisi tempat sebelum berangkat
           </h1>
 
-          <p className="mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
+          <p style={{ "--i": 1 } as CSSProperties} className="masuk mx-auto max-w-xl text-body text-ink-muted md:text-card md:font-normal">
             Anak tangga, ramp, lebar pintu, dan jalur pemandu, masing-masing dengan foto, tanggal foto diambil, dan hasil
             pemeriksaan keasliannya. Dimulai dari koridor kampus UNPAD Dipatiukur, Bandung.
           </p>
@@ -127,7 +128,8 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             action="/tempat"
             role="search"
             aria-label="Cari tempat"
-            className="relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
+            style={{ "--i": 2 } as CSSProperties}
+            className="masuk relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
           >
             <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
               <span className="block text-label font-normal text-ink-muted">Profil kebutuhan</span>
@@ -221,7 +223,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                   <VerdictBadge verdict={unggulan.verdict} profile={profile} />
                 </div>
                 <p className="text-label text-ink">
-                  Lihat laporan <span aria-hidden="true">›</span>
+                  Lihat laporan <span aria-hidden="true" className="panah">›</span>
                 </p>
               </div>
             </article>
@@ -284,7 +286,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
               href="/cara-kerja"
               className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-6 font-semibold text-on-brand no-underline hover:opacity-90"
             >
-              Lihat cara kerja <span aria-hidden="true">›</span>
+              Lihat cara kerja <span aria-hidden="true" className="panah">›</span>
             </Link>
           </div>
         </div>
@@ -314,7 +316,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             </p>
           </article>
 
-          <article className="grid gap-4 overflow-hidden rounded-lg bg-surface p-5 sm:col-span-2 sm:grid-cols-2">
+          <article className="group grid gap-4 overflow-hidden rounded-lg bg-surface p-5 sm:col-span-2 sm:grid-cols-2">
             <div className="flex flex-col justify-end gap-2">
               <h3 className="text-card">Dinilai sesuai kebutuhan Anda</h3>
               <p className="text-meta text-ink-muted">
@@ -335,11 +337,14 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 return (
                   <div
                     key={p}
-                    className="absolute w-28 rounded-md border border-line bg-surface p-1"
-                    style={{
-                      left: `calc((100% - 8rem) * ${i / 2} + 0.5rem)`,
-                      bottom: `${0.75 + i * 2.75}rem`,
-                    }}
+                    className="kipas absolute w-28 rounded-md border border-line bg-surface p-1"
+                    style={
+                      {
+                        left: `calc((100% - 8rem) * ${i / 2} + 0.5rem)`,
+                        bottom: `${0.75 + i * 2.75}rem`,
+                        "--k": i - 1,
+                      } as CSSProperties
+                    }
                   >
                     <Ilustrasi className="w-full rounded-sm" />
                     <p className="px-1 pt-1 text-label">{PROFILE_TITLE[p]}</p>

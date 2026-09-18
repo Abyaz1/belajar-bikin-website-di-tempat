@@ -17,13 +17,14 @@ export type ButtonVariant = "utama" | "sekunder" | "teks";
 
 const BASE =
   "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-body font-semibold " +
-  "min-h-12 text-center no-underline cursor-pointer select-none";
+  "min-h-12 text-center no-underline cursor-pointer select-none " +
+  "transition-[background-color,border-color,box-shadow,translate] duration-150 ease-out";
 
 const VARIANT: Record<ButtonVariant, string> = {
   utama:
-    "bg-action text-surface border-2 border-action hover:bg-brand hover:border-brand active:translate-y-px",
+    "bg-action text-surface border-2 border-action hover:-translate-y-px hover:shadow-[0_6px_16px_-6px_rgb(54_59_88/0.5)] active:translate-y-0 active:shadow-none",
   sekunder:
-    "bg-surface text-action border-2 border-action hover:bg-surface-alt active:translate-y-px",
+    "bg-surface text-action border-2 border-action hover:bg-surface-alt hover:-translate-y-px active:translate-y-0",
   teks: "bg-transparent text-action border-2 border-transparent underline underline-offset-2 hover:decoration-2",
 };
 

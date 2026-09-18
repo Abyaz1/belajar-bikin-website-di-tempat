@@ -37,7 +37,7 @@ export function SiteHeader() {
   return (
     <header className={cx("z-[1100] px-3 pt-3 md:px-6 md:pt-4", diPeta ? "fixed inset-x-0 top-0" : "relative")}>
       <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 md:grid-cols-[auto_1fr_auto] md:px-5">
-        <Link href="/" className="inline-flex min-h-12 items-center gap-3 rounded-md px-1 text-card font-bold text-ink no-underline">
+        <Link href="/" className="merek inline-flex min-h-12 items-center gap-3 rounded-md px-1 text-card font-bold text-ink no-underline">
           <BrandMark />
           {PRODUCT_NAME}
         </Link>
@@ -55,7 +55,7 @@ export function SiteHeader() {
             className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-5 font-semibold text-on-brand no-underline hover:opacity-90"
           >
             Buka peta
-            <span aria-hidden="true">›</span>
+            <span aria-hidden="true" className="panah">›</span>
           </Link>
         </div>
 
@@ -69,8 +69,8 @@ export function SiteHeader() {
                     href={t.href}
                     aria-current={aktif ? "page" : undefined}
                     className={cx(
-                      "flex min-h-12 items-center justify-center whitespace-nowrap border-b-2 px-1 text-label no-underline md:px-3 md:text-meta",
-                      aktif ? "border-action font-bold text-ink" : "border-transparent font-normal text-ink-muted hover:text-ink",
+                      "flex min-h-12 items-center justify-center whitespace-nowrap border-b-2 px-1 transition-colors duration-150 text-label no-underline md:px-3 md:text-meta",
+                      aktif ? "border-action font-bold text-ink" : "border-transparent font-normal text-ink-muted hover:border-line-control hover:text-ink",
                     )}
                   >
                     <span className="md:hidden">{t.pendek}</span>

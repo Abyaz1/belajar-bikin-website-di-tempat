@@ -48,7 +48,7 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
                   </h3>
                   <p className="text-meta text-ink-muted">{PROFILE_HINT[p]}</p>
                   <p className="mt-auto pt-2 text-label text-ink">
-                    Lihat daftar <span aria-hidden="true">›</span>
+                    Lihat daftar <span aria-hidden="true" className="panah">›</span>
                   </p>
                 </div>
               </li>
@@ -96,7 +96,7 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
           href="/profil"
           className="inline-flex min-h-12 items-center gap-2 rounded-pill border-2 border-line-control bg-surface px-5 font-semibold text-ink no-underline hover:border-brand hover:bg-surface-alt"
         >
-          Lihat aturan tiap profil <span aria-hidden="true">›</span>
+          Lihat aturan tiap profil <span aria-hidden="true" className="panah">›</span>
         </Link>
       </section>
     </div>
