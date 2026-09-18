@@ -72,6 +72,28 @@ sistem sejenis, dan di sini ada buktinya.
 | Atribut terverifikasi tanpa jejak audit | 0 | pemeriksaan di akhir skrip benih |
 | Build produksi | berhasil, tanpa peringatan | `npm run build` |
 | Jarak pHash antar pintu berbeda | terdekat 24, ambang 6, jarak aman 18 | `npm run phash:kalibrasi` atas 12 foto koridor, 66 pasangan |
+| Precision usulan model | step_count 1,00 (n=3) · ramp_wheelchair 1,00 (n=2) · tactile_paving tak terdefinisi | 36 citra berlabel manusia, gemini-3.8-flash, prompt 2026-09-18.v1 |
+| Atribut usulan AI yang dimatikan gerbang | 1 dari 3 (`tactile_paving`) | migrasi 202609182330, sudah berlaku di produksi |
+
+Gerbang precision sudah dijalankan dan sudah benar-benar mematikan sesuatu.
+Angkanya tidak boleh disebut tanpa n-nya: precision 1,00 itu berdiri di atas 3
+dan 2 usulan, dengan batas bawah selang 95% di 0,44 dan 0,34. Yang bisa dikatakan
+jujur: tidak ada satu pun salah positif pada citra uji, dan `tactile_paving`
+tidak punya bukti sama sekali sehingga dimatikan. Rinciannya di PERUBAHAN.md
+entri 6.
+
+**Risiko demo yang belum selesai: latensi model.** Pengukuran ini dijalankan dari
+laptop, bukan dari Cloud Run. Pada percobaan pertama dengan timeout kontrak 8
+detik, 21 dari 36 panggilan kehabisan waktu dan 7 sisanya menjawab `not_visible`
+untuk semuanya — praktis tidak ada usulan yang keluar. Angka precision di atas
+baru bisa diperoleh setelah timeout dinaikkan ke 45 detik khusus untuk mengukur
+ketepatan; median latensinya 10,6 detik dan p95-nya 38 detik. Dari Cloud Run yang
+sedaerah dengan Vertex, E4 di produksi memang menjawab `model_status: ok`, jadi
+angka laptop ini bukan angka produksi. Tetapi selisihnya belum diukur dari sisi
+produksi, dan sampai itu diukur, kemungkinan usulan tidak muncul saat demo harus
+dianggap nyata. Yang menenangkan: alur kontribusi tidak bergantung padanya —
+usulan kosong tetap menyisakan formulir yang bisa diisi kontributor, dan aturan 2
+memang melarang usulan jadi nilai tanpa konfirmasi.
 
 Kalibrasi pHash itu baru separuh. Yang terjawab: ambang 6 **tidak** salah menolak
 foto pintu yang berbeda — 66 pasangan diuji, yang terdekat pun masih 24, jadi

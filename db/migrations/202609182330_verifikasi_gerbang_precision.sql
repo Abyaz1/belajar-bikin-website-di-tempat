@@ -1,0 +1,35 @@
+-- Keputusan gerbang precision, docs-20 §5 dan 00-KONTRAK §7 (ambang 0,85).
+--
+-- Diukur 2026-09-18 atas 36 citra pintu masuk berlabel manusia, model
+-- gemini-3.8-flash, prompt 2026-09-18.v1. Label ditetapkan pelabel manusia
+-- sebelum model melihat citranya; berkas label ada di
+-- tools/metrics/testset/labels.json, laporan lengkap di hasil/ (tidak
+-- di-commit karena memuat foto nyata).
+--
+--   atribut           precision   n    95%          gerbang
+--   step_count        1,00        3    0,44-1,00    lolos
+--   ramp_wheelchair   1,00        2    0,34-1,00    lolos
+--   tactile_paving    tak terdefinisi  -            DIMATIKAN
+--
+-- tactile_paving dimatikan karena dua alasan yang berdiri sendiri:
+--   1. Model tidak pernah sekali pun mengusulkan kelas positif, sehingga
+--      precision-nya tidak terdefinisi. Tidak ada yang bisa dibuktikan.
+--   2. Himpunan uji tidak punya satu pun contoh positif berlabel (36 dari 36
+--      dilabeli "tidak ada ubin pemandu"), jadi sekalipun model menjawab, uji
+--      ini tidak sanggup membedakan model yang melihat dari yang menebak.
+-- Keduanya soal bukti yang tidak ada, bukan soal model yang terbukti salah.
+--
+-- step_count dan ramp_wheelchair dibiarkan menyala karena aturan gerbang yang
+-- DIBEKUKAN SEBELUM pengukuran (precision >= 0,85) terpenuhi dan tidak ada satu
+-- pun salah positif. Tapi n-nya 3 dan 2, dan batas bawah selang kepercayaan 95%
+-- ada di 0,44 dan 0,34 -- jauh di bawah 0,85. Angka ini TIDAK boleh disebut
+-- tanpa menyebut n-nya. Memperketat ambang sesudah melihat hasil sama
+-- menyesatkannya dengan melonggarkannya, jadi aturannya diterapkan apa adanya
+-- dan ketidakpastiannya dilaporkan terbuka.
+--
+-- Pengaman yang tetap berlaku apa pun hasilnya: usulan model tidak pernah jadi
+-- nilai berlaku tanpa konfirmasi kontributor (aturan 2, observation
+-- .confirmed_value NOT NULL). Gerbang ini mengurangi usulan yang mengganggu,
+-- bukan menjadi satu-satunya yang menahan nilai salah.
+
+update attribute_type set ai_suggestable = false where code = 'tactile_paving';

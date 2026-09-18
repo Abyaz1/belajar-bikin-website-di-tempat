@@ -142,3 +142,45 @@ dipalsukan, melainkan bahwa memalsukannya jadi mahal dan setiap jejaknya terliha
 Mencatat pembuatan sesi membuat celah termurah pada tesis itu ikut terlihat di
 jejak audit yang sama dengan yang dipakai menampilkan bukti — bukan disembunyikan
 di tempat lain, dan bukan tidak dicatat sama sekali.
+
+---
+
+## 6. Usulan model untuk jalur pemandu dimatikan setelah precision-nya diukur
+
+**Kondisi di proposal:** Kamus atribut menetapkan tiga atribut yang boleh menerima
+usulan model — `step_count`, `ramp_wheelchair`, dan `tactile_paving` — dengan
+alasan bahwa ketiganya adalah yang precision-nya diukur. Kontrak §7 menetapkan
+ambang aktivasi 0,85 per atribut. Tabel `attribute_type` menyalakan ketiganya.
+
+**Yang diubah:** `tactile_paving` dimatikan, `ai_suggestable = false`. Dua atribut
+lainnya dibiarkan menyala. Perubahannya berupa migrasi
+`202609182330_verifikasi_gerbang_precision.sql`, sudah diterapkan ke basis data
+produksi.
+
+**Alasan perubahan:** Ambangnya diukur, bukan diperkirakan. Tiga puluh enam foto
+pintu masuk dilabeli manusia lebih dulu, prompt dibekukan di `2026-09-18.v1`
+sebelum foto-foto itu ada, lalu model gemini-3.8-flash ditanya satu per satu.
+Hasilnya: `step_count` precision 1,00 (n=3), `ramp_wheelchair` 1,00 (n=2),
+`tactile_paving` **tidak terdefinisi**. Model tidak pernah sekali pun mengusulkan
+"ada jalur pemandu", jadi tidak ada satu pun usulan yang bisa dinilai benar atau
+salah. Terpisah dari itu, himpunan ujinya sendiri tidak punya contoh positif: 36
+dari 36 citra dilabeli "tidak ada ubin pemandu". Dua alasan yang berdiri sendiri,
+dan keduanya soal bukti yang tidak ada — bukan soal model yang terbukti salah.
+
+Dua atribut lain dibiarkan menyala karena aturan gerbang yang dibekukan sebelum
+pengukuran memang terpenuhi, dan tidak ada satu pun salah positif. Tapi n-nya 3
+dan 2, dan batas bawah selang kepercayaan 95% ada di 0,44 dan 0,34 — jauh di
+bawah 0,85. Angka itu tidak boleh disebut tanpa menyebut n-nya. Memperketat
+ambang sesudah melihat hasil sama menyesatkannya dengan melonggarkannya, jadi
+aturannya diterapkan apa adanya dan ketidakpastiannya dilaporkan terbuka.
+
+**Dampak terhadap masalah inti:** Masalah inti kami adalah platform yang menyimpan
+klaim tanpa dasar. Kalau gerbang precision cuma angka di dokumen dan tidak pernah
+benar-benar mematikan apa pun, dia adalah janji, bukan pengaman — persis bentuk
+klaim tanpa dasar yang kami tuduhkan ke sistem lain, hanya saja tuduhannya
+mengarah ke diri sendiri. Satu atribut benar-benar mati hari ini karena tidak
+lolos, dan yang mematikannya adalah pengukuran, bukan pendapat. Perlu dicatat
+juga bahwa yang menahan nilai salah masuk ke basis data bukan gerbang ini,
+melainkan aturan 2: usulan model tidak pernah jadi nilai berlaku tanpa konfirmasi
+kontributor. Gerbang ini mengurangi usulan yang mengganggu; dia tidak sendirian
+menjaga pintunya.
