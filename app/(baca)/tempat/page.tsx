@@ -196,8 +196,14 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
           </div>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
-            {places.map((p) => (
-              <PlaceCard key={p.id} place={p} profile={profile} href={`/tempat/${encodeURIComponent(p.id)}?profil=${profile}`} />
+            {places.map((p, i) => (
+              <PlaceCard
+                key={p.id}
+                place={p}
+                profile={profile}
+                href={`/tempat/${encodeURIComponent(p.id)}?profil=${profile}`}
+                urutan={i}
+              />
             ))}
           </ul>
         )}

@@ -220,8 +220,21 @@
     outline: 3px solid var(--color-focus-ring);
     outline-offset: 2px;
   }
+  .card-link {
+    transition: background-color 150ms ease-out;
+  }
   .card-link:hover {
     background: var(--color-surface-alt);
+  }
+
+  /* Satu momen gerak produk ini: penilaian "dicap" ulang setiap profil
+     diganti, karena penilaian memang dihitung saat itu untuk profil itu.
+     Badge berurutan turun di daftar, jeda dibatasi 8 badge (280ms). Mulai
+     dari tetap terlihat (tidak dari 0), jadi isi tidak pernah hilang. */
+  .stempel {
+    transform-origin: left center;
+    animation: stempel 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(min(var(--i, 0), 8) * 35ms);
   }
 
   /* Pemilih atribut: kartu penuh lebar, radio asli disembunyikan secara visual
@@ -339,6 +352,31 @@
 /* Latar di balik dialog panduan: warna 1, tembus pandang. */
 .panduan::backdrop {
   background: rgb(54 59 88 / 0.6);
+}
+.panduan[open] {
+  animation: panduan-masuk 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.panduan[open]::backdrop {
+  animation: panduan-latar 300ms ease-out;
+}
+
+@keyframes stempel {
+  from {
+    opacity: 0.35;
+    transform: scale(1.08);
+    filter: blur(1px);
+  }
+}
+@keyframes panduan-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+}
+@keyframes panduan-latar {
+  from {
+    opacity: 0;
+  }
 }
 
 /* Peta latar hero beranda: ubin dipudarkan dan diabukan supaya teks di atasnya

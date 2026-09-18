@@ -96,7 +96,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
         <h2 id="judul-penilaian" className="text-section">
           Penilaian
         </h2>
-        <VerdictBadge verdict={place.verdict} profile={profile} size="besar" />
+        <VerdictBadge key={profile} verdict={place.verdict} profile={profile} size="besar" stempel={0} />
 
         {checkedCount === 0 ? (
           <div className="space-y-2 rounded-md border-2 border-dashed border-line-control p-4">

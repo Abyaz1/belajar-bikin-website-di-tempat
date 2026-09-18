@@ -20,7 +20,17 @@ const TEPI: Record<Verdict, string> = {
   belum_dapat_dipastikan: "border-s-belum-line [border-inline-start-style:dashed]",
 };
 
-export function PlaceCard({ place, profile, href }: { place: PlaceSummary; profile: ProfileCode; href: string }) {
+export function PlaceCard({
+  place,
+  profile,
+  href,
+  urutan = 0,
+}: {
+  place: PlaceSummary;
+  profile: ProfileCode;
+  href: string;
+  urutan?: number;
+}) {
   const c = place.status_counts ?? { terverifikasi: 0, belum_terverifikasi: 0, perlu_ditinjau_ulang: 0 };
   const total = c.terverifikasi + c.belum_terverifikasi + c.perlu_ditinjau_ulang;
   const checked = c.terverifikasi + c.perlu_ditinjau_ulang;
@@ -36,7 +46,7 @@ export function PlaceCard({ place, profile, href }: { place: PlaceSummary; profi
         {place.category ? <p className="text-meta text-ink-muted">{place.category}</p> : null}
       </div>
 
-      <VerdictBadge verdict={place.verdict} profile={profile} />
+      <VerdictBadge key={profile} verdict={place.verdict} profile={profile} stempel={urutan} />
 
       <p className="text-meta">
         {checked === 0
