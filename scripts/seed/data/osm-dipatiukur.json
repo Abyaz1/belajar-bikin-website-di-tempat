@@ -1,0 +1,923 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-18T09:17:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 25448775,
+  "lat": -6.8948767,
+  "lon": 107.6134350,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Rumah Sakit Santo Borromeus B",
+    "pole": "no",
+    "public_transport": "platform",
+    "ref": "Hasanudin",
+    "route_ref": "4",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 1341957637,
+  "lat": -6.8906876,
+  "lon": 107.6191131,
+  "tags": {
+    "amenity": "dentist",
+    "name": "Rumah Sakit Gigi dan Mulut Unpad"
+  }
+},
+{
+  "type": "node",
+  "id": 1663274764,
+  "lat": -6.8944686,
+  "lon": 107.6129282,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Rumah Sakit Santo Borromeus A",
+    "pole": "flag",
+    "public_transport": "platform",
+    "route_ref": "4",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 3029960606,
+  "lat": -6.8908699,
+  "lon": 107.6168181,
+  "tags": {
+    "amenity": "bus_station",
+    "bus": "yes",
+    "name": "Cititrans Dipatiukur",
+    "public_transport": "station",
+    "shelter": "yes",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 3375793676,
+  "lat": -6.8928850,
+  "lon": 107.6180829,
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:street": "Jalan Dipatiukur",
+    "amenity": "bus_station",
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "UNPAD Dipatiukur",
+    "pole": "traffic_sign",
+    "public_transport": "station",
+    "route_ref": "5",
+    "shelter": "yes",
+    "source": "S2City_POI_2022",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 3797907525,
+  "lat": -6.8923042,
+  "lon": 107.6178302,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "covered": "no",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "image": "https://commons.wikimedia.org/wiki/File:Halte_UNPAD_Dipatiukur.jpg",
+    "lit": "no",
+    "name": "Dipatiukur",
+    "operator": "DAMRI",
+    "pole": "no",
+    "public_transport": "platform",
+    "ramp": "no",
+    "route_ref": "4",
+    "shelter": "no",
+    "tactile_paving": "yes",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 4373194455,
+  "lat": -6.8905403,
+  "lon": 107.6165840,
+  "tags": {
+    "amenity": "bus_station",
+    "bus": "yes",
+    "name": "Geulis Indonesia Travel",
+    "public_transport": "station"
+  }
+},
+{
+  "type": "node",
+  "id": 6141666686,
+  "lat": -6.8896755,
+  "lon": 107.6168415,
+  "tags": {
+    "amenity": "clinic",
+    "healthcare": "clinic",
+    "name": "Puskesmas Sekeloa",
+    "operator": "Ministry of Health",
+    "operator:en": "Ministry of Health",
+    "operator:id": "Kementerian Kesehatan",
+    "operator:type": "government",
+    "operator:wikidata": "Q12490745"
+  }
+},
+{
+  "type": "node",
+  "id": 9676725113,
+  "lat": -6.8886552,
+  "lon": 107.6196519,
+  "tags": {
+    "amenity": "hospital",
+    "healthcare": "hospital",
+    "name": "Rumah Sakit Rizky Bersalin"
+  }
+},
+{
+  "type": "node",
+  "id": 9739234181,
+  "lat": -6.8979463,
+  "lon": 107.6161299,
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Penata Yudha",
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Panatayudha B",
+    "pole": "no",
+    "public_transport": "platform",
+    "route_ref": "5",
+    "shelter": "yes",
+    "source": "S2City_POI_2022",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 9739234182,
+  "lat": -6.8942995,
+  "lon": 107.6130730,
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Ir. H. Juanda",
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Rumah Sakit Santo Borromeus",
+    "pole": "traffic_sign",
+    "public_transport": "platform",
+    "shelter": "no",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 9739234183,
+  "lat": -6.8866077,
+  "lon": 107.6150134,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "image": "https://commons.wikimedia.org/wiki/File:Halte_UNIKOM.jpg",
+    "lit": "no",
+    "name": "Masjid Baiturrahman",
+    "pole": "traffic_sign",
+    "public_transport": "platform",
+    "ramp": "no",
+    "route_ref": "4",
+    "shelter": "no",
+    "sign": "no",
+    "tactile_paving": "no",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 9740431470,
+  "lat": -6.8954684,
+  "lon": 107.6127910,
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Ir. H. Juanda",
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "SMAN 1 Bandung",
+    "pole": "totem;traffic_sign",
+    "public_transport": "platform",
+    "shelter": "no",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 9808159309,
+  "lat": -6.8931521,
+  "lon": 107.6192969,
+  "tags": {
+    "amenity": "college",
+    "name": "Grafologi Indonesia"
+  }
+},
+{
+  "type": "node",
+  "id": 10676406092,
+  "lat": -6.8979268,
+  "lon": 107.6162121,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Panatayudha A",
+    "pole": "totem",
+    "public_transport": "platform",
+    "route_ref": "5",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 10778322180,
+  "lat": -6.8975222,
+  "lon": 107.6127527,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Kartikasari A",
+    "pole": "totem",
+    "public_transport": "platform",
+    "route_ref": "4",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 11104718107,
+  "lat": -6.8955412,
+  "lon": 107.6129933,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "STMIK LIKMI",
+    "pole": "totem",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 11104718109,
+  "lat": -6.8975176,
+  "lon": 107.6129141,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "departures_board": "no",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Kartikasari B",
+    "pole": "no",
+    "public_transport": "platform",
+    "route_ref": "4",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 11690728116,
+  "lat": -6.8873771,
+  "lon": 107.6151751,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "image": "https://commons.wikimedia.org/wiki/File:Sentinel_Halte.jpg",
+    "lit": "yes",
+    "name": "Seberang UNIKOM",
+    "pole": "flag",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "yes",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 11874791387,
+  "lat": -6.8932886,
+  "lon": 107.6178786,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Unpad Kampus Iwa Koesoemasoemantri",
+    "pole": "totem",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 12637472328,
+  "lat": -6.8947864,
+  "lon": 107.6144034,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Surya Kencana",
+    "note": "Virtual stop to accomodate the terminus of angkot Gedebage-Simpang Dago",
+    "pole": "no",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 12813237912,
+  "lat": -6.8935654,
+  "lon": 107.6121291,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Ganesha Ciungwanara",
+    "pole": "no",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 12816121753,
+  "lat": -6.8950588,
+  "lon": 107.6171525,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Simpang Dipatiukur Hasanudin",
+    "pole": "totem",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 12816121754,
+  "lat": -6.8950518,
+  "lon": 107.6172906,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "Magister Manajemen UNPAD",
+    "pole": "totem",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 13058949298,
+  "lat": -6.8891265,
+  "lon": 107.6158112,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Seberang ITHB",
+    "pole": "flag",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 13058959517,
+  "lat": -6.8877836,
+  "lon": 107.6149958,
+  "tags": {
+    "amenity": "dentist",
+    "healthcare": "dentist"
+  }
+},
+{
+  "type": "node",
+  "id": 13598275983,
+  "lat": -6.8892944,
+  "lon": 107.6131146,
+  "tags": {
+    "amenity": "doctors",
+    "healthcare": "doctor",
+    "healthcare:speciality": "dermatology",
+    "name": "Bandung Skin Centre"
+  }
+},
+{
+  "type": "node",
+  "id": 13760585755,
+  "lat": -6.8870211,
+  "lon": 107.6233973,
+  "tags": {
+    "amenity": "dentist",
+    "healthcare": "dentist"
+  }
+},
+{
+  "type": "way",
+  "id": 119419634,
+  "center": {
+    "lat": -6.8905035,
+    "lon": 107.6193435
+  },
+  "nodes": [
+    1341957621,
+    1341957634,
+    1341957631,
+    1341957619,
+    1341957630,
+    1341957638,
+    1341957635,
+    1341957622,
+    1341957639,
+    1341957629,
+    1341957636,
+    1341957626,
+    1341957632,
+    1341957620,
+    1341957621
+  ],
+  "tags": {
+    "amenity": "hospital",
+    "building": "yes",
+    "building:levels": "3",
+    "building:roof": "tile",
+    "building:structure": "confined_masonry",
+    "building:use": "medical",
+    "building:walls": "brick",
+    "healthcare": "hospital",
+    "name": "RSGM Unpad"
+  }
+},
+{
+  "type": "way",
+  "id": 119444369,
+  "center": {
+    "lat": -6.8964104,
+    "lon": 107.6133392
+  },
+  "nodes": [
+    1342159597,
+    1342159582,
+    1342159586,
+    1342159592,
+    1342159597
+  ],
+  "tags": {
+    "amenity": "doctors",
+    "building": "yes",
+    "building:levels": "1",
+    "building:roof": "tile",
+    "building:structure": "reinforced_masonry",
+    "building:use": "commercial",
+    "building:walls": "brick",
+    "healthcare": "doctor",
+    "healthcare:speciality": "dermatology",
+    "name": "Aesthetic Derma Centre"
+  }
+},
+{
+  "type": "way",
+  "id": 177629384,
+  "center": {
+    "lat": -6.8904916,
+    "lon": 107.6104510
+  },
+  "nodes": [
+    1880477624,
+    5276753400,
+    5276753399,
+    5276753398,
+    1880477615,
+    5276753396,
+    1880477630,
+    5276753394,
+    2134542985,
+    2134542983,
+    2134542979,
+    2134542975,
+    2134542974,
+    2134542973,
+    2134542977,
+    2134542981,
+    1880477617,
+    2134542987,
+    2134542989,
+    1880477618,
+    5276753382,
+    5276753381,
+    5276753227,
+    1880477622,
+    6091516265,
+    1880477620,
+    1880477612,
+    1880477621,
+    1880477619,
+    2134475675,
+    2134542926,
+    2134542915,
+    5281097734,
+    2134542898,
+    1880477627,
+    1880477625,
+    5276753245,
+    1880477623,
+    1880477613,
+    5234549639,
+    1880477614,
+    2134475571,
+    2134542896,
+    1880477626,
+    5276753435,
+    1880477628,
+    2134475592,
+    2134475607,
+    2134475644,
+    2134475717,
+    2134542950,
+    5276753408,
+    2035858663,
+    1880477629,
+    5276753405,
+    5276753404,
+    5276753403,
+    5276753402,
+    1880477624
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Ganesa No.10, Lb. Siliwangi, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132",
+    "addr:housenumber": "10-12",
+    "addr:postcode": "40132",
+    "addr:street": "Ganesha",
+    "alt_name": "ITB",
+    "amenity": "university",
+    "area": "yes",
+    "int_name": "Bandung Technology Institute",
+    "name": "Institut Teknologi Bandung",
+    "name:en": "Bandung Institute of Technology",
+    "name:ja": "バンドゥン工科大学",
+    "old_name": "Technische Hogeschool",
+    "operator": "Kementerian Riset, Teknologi dan Pendidikan Tinggi",
+    "operator:type": "government",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes",
+    "wikidata": "Q1579397",
+    "wikipedia": "en:Bandung Institute of Technology"
+  }
+},
+{
+  "type": "way",
+  "id": 299053014,
+  "center": {
+    "lat": -6.8870576,
+    "lon": 107.6154390
+  },
+  "nodes": [
+    3029853388,
+    3029853389,
+    3029853390,
+    1960376698,
+    3029853391,
+    9738831345,
+    9738831346,
+    5521774094,
+    3029856773,
+    11739021655,
+    3029853388
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Dipatiukur No.112-116, Lebakgede, Kecamatan Coblong, Kota Bandung, Jawa Barat",
+    "addr:housenumber": "12",
+    "addr:street": "Jalan Dipatiukur",
+    "amenity": "university",
+    "name": "Universitas Komputer Indonesia",
+    "operator:type": "private",
+    "phone": "+62 22 2504119",
+    "source": "S2City_POI_2022",
+    "website": "https://unikom.ac.id/"
+  }
+},
+{
+  "type": "way",
+  "id": 299054017,
+  "center": {
+    "lat": -6.8889230,
+    "lon": 107.6160237
+  },
+  "nodes": [
+    3029870365,
+    3029870366,
+    3029870367,
+    3029870368,
+    9759815310,
+    9759815311,
+    3029870371,
+    9759815313,
+    9759815312,
+    3029870365
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Dipatiukur No.85 B",
+    "addr:housenumber": "82",
+    "addr:street": "Jalan Dipatiukur",
+    "amenity": "university",
+    "building": "university",
+    "building:condition": "good",
+    "building:levels": "5",
+    "check_date": "2025-08-09",
+    "name": "Institut Teknologi Harapan Bangsa",
+    "operator:type": "private",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 299062906,
+  "center": {
+    "lat": -6.8874642,
+    "lon": 107.6147902
+  },
+  "nodes": [
+    3029976134,
+    3029976135,
+    5282138288,
+    3029976136,
+    3029976137,
+    3029976134
+  ],
+  "tags": {
+    "amenity": "bus_station",
+    "building": "garage",
+    "bus": "yes",
+    "name": "Jackal Holidays Dipatiukur",
+    "public_transport": "station"
+  }
+},
+{
+  "type": "way",
+  "id": 299080058,
+  "center": {
+    "lat": -6.8948153,
+    "lon": 107.6179279
+  },
+  "nodes": [
+    3030249479,
+    3230898586,
+    3030249481,
+    3230898588,
+    3030249479
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Dipatiukur No. 23",
+    "amenity": "university",
+    "building": "university",
+    "building:condition": "good",
+    "building:levels": "3",
+    "name": "Magister Manajemen Universitas Padjadjaran",
+    "operator:type": "government",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 380223312,
+  "center": {
+    "lat": -6.8939306,
+    "lon": 107.6136691
+  },
+  "nodes": [
+    13544651155,
+    3835646953,
+    9133766776,
+    13541854670,
+    9133766752,
+    5293103310,
+    9135239886,
+    3835646952,
+    13544651154,
+    9133766766,
+    13544651155
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Ir. H. Juanda Nomor 100",
+    "addr:housenumber": "100",
+    "addr:street": "Jalan Ir. Haji Juanda",
+    "amenity": "hospital",
+    "building:floor": "ceramics",
+    "building:material": "brick",
+    "building:structure": "reinforced_masonry",
+    "emergency": "yes",
+    "healthcare": "hospital",
+    "name": "Rumah Sakit Santo Borromeus",
+    "operator:type": "private",
+    "website": "https://rsborromeus.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 545994901,
+  "center": {
+    "lat": -6.8898538,
+    "lon": 107.6191693
+  },
+  "nodes": [
+    5276821804,
+    5276821805,
+    5276821806,
+    5276821807,
+    5276821804
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Sekeloa Selatan No. 1",
+    "amenity": "university",
+    "building": "university",
+    "building:condition": "good",
+    "building:levels": "2",
+    "name": "Magister Ilmu Lingkungan Universitas Padjadjaran",
+    "operator:type": "government",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1061698503,
+  "center": {
+    "lat": -6.8975396,
+    "lon": 107.6242009
+  },
+  "nodes": [
+    9754331262,
+    9754331261,
+    9754331258,
+    9754331260,
+    9754331259,
+    9754331262
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jl. Gagak No. 15",
+    "amenity": "college",
+    "name": "STAI Sabili",
+    "operator:type": "private",
+    "source": "S2City_POI_2022",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 1062365223,
+  "center": {
+    "lat": -6.8934280,
+    "lon": 107.6171347
+  },
+  "nodes": [
+    9759815292,
+    9759815291,
+    9759815290,
+    9759815289,
+    9759815288,
+    9759815287,
+    9759815279,
+    9759815280,
+    9759815286,
+    9759815285,
+    9759815282,
+    9759815284,
+    9759815283,
+    9759815292
+  ],
+  "tags": {
+    "addr:city": "Bandung",
+    "addr:full": "Jalan Dipatiukur No.35, Lebakgede, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132",
+    "amenity": "university",
+    "name": "Universitas Padjajaran",
+    "operator:type": "government",
+    "source": "S2City_POI_2022",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1475349073,
+  "center": {
+    "lat": -6.8943179,
+    "lon": 107.6125072
+  },
+  "nodes": [
+    13534885351,
+    13534885352,
+    13534885353,
+    13534885354,
+    13534885351
+  ],
+  "tags": {
+    "amenity": "college",
+    "education": "college",
+    "name": "STIKES Borromeus",
+    "name:en": "Stikes Borromeus"
+  }
+},
+{
+  "type": "way",
+  "id": 1475349076,
+  "center": {
+    "lat": -6.8954973,
+    "lon": 107.6132889
+  },
+  "nodes": [
+    13534885365,
+    13534885366,
+    13534885367,
+    13534885368,
+    13534885365
+  ],
+  "tags": {
+    "amenity": "college",
+    "education": "college",
+    "name": "STMIK LIKMI"
+  }
+}
+
+  ]
+}
