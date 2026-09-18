@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps<"/tempat/[id]/atribut/[
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Jejak halaman" className="text-meta">
+      <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat/${encodeURIComponent(id)}`}>{trail.place.name}</Link> <span aria-hidden="true">›</span>{" "}
         <Link href={`/tempat/${encodeURIComponent(id)}/atribut/${encodeURIComponent(kode)}`}>{label}</Link>{" "}
         <span aria-hidden="true">›</span> <span aria-current="page">Jejak audit</span>

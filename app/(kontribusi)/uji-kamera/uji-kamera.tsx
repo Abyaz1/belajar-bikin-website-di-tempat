@@ -9,6 +9,30 @@ import { GeoWatch, useGeo } from "@/lib/ui/geo";
 import { useIsClient } from "@/lib/ui/use-client";
 import { useNow } from "@/lib/ui/use-now";
 
+/** Hasil satu cara ambil foto: metadata + resolusi berkas (dan aliran kamera). */
+interface Hasil {
+  meta: MetadataReport;
+  w: number;
+  h: number;
+  /** Resolusi aliran getUserMedia sebelum dikecilkan; hanya cara A. */
+  sw?: number;
+  sh?: number;
+}
+
+/** Target 00-KONTRAK §7: sisi terpanjang tangkapan 1600 px. */
+const TARGET_SISI = 1600;
+
+async function ukuranBerkas(file: Blob): Promise<{ w: number; h: number }> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const out = { w: bmp.width, h: bmp.height };
+    bmp.close();
+    return out;
+  } catch {
+    return { w: 0, h: 0 };
+  }
+}
+
 interface Env {
   secure: boolean;
   mediaDevices: boolean;
@@ -18,8 +42,8 @@ interface Env {
 
 export function UjiKamera() {
   const isClient = useIsClient();
-  const [a, setA] = useState<MetadataReport | null>(null);
-  const [b, setB] = useState<MetadataReport | null>(null);
+  const [a, setA] = useState<Hasil | null>(null);
+  const [b, setB] = useState<Hasil | null>(null);
   const [geoLine, setGeoLine] = useState("belum dites");
 
   const env: Env | null = isClient
@@ -91,8 +115,9 @@ export function UjiKamera() {
   );
 }
 
-function line(r: MetadataReport) {
-  return `${r.kind}, ${Math.round(r.bytes / 1024)} KB, EXIF ${r.exif ? "ADA" : "tidak ada"}, GPS ${
+function line({ meta: r, w, h, sw, sh }: Hasil) {
+  const aliran = sw && sh ? `, aliran kamera ${sw}×${sh}` : "";
+  return `${r.kind}, ${w}×${h} px${aliran}, ${Math.round(r.bytes / 1024)} KB, EXIF ${r.exif ? "ADA" : "tidak ada"}, GPS ${
     r.exifGps ? "ADA" : "tidak ada"
   }${r.xmp ? ", XMP ada" : ""}`;
 }
@@ -101,8 +126,8 @@ function CaraA({
   report,
   onReport,
 }: {
-  report: MetadataReport | null;
-  onReport: (r: MetadataReport) => void;
+  report: Hasil | null;
+  onReport: (r: Hasil) => void;
 }) {
   const { videoRef, state, detail, start, capture } = useCamera();
   const announce = useAnnounce();
@@ -114,8 +139,10 @@ function CaraA({
     try {
       const shot = await capture();
       const r = await sniffMetadata(shot.blob);
-      onReport(r);
-      announce(`Cara A selesai. EXIF ${r.exif ? "ada" : "tidak ada"}.`);
+      onReport({ meta: r, w: shot.width, h: shot.height, sw: shot.sourceWidth, sh: shot.sourceHeight });
+      announce(
+        `Cara A selesai. ${shot.width} kali ${shot.height} piksel. EXIF ${r.exif ? "ada" : "tidak ada"}.`,
+      );
     } finally {
       setBusy(false);
     }
@@ -127,7 +154,9 @@ function CaraA({
         Cara A — kamera dalam aplikasi (getUserMedia → kanvas)
       </h2>
       <p className="text-meta text-ink-muted">
-        Cara yang dipakai alur kontribusi. Hasil yang diharapkan: berkas JPEG tanpa EXIF di semua HP.
+        Cara yang dipakai alur kontribusi — sudah diputuskan di 00-KONTRAK §10. Kode yang sama persis dengan layar
+        kamera produk (<code className="font-mono">lib/ui/camera.tsx</code>): meminta aliran 1920×1440, lalu sisi
+        terpanjang dikecilkan ke {TARGET_SISI} px. Harapan: JPEG tanpa EXIF, sisi terpanjang sekitar {TARGET_SISI} px.
       </p>
       {problem ? (
         <div className="rounded-md border border-tidak-line bg-tidak-fill p-4 text-tidak-ink">
@@ -163,8 +192,8 @@ function CaraB({
   report,
   onReport,
 }: {
-  report: MetadataReport | null;
-  onReport: (r: MetadataReport) => void;
+  report: Hasil | null;
+  onReport: (r: Hasil) => void;
 }) {
   const announce = useAnnounce();
   return (
@@ -188,8 +217,8 @@ function CaraB({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            const r = await sniffMetadata(file);
-            onReport(r);
+            const [r, dim] = await Promise.all([sniffMetadata(file), ukuranBerkas(file)]);
+            onReport({ meta: r, ...dim });
             announce(`Cara B selesai. EXIF ${r.exif ? "ada" : "tidak ada"}, GPS ${r.exifGps ? "ada" : "tidak ada"}.`);
           }}
         />
@@ -199,9 +228,30 @@ function CaraB({
   );
 }
 
-function ReportView({ report }: { report: MetadataReport }) {
+function ReportView({ report: hasil }: { report: Hasil }) {
+  const report = hasil.meta;
+  const sisi = Math.max(hasil.w, hasil.h);
   return (
     <dl className="grid gap-x-6 gap-y-1 rounded-md border border-line bg-surface-alt p-4 sm:grid-cols-[max-content_1fr]">
+      <dt className="font-semibold">Resolusi berkas</dt>
+      <dd>
+        <strong>
+          {hasil.w}×{hasil.h} px
+        </strong>
+        {hasil.sw !== undefined
+          ? sisi >= TARGET_SISI - 16
+            ? ` — sisi terpanjang ${sisi} px, sesuai target ${TARGET_SISI} px.`
+            : ` — sisi terpanjang ${sisi} px, DI BAWAH target ${TARGET_SISI} px.`
+          : null}
+      </dd>
+      {hasil.sw !== undefined ? (
+        <>
+          <dt className="font-semibold">Aliran kamera</dt>
+          <dd>
+            {hasil.sw}×{hasil.sh} px{sisi < TARGET_SISI - 16 ? " — kamera memberi resolusi lebih kecil dari yang diminta; kanvas tidak memperbesar." : ""}
+          </dd>
+        </>
+      ) : null}
       <dt className="font-semibold">Jenis berkas</dt>
       <dd>{report.kind.toUpperCase()}</dd>
       <dt className="font-semibold">Ukuran</dt>

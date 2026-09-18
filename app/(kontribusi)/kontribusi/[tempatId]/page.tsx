@@ -24,7 +24,7 @@ export default async function Page({ params, searchParams }: PageProps<"/kontrib
 
   return (
     <div className="max-w-3xl space-y-8">
-      <nav aria-label="Jejak halaman" className="text-meta">
+      <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat/${encodeURIComponent(tempatId)}${q}`}>{facts.name}</Link> <span aria-hidden="true">›</span>{" "}
         <span aria-current="page">Perbarui data</span>
       </nav>
