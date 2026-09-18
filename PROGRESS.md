@@ -73,6 +73,7 @@ sistem sejenis, dan di sini ada buktinya.
 | Build produksi | berhasil, tanpa peringatan | `npm run build` |
 | EXIF pada tangkapan getUserMedia | tidak ada, juga tanpa tag GPS | Samsung Browser 30 / Android 10, 480x640, 40 KB, lewat /uji-kamera |
 | Jarak pHash antar pintu berbeda | terdekat 24, ambang 6, jarak aman 18 | `npm run phash:kalibrasi` atas 12 foto koridor, 66 pasangan |
+| Jarak pHash pintu sama, dua HP | 14 (pita penguatan 3-6: TERLEWAT) | dua HP, jarak 2 cm, dihitung modul server |
 | Precision usulan model | step_count 1,00 (n=3) · ramp_wheelchair 1,00 (n=2) · tactile_paving tak terdefinisi | 36 citra berlabel manusia, gemini-3.8-flash, prompt 2026-09-18.v1 |
 | Atribut usulan AI yang dimatikan gerbang | 1 dari 3 (`tactile_paving`) | migrasi 202609182330, sudah berlaku di produksi |
 
@@ -101,28 +102,38 @@ foto pintu yang berbeda — 66 pasangan diuji, yang terdekat pun masih 24, jadi
 kekhawatiran "turunkan ke 4 kalau salah tolak" di CLAUDE.md §17 tidak terbukti
 dari sisi ini dan ambangnya dibiarkan 6.
 
-Separuh yang belum terjawab sudah dapat petunjuk pertama, dan petunjuknya tidak
-menyenangkan. Dua HP memotret pintu yang sama dari jarak 2 cm menghasilkan jarak
-**16**, jauh di atas pita penguatan C8 yang cuma 3–6. Dua sentimeter praktis
-titik pandang yang sama, jadi kontribusi sungguhan dari dua orang akan lebih jauh
-lagi, bukan lebih dekat. Dugaan sementara: cabang "flag, bukan fail" untuk dua
-kontributor berbeda tidak pernah terjangkau.
+Separuh yang belum terjawab kini sudah diukur, dan hasilnya: **pita penguatan C8
+tidak terjangkau.** Dua HP memotret pintu yang sama dari jarak 2 cm menghasilkan
+jarak **14** lewat modul server — di atas pita penguatan yang cuma 3–6. Hasil
+klasifikasinya `none`, artinya C8 menganggap dua kontributor yang memotret pintu
+yang sama sebagai tidak berhubungan sama sekali. Cabang "flag, bukan fail" itu
+tidak pernah menyala.
 
-Angka 16 itu **hitungan peramban** dari halaman /uji-kamera, n=1, dan hash
-peramban bukan hash yang menegakkan C8 (median menyertakan DC, downscale canvas).
-Jadi ini petunjuk, belum bukti. Menyandingkannya dengan angka 24 di atas untuk
-menetapkan ambang baru justru kesalahan yang dihindari scripts/kalibrasi-phash.ts.
-Yang dibutuhkan: berkas JPEG dari kedua HP, dihitung ulang dengan modul server.
+Dua sentimeter praktis titik pandang yang sama, jadi ini kasus paling
+menguntungkan. Tangkapan dua orang yang sungguhan — beda posisi, beda waktu —
+akan lebih jauh lagi, bukan lebih dekat.
+
+Ambangnya TIDAK diubah, dan itu keputusan sadar. Pengukuran ini memang
+memperlihatkan celah 14..24 sehingga ambang mana pun di 14..23 memisahkan pintu
+sama dari pintu berbeda. Tetapi n-nya satu pasang, dan pasangan itu kasus terbaik.
+Kalau tangkapan dua orang yang wajar ternyata jatuh di 20–30, dia bertabrakan
+dengan lantai pintu-berbeda yang ada di 24, dan tidak ada ambang bersih yang
+memisahkan keduanya. Melebarkan pita dari satu pasangan terbaik berarti menukar
+cacat yang diketahui dengan cacat yang tidak diketahui. Mengubahnya juga
+mengubah kontrak yang dibekukan (CLAUDE.md §8 dan §17), yang butuh persetujuan
+tiga engineer dan satu entri PERUBAHAN.md.
 
 Yang tidak terpengaruh, supaya tidak salah dibaca: tugas utama C8 — menangkap
 berkas daur ulang — tetap jalan, karena berkas yang sama menghasilkan jarak <=2.
-Dan corroboration_count di mesin status tidak memakai pHash sama sekali; dia
-menghitung contributor_id berbeda dengan nilai sama. Penguatan sebagai fitur
-produk tetap hidup.
+Dan `corroboration_count` di mesin status tidak memakai pHash sama sekali; dia
+menghitung `contributor_id` berbeda dengan nilai sama. Penguatan sebagai fitur
+produk tetap hidup. Yang mati hanya satu cabang penandaan di audit.
 
-Kalau pita itu memang perlu dilebarkan, itu mengubah kontrak yang dibekukan
-(CLAUDE.md §17 justru mengantisipasi arah sebaliknya), jadi butuh persetujuan
-tiga engineer dan satu entri PERUBAHAN.md.
+Skrip kalibrasinya sendiri sempat menutupi ini: dia hanya menganggap hasil `fail`
+sebagai masalah, sehingga pasangan yang terlewat (`none`) dilaporkan sebagai
+"semua masuk pita penguatan" sambil memperlihatkan sisa ruang negatif. Sudah
+diperbaiki — untuk pasangan pintu-sama, hasil yang benar adalah `flag`, dan
+`none` kini dilaporkan sebagai kegagalan.
 
 ---
 
