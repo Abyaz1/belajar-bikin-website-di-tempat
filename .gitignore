@@ -43,7 +43,6 @@ next-env.d.ts
 
 # arahan agent AI dari create-next-app / next dev (tidak di-commit)
 /AGENTS.md
-/CLAUDE.md
 
 # spek internal tim, dibagikan di luar repo (tidak di-commit)
 /docs/docs-00-KONTRAK.md
