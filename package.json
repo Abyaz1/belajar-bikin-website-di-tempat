@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db/migrate.mts",
+    "db:seed-demo": "node --env-file-if-exists=.env.local scripts/db/seed-demo.mts",
     "phash:kalibrasi": "vite-node scripts/kalibrasi-phash.ts",
     "seed:osm": "vite-node scripts/seed/osm-seed.ts"
   },
