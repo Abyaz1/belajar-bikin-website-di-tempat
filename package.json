@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db/migrate.mts",
-    "phash:kalibrasi": "vite-node scripts/kalibrasi-phash.ts"
+    "phash:kalibrasi": "vite-node scripts/kalibrasi-phash.ts",
+    "seed:osm": "vite-node scripts/seed/osm-seed.ts"
   },
   "dependencies": {
     "@google-cloud/cloud-sql-connector": "^1.12.0",
