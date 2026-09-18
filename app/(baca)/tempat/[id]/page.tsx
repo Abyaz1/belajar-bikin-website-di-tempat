@@ -67,8 +67,8 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
   const announce = `Profil diganti. ${verdictWithProfile(place.verdict, profile)}.${blockers[0] ? ` ${blockers[0].message}` : ""}`;
 
   return (
-    <div className="space-y-10">
-      <nav aria-label="Jejak halaman" className="text-meta">
+    <div className="space-y-12">
+      <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat?profil=${profile}`}>Daftar tempat</Link> <span aria-hidden="true">›</span>{" "}
         <span aria-current="page">{place.name}</span>
       </nav>

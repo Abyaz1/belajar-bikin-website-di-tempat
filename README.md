@@ -44,7 +44,8 @@ Langkah demo singkat:
 | Google Cloud CLI (`gcloud`) | terbaru | deploy ke Cloud Run, dan kredensial lokal ke Google Cloud |
 
 Stack: Next.js 16.3 (App Router), React 19.2, TypeScript 5.9, Tailwind CSS 4.3.
-Tidak memakai component library; komponen UI ditulis sendiri di `lib/ui/`.
+Data di PostgreSQL 18 (Cloud SQL), foto bukti di Cloud Storage, usulan atribut dari
+Vertex AI. Tidak memakai component library; komponen UI ditulis sendiri di `lib/ui/`.
 
 ### Google Cloud
 
@@ -140,16 +141,32 @@ direktori itu. Di clone yang bersih direktori itu belum ada, sehingga
 yang terlihat seperti kode rusak padahal cuma tipe yang belum dibangkitkan.
 `npm run dev` juga membangkitkannya, tapi baru setelah server menyala.
 
-Akses ke Vertex AI dan Cloud Storage dari lokal memakai Application Default
-Credentials (ADC), jadi tidak perlu file kunci JSON. Login sekali:
+Akses ke Vertex AI, Cloud Storage, dan Cloud SQL dari lokal memakai Application
+Default Credentials (ADC), jadi tidak perlu file kunci JSON. Login sekali:
 
 ```bash
 gcloud auth application-default login
 ```
 
-Untuk Cloud SQL: kalau aplikasi memakai library Cloud SQL Connector, ADC saja
-cukup; kalau terhubung lewat socket atau TCP biasa, jalankan Cloud SQL Auth Proxy
-di laptop.
+### Database dan tes
+
+Aplikasi terhubung ke Cloud SQL lewat library Cloud SQL Connector dengan ADC tadi,
+jadi tidak perlu Cloud SQL Auth Proxy. Akun Google-mu butuh peran Cloud SQL Client
+di project, dan `DB_PASSWORD` di `.env.local` harus terisi.
+
+Skema database ditulis sebagai berkas SQL di `db/migrations/` dengan nama
+`YYYYMMDDHHMM_deskripsi.sql`, supaya urutannya tidak bentrok antar-branch. Terapkan
+migrasi yang belum dijalankan:
+
+```bash
+npm run db:migrate
+```
+
+Tes unit memakai Vitest:
+
+```bash
+npm test
+```
 
 ### Build produksi
 
@@ -290,7 +307,6 @@ gcloud run deploy ifest \
   --region "$GCP_REGION" \
   --service-account "$SA" \
   --allow-unauthenticated \
-  --add-cloudsql-instances "$CLOUD_SQL_CONNECTION_NAME" \
   --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,GCS_BUCKET=$GCS_BUCKET" \
   --set-secrets "DB_PASSWORD=db-password:latest"
 ```

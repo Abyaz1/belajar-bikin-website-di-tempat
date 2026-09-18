@@ -46,7 +46,7 @@ export class RequestFailed extends Error {
 
 const NETWORK: RequestFailed = new RequestFailed(0, null);
 
-/** E8, dengan E7 hanya bila belum ada sesi (server menjawab 401). Memanggil
+/** E8, dengan E7 hanya bila belum ada sesi (server menjawab 401/403). Memanggil
  *  E7 setiap kali akan membuat kontributor baru dan merusak rate limit C1. */
 export async function openCaptureSession(placeId: string, vantage: Vantage): Promise<CaptureSession> {
   const request = () =>
@@ -58,7 +58,8 @@ export async function openCaptureSession(placeId: string, vantage: Vantage): Pro
   let res: Response;
   try {
     res = await request();
-    if (res.status === 401) {
+    // Belum ada sesi: buat kontributor anonim (E7), lalu ulangi E8 sekali.
+    if (res.status === 401 || res.status === 403) {
       const s = await call("/api/session", { method: "POST" });
       if (!s.ok) throw new RequestFailed(s.status, await errorBody(s));
       res = await request();
@@ -79,8 +80,9 @@ export interface DraftInput {
   vantage: Vantage;
   fix: { lat: number; lon: number; accuracy: number; at: number } | null;
   capturedAt: Date;
-  /** Dicatat server sebagai keterangan, BUKAN diperiksa (spek 10 §2.3). */
-  captureMethod: "getusermedia" | "file_capture" | "gallery";
+  /** Dicatat server sebagai keterangan, BUKAN diperiksa (spek 10 §2.3).
+   *  Kosakatanya sama dengan suite tests/rejection milik Trust. */
+  captureMethod: "getusermedia" | "galeri";
   /** Hanya dibaca mode data contoh; server nyata mengabaikannya. */
   fixtureScenario?: string;
 }
@@ -88,7 +90,8 @@ export interface DraftInput {
 /** E4. 422 berarti ditolak — dan penolakan itu tetap tercatat di server. */
 export async function submitDraft(input: DraftInput): Promise<DraftResult> {
   const form = new FormData();
-  form.set("image", input.image, "bukti.jpg");
+  // Nama field `file` — sama dengan suite tests/rejection milik Trust.
+  form.set("file", input.image, "tangkapan.jpg");
   form.set("capture_token", input.captureToken);
   form.set("place_id", input.placeId);
   form.set("vantage", input.vantage);
