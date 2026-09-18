@@ -22,6 +22,11 @@ export function vertexCaller(opts: { project: string; location: string }): Model
         abortSignal: signal,
         // Eksplisit tanpa retry (docs-20 §4), tidak bergantung pada bawaan SDK.
         httpOptions: { retryOptions: { attempts: 1 } },
+        // Penalaran dimatikan. gemini-3.8-flash menalar secara bawaan, dan pada
+        // foto pintu masuk 1600 px itu menembus anggaran 8 detik kontrak §7:
+        // 9,6 dtk menyala, 4,2 dtk mati. Tanpa baris ini seluruh usulan model
+        // selalu berakhir "timeout" dan tidak pernah sampai ke layar konfirmasi.
+        thinkingConfig: { thinkingBudget: 0 },
       },
     });
     return res.text ?? "";

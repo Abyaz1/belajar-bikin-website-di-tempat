@@ -50,6 +50,7 @@ describe("vertexCaller", () => {
       temperature: 0,
       abortSignal: signal,
       httpOptions: { retryOptions: { attempts: 1 } },
+      thinkingConfig: { thinkingBudget: 0 },
     });
   });
 
