@@ -4,21 +4,10 @@
  */
 
 import Link from "next/link";
-import type { PlaceSummary, ProfileCode, Verdict } from "./api/types";
+import type { PlaceSummary, ProfileCode } from "./api/types";
 import { DemoLabel, VerdictBadge } from "./badges";
 import { attributeLabel } from "./copy";
-import { cx } from "./cx";
 import { formatDate } from "./format";
-
-// Garis tepi kiri mengikuti penilaian: warna penilaian ditambah gaya garis,
-// putus-putus untuk "belum dapat dipastikan", supaya pembedanya tidak hanya
-// warna. Badge berteks di dalam kartu tetap penanda utamanya.
-const TEPI: Record<Verdict, string> = {
-  tidak_dapat_diakses: "border-s-tidak-line",
-  dengan_catatan: "border-s-catatan-line",
-  dapat_diakses: "border-s-dapat-line",
-  belum_dapat_dipastikan: "border-s-belum-line [border-inline-start-style:dashed]",
-};
 
 export function PlaceCard({
   place,
@@ -36,7 +25,9 @@ export function PlaceCard({
   const checked = c.terverifikasi + c.perlu_ditinjau_ulang;
 
   return (
-    <li className={cx("card-link space-y-3 rounded-md border border-s-[6px] border-line-control bg-surface p-6", TEPI[place.verdict])}>
+    // Kartu netral. Penilaian dibawa satu penanda saja, yaitu badge (warna,
+    // bentuk ikon, teks dengan nama profil, dan garis putus-putus untuk "belum").
+    <li className="card-link space-y-3 rounded-md border border-line-control bg-surface p-6">
       <div>
         <h3 className="text-card">
           <Link href={href} className="stretch text-ink no-underline hover:underline">
