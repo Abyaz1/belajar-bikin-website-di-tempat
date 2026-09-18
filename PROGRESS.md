@@ -26,7 +26,7 @@ menunggu kode.
 | Aplikasi hidup di Cloud Run | **tercapai** — revisi `ifest-00004-rxf`, seluruh halaman kontrak §9 membalas 200 |
 | Cloud SQL terisi dan terpakai | **tercapai** — 44 tempat, jalur baca dan tulis keduanya jalan |
 | GCS terpakai | **tercapai** — unggahan nyata, objek terbukti tidak bisa diakses publik |
-| Vertex AI terpanggil | **tercapai** — `model_status: ok`, model menjawab pada kontribusi nyata |
+| Vertex AI terpanggil | **tercapai sebagian** — `model_status: ok` lewat alur produksi, tetapi citranya 32×32 piksel buatan uji. Syarat kontrak §10 (foto nyata 1600 px, di bawah 8 detik) **belum** terpenuhi |
 | Gerbang precision | **belum** — menunggu himpunan uji berlabel dari problem owner |
 
 ### Yang berubah sejak checkpoint 1
@@ -45,11 +45,28 @@ menunggu kode.
 
 ### Satu hasil yang layak masuk deck
 
-Pada kontribusi nyata di produksi, model menjawab `not_visible` untuk ketiga
+Pada kontribusi lewat alur produksi, model menjawab `not_visible` untuk ketiga
 atribut yang diukur — citranya memang bukan pintu — lalu kontributor
 mengoreksinya, dan `was_corrected` tercatat `true`. Model menolak menebak,
-manusia mengoreksi, keduanya terekam. Itu pengaman yang paling sering gagal di
-sistem sejenis, dan di sini ada buktinya.
+manusia mengoreksi, keduanya terekam.
+
+Sebut batasnya bersama hasilnya: citra itu gambar uji 32×32 piksel, bukan foto
+kamera (diperiksa langsung dari bucket bukti). Hasil ini membuktikan jalurnya
+utuh, bukan bahwa model menolak menebak pada foto pintu sungguhan. Klaim yang
+kedua baru boleh dibawa ke deck setelah pengukuran pada himpunan uji berlabel.
+
+### Tambahan sesudah checkpoint (malam 18 September)
+
+- Revisi Cloud Run `ifest-00005-zlf` (image `d4d7af4`): tombol pembacaan suara
+  di laporan tempat dan rincian atribut.
+- `seed_demo.sql` dilengkapi supaya keempat penilaian muncul di data demo, dan
+  dibuat aman dijalankan ulang. Dijalankan lewat `npm run db:seed-demo`
+  (simulasi dulu, `--tulis` untuk menyimpan). Simulasi di Cloud SQL lolos
+  pemeriksaan keterlacakan; penulisannya menunggu dijalankan pemilik akses.
+- `labels.json` belum bisa dipakai: validator menolak 36 isian, yaitu
+  `step_count` berisi angka, `ramp_wheelchair` berisi `ada` atau angka, sebagian
+  besar isian kosong, dan `pelabel` kosong di semua citra. Gerbang precision
+  menunggu label diperbaiki oleh manusia sambil melihat fotonya.
 
 ### Batasan yang diakui
 
