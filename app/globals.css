@@ -87,141 +87,151 @@
      = kelas 1 2 3 4 6 8 12 16. Kelas lain jangan dipakai. */
 }
 
-:root {
-  color-scheme: light;
+/* Gaya dasar dan komponen masuk cascade layer supaya utility Tailwind tetap
+   bisa menimpanya. Gaya di luar layer selalu menang atas utility. */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.5;
+  }
+
+  /* Kata panjang (kode alasan, URL) tidak boleh memaksa scroll mendatar saat
+     halaman diperbesar 200%. */
+  body {
+    overflow-wrap: break-word;
+  }
+  code,
+  .font-mono {
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: var(--color-action);
+    text-decoration-line: underline;
+    text-underline-offset: 0.15em;
+  }
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* ── A1: fokus selalu terlihat ──
+     focus-ring vs action cuma 1,14 — praktis tidak terbedakan. Cincin fokus di
+     tombol utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
+     halaman, bukan di atas isian tombol. outline-offset 2px JANGAN diubah atau
+     dihapus. Satu-satunya `outline: none` di produk ini ada di tautan kartu
+     di bawah, dan itu karena cincinnya dipindah ke kartunya, bukan dihapus. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    inset-block-start: -10rem;
+    z-index: 1000;
+    padding: 0.75rem 1rem;
+    background: var(--color-surface);
+    color: var(--color-action);
+    border: 2px solid var(--color-action);
+    border-radius: var(--radius-md);
+  }
+  .skip-link:focus {
+    inset-block-start: 1rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
+@layer components {
+  /* Kartu yang seluruhnya satu sasaran tekan: tautan di judul diregangkan
+     menutupi kartu, fokusnya digambar di kartu. Satu tautan, tanpa tautan
+     bersarang, nama terbaca screen reader tetap pendek. */
+  .card-link {
+    position: relative;
+  }
+  .card-link :where(a.stretch)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .card-link :where(a.stretch):focus-visible {
+    outline: none;
+  }
+  .card-link:has(a.stretch:focus-visible) {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  .card-link:hover {
+    background: var(--color-surface-alt);
+  }
 
-body {
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: var(--text-body);
-  line-height: 1.5;
-}
+  /* Pemilih atribut: kartu penuh lebar, radio asli disembunyikan secara visual
+     tapi tetap jadi kendali yang dibaca screen reader. Terpilih = garis tebal +
+     centang + teks "dipilih", bukan cuma isian warna (A7). */
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-block-size: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-line-control);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+  }
+  .choice:hover {
+    background: var(--color-surface-alt);
+  }
+  .choice:has(input:checked) {
+    border-width: 3px;
+    border-color: var(--color-action);
+    padding: calc(0.75rem - 2px) calc(1rem - 2px);
+  }
+  .choice:has(input:focus-visible) {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  .choice .choice-mark {
+    visibility: hidden;
+  }
+  .choice:has(input:checked) .choice-mark {
+    visibility: visible;
+  }
+  .choice:has(input:checked) .choice-box {
+    border-color: var(--color-action);
+  }
 
-/* Kata panjang (kode alasan, URL) tidak boleh memaksa scroll mendatar saat
-   halaman diperbesar 200%. */
-body {
-  overflow-wrap: break-word;
-}
-code,
-.font-mono {
-  overflow-wrap: anywhere;
-}
-
-a {
-  color: var(--color-action);
-  text-decoration-line: underline;
-  text-underline-offset: 0.15em;
-}
-a:hover {
-  text-decoration-thickness: 2px;
-}
-
-/* ── A1: fokus selalu terlihat ──
-   focus-ring vs action cuma 1,14 — praktis tidak terbedakan. Cincin fokus di
-   tombol utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
-   halaman, bukan di atas isian tombol. outline-offset 2px JANGAN diubah atau
-   dihapus. Tidak ada `outline: none` di mana pun di produk ini. */
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-
-/* Kartu yang seluruhnya satu sasaran tekan: tautan di judul diregangkan
-   menutupi kartu, fokusnya digambar di kartu. Satu tautan, tanpa tautan
-   bersarang, nama terbaca screen reader tetap pendek. */
-.card-link {
-  position: relative;
-}
-.card-link :where(a.stretch)::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-.card-link :where(a.stretch):focus-visible {
-  outline: none;
-}
-.card-link:has(a.stretch:focus-visible) {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-.card-link:hover {
-  background: var(--color-surface-alt);
-}
-
-/* Pemilih atribut: kartu penuh lebar, radio asli disembunyikan secara visual
-   tapi tetap jadi kendali yang dibaca screen reader. Terpilih = garis tebal +
-   centang + teks "dipilih", bukan cuma isian warna (A7). */
-.choice {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-block-size: 3rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-line-control);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  cursor: pointer;
-}
-.choice:hover {
-  background: var(--color-surface-alt);
-}
-.choice:has(input:checked) {
-  border-width: 3px;
-  border-color: var(--color-action);
-  padding: calc(0.75rem - 2px) calc(1rem - 2px);
-}
-.choice:has(input:focus-visible) {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-.choice .choice-mark {
-  visibility: hidden;
-}
-.choice:has(input:checked) .choice-mark {
-  visibility: visible;
-}
-
-/* Label data demonstrasi: garis tepi kiri bermotif diagonal. */
-.demo-stripe {
-  border-inline-start: 0.5rem solid transparent;
-  border-image: repeating-linear-gradient(
-      -45deg,
-      var(--color-demo-ink) 0 3px,
-      var(--color-demo-bg) 3px 6px
-    )
-    1;
-}
-
-.skip-link {
-  position: absolute;
-  inset-inline-start: 1rem;
-  inset-block-start: -10rem;
-  z-index: 1000;
-  padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  color: var(--color-action);
-  border: 2px solid var(--color-action);
-  border-radius: var(--radius-md);
-}
-.skip-link:focus {
-  inset-block-start: 1rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  /* Label data demonstrasi: garis tepi kiri bermotif diagonal. */
+  .demo-stripe {
+    border-inline-start: 0.5rem solid transparent;
+    border-image: repeating-linear-gradient(
+        -45deg,
+        var(--color-demo-ink) 0 3px,
+        var(--color-demo-bg) 3px 6px
+      )
+      1;
   }
 }
 
