@@ -26,6 +26,7 @@ from conftest import (
     hamming_terlapor,
     jpeg_bersih,
     jpeg_galeri,
+    jpeg_galeri_diencode_ulang,
     oracle_c8,
     pasangan_hamming,
     pasangan_penguatan,
@@ -73,6 +74,29 @@ class TestKelas1UnggahanGaleri:
         b = kontributor.kirim(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)
         assert b.status == 400
         assert b.kode_galat == ["FILE_TYPE_INVALID"]
+
+    def test_ditolak_walau_semua_pemeriksaan_lain_lolos(self, kontributor: Kontributor):
+        """Berkas galeri dengan koordinat, akurasi, dan waktu yang sempurna tetap
+        ditolak. Yang menolak C3 sendirian, bukan gabungan beberapa kegagalan."""
+        b = kontributor.kirim(jpeg_galeri(seed=15), lat=UJI_LAT, lon=UJI_LON, akurasi=5.0)
+        assert b.status == 422
+        assert b.kode_galat == ["FILE_METADATA_PRESENT"], b.kode_galat
+
+    def test_exif_tanpa_tag_apa_pun_tetap_terdeteksi(self, kontributor: Kontributor):
+        """Blok EXIF kosong pun tetap blok EXIF. Yang diperiksa keberadaan
+        segmennya, bukan isinya."""
+        b = kontributor.kirim(jpeg_galeri(seed=16, gps=False, tag_lain=False))
+        assert b.status == 422
+        assert "FILE_METADATA_PRESENT" in b.kode_galat
+
+    @pytest.mark.parametrize("seed", [17, 18])
+    def test_berkas_galeri_berbeda_ditolak_konsisten(self, kontributor: Kontributor, seed):
+        """Penolakan tidak bergantung pada isi fotonya. Angka "ditolak 100 persen"
+        pada kelas ini memang benar menurut konstruksi — dan justru karena itu
+        angkanya tidak berarti kalau berdiri sendiri."""
+        b = kontributor.kirim(jpeg_galeri(seed=seed))
+        assert b.status == 422
+        assert "FILE_METADATA_PRESENT" in b.kode_galat
 
     def test_penolakan_tetap_masuk_jejak_audit(self, kontributor: Kontributor):
         """Aturan 4. Dicek lewat C1: kontribusi yang ditolak tetap dihitung,
@@ -123,6 +147,105 @@ class TestKelas2UnggahanBersihLangsung:
         c7 = b.cek("C7")
         assert c7 is not None and c7["result"] == "pass"
         print(f"\n[BATASAN TERUKUR] koordinat karangan lolos C7: measured={c7['measured']}")
+
+
+    @pytest.mark.batasan
+    def test_foto_galeri_diencode_ulang_lolos_c3(self, kontributor: Kontributor):
+        """
+        SERANGAN YANG SEBENARNYA, kata dokumen sendiri: "curl dengan JPEG hasil
+        re-encode".
+
+        Foto diambil dari galeri, dibuka, disimpan ulang. EXIF-nya hilang, dan C3
+        tidak punya apa pun untuk dipegang. Tidak ada yang perlu dibobol.
+        """
+        b = kontributor.kirim(jpeg_galeri_diencode_ulang(seed=23))
+        c3 = b.cek("C3")
+        assert c3 is not None and c3["result"] == "pass", b.body
+        print("\n[BATASAN TERUKUR] foto galeri di-encode ulang: C3 = pass")
+
+    @pytest.mark.parametrize(
+        "kode,label",
+        [
+            ("C4", "waktu pengambilan dikarang"),
+            ("C6", "ketelitian dikarang"),
+            ("C6b", "umur fix dikarang"),
+        ],
+    )
+    def test_nilai_yang_dinyatakan_klien_lolos_pemeriksaannya(
+        self, kontributor: Kontributor, kode, label
+    ):
+        """
+        Koordinat, akurasi, dan timestamp semuanya dinyatakan klien. Mengirim
+        angka yang rapi lewat curl akan lolos, dan itu bukan bug — pemeriksaan
+        ini menaikkan biaya pemalsuan, tidak menutup celah.
+
+        Yang harus bisa diucapkan ke juri: penyerang tidak perlu membobol HP,
+        cukup memanggil API langsung.
+        """
+        # Semuanya angka yang dipilih penyerang, bukan diukur perangkat: waktu
+        # yang pas, ketelitian yang mencurigakan bagusnya, dan fix yang mengaku
+        # baru saja didapat. Ketiganya diterima.
+        sekarang = SEKARANG()
+        b = kontributor.kirim(
+            jpeg_bersih(seed=2400 + abs(hash(kode)) % 900),
+            captured_at=sekarang - timedelta(seconds=1),
+            fix_at=sekarang - timedelta(seconds=1),
+            akurasi=3.0,
+        )
+        k = b.cek(kode)
+        assert k is not None and k["result"] == "pass", (kode, b.body)
+        print(f"\n[BATASAN TERUKUR] {label}: {kode} = pass")
+
+    @pytest.mark.batasan
+    def test_capture_method_dikarang_tidak_berpengaruh(self, kontributor: Kontributor):
+        """Klien menuliskan sendiri metode penangkapannya. Menulis "getusermedia"
+        dari curl sama sekali tidak memengaruhi hasil — kolom itu dicatat, bukan
+        diperiksa."""
+        b = kontributor.kirim(jpeg_bersih(seed=25), capture_method="getusermedia")
+        assert b.status == 200, b.body
+        print("\n[BATASAN TERUKUR] capture_method dikarang: tidak memengaruhi apa pun")
+
+    @pytest.mark.batasan
+    def test_seluruh_pemeriksaan_lolos_lewat_curl_tanpa_kamera(
+        self, kontributor: Kontributor
+    ):
+        """
+        Peragaan penuh: satu kontribusi yang lolos KESEMBILAN pemeriksaan tanpa
+        kamera, tanpa GPS, tanpa pernah mendekati lokasinya.
+
+        Ini angka yang harus disebut sendiri sebelum juri menemukannya.
+        """
+        b = kontributor.kirim(jpeg_bersih(seed=26), lat=UJI_LAT, lon=UJI_LON, akurasi=8.0)
+        assert b.status == 200, b.body
+        hasil = [f"{k['code']}={k['result']}" for k in b.body["checks"]]
+        assert all(k["result"] == "pass" for k in b.body["checks"]), hasil
+        print(f"\n[BATASAN TERUKUR] kontribusi lolos penuh lewat curl: {' '.join(hasil)}")
+
+    def test_yang_c0_memang_hentikan_tanpa_token(self, kontributor: Kontributor):
+        """Penyeimbangnya. Tanpa token yang diterbitkan server, pengiriman ditolak
+        berapa pun rapinya data lain. Inilah yang dibeli lapisan ini."""
+        b = kontributor.kirim(jpeg_bersih(seed=27), token="x" * 43)
+        assert b.status == 422
+        assert "CAPTURE_SESSION_INVALID" in b.kode_galat
+
+    def test_yang_c0_memang_hentikan_token_dipakai_ulang(self, kontributor: Kontributor):
+        """Dan token itu sekali pakai, jadi merekam satu pengiriman yang sah lalu
+        memutarnya ulang juga tidak bekerja."""
+        t = kontributor.token()
+        assert kontributor.kirim(jpeg_bersih(seed=28), token=t).status == 200
+        b = kontributor.kirim(jpeg_bersih(seed=29), token=t)
+        assert b.status == 422
+        assert "CAPTURE_SESSION_INVALID" in b.kode_galat
+
+    def test_yang_c0_memang_hentikan_tempat_ditetapkan_sebelum_foto(
+        self, kontributor: Kontributor
+    ):
+        """Tempat ditetapkan server saat token diterbitkan, sebelum fotonya
+        diambil. Memindahkan klaim ke tempat lain sesudahnya ditolak."""
+        t = kontributor.token(vantage="entrance")
+        b = kontributor.kirim(jpeg_bersih(seed=30), vantage="toilet", token=t)
+        assert b.status == 422
+        assert "CAPTURE_SESSION_INVALID" in b.kode_galat
 
 
 # ==========================================================================
@@ -223,6 +346,16 @@ class TestKelas4BerkasDaurUlang:
         assert kontributor.kirim(jpeg_bersih(seed=43)).status == 200
         b = kontributor.kirim(jpeg_bersih(seed=44))
         assert b.status == 200, b.body
+
+    def test_berkas_daur_ulang_disela_berkas_lain(self, kontributor: Kontributor):
+        """Menyelipkan kiriman lain di antaranya tidak menghapus ingatan. Yang
+        dibandingkan seluruh bukti yang pernah masuk, bukan yang terakhir saja."""
+        daur = jpeg_bersih(seed=47)
+        assert kontributor.kirim(daur).status == 200
+        assert kontributor.kirim(jpeg_bersih(seed=48)).status == 200
+        b = kontributor.kirim(daur)
+        assert b.status == 422, b.body
+        assert "DUPLICATE_IMAGE" in b.kode_galat
 
     @pytest.mark.parametrize("target", [0, 2, 4, 6, 8])
     def test_oracle_menyusuri_batas_keputusan_c8(

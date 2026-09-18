@@ -128,6 +128,25 @@ def jpeg_bersih(seed: int = 1, geser: int = 0, terang: int = 0) -> bytes:
     return _jpeg_32(_grid(seed, geser, terang))
 
 
+def jpeg_galeri_diencode_ulang(seed: int = 1) -> bytes:
+    """
+    Foto galeri yang di-encode ulang sehingga EXIF-nya hilang.
+
+    Ini serangan yang disebut docs/10-trust.md §5 dengan kata-katanya sendiri:
+    "curl dengan JPEG hasil re-encode". Penyerang tidak perlu membobol HP, cukup
+    membuka foto galeri, menyimpannya ulang, lalu memanggil API langsung.
+
+    Berkasnya lolos C3, dan memang dirancang begitu. Yang diuji kelas 2 bukan
+    apakah kita menangkapnya — kita tidak — melainkan apakah kita melaporkannya
+    apa adanya.
+    """
+    galeri = jpeg_galeri(seed)
+    im = Image.open(io.BytesIO(galeri))
+    buf = io.BytesIO()
+    im.convert("RGB").save(buf, "JPEG", quality=100, subsampling=0)   # EXIF tidak ikut
+    return buf.getvalue()
+
+
 def jpeg_galeri(seed: int = 1, *, gps: bool = True, tag_lain: bool = True) -> bytes:
     """JPEG ber-EXIF - meniru berkas yang dipilih dari galeri HP."""
     zeroth: dict[int, Any] = {}
