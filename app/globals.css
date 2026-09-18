@@ -393,6 +393,27 @@
 .leaflet-container a {
   color: var(--color-brand);
 }
+/* Tautan "Buka laporan tempat" di popup penanda berdiri sendiri, bukan di
+   dalam kalimat, jadi sasaran sentuhnya 48px seperti tautan lain. */
+.leaflet-popup-content a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 3rem;
+  font-weight: 600;
+}
+/* Tombol tutup popup bawaan Leaflet hanya 24px: diperbesar ke 44px.
+   Pemilih lebih spesifik karena leaflet.css dimuat sesudah berkas ini. */
+.leaflet-container .leaflet-popup a.leaflet-popup-close-button {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  color: var(--color-ink-muted);
+}
+.leaflet-container .leaflet-popup .leaflet-popup-content {
+  margin-inline-end: 2.75rem;
+}
 
 /* Tombol perbesar dan perkecil yang besar dan selalu tampil: pengguna dengan
    keterbatasan motorik tidak dipaksa mencubit layar. Tiap tombol 48px,
