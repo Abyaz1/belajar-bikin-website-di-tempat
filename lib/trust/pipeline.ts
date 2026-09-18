@@ -106,11 +106,25 @@ export async function runProvenancePipeline(
   // ---- C1 rate limit -------------------------------------------------
   // Kontribusi yang DITOLAK tetap dihitung. Kalau tidak, rate limit tidak
   // menahan percobaan berulang sama sekali.
+  // Jendelanya dimulai dari yang lebih baru antara satu jam lalu dan reset
+  // terakhir yang TERCATAT di jejak audit. Reset tidak pernah menghapus baris
+  // evidence — lihat app/api/contributions/reset-rate-limit/route.ts. Dengan
+  // begitu jejak auditnya sendiri yang jadi sumber kebenaran batas laju, dan
+  // setiap reset meninggalkan bekas permanen yang terbaca publik.
   const { rows: rl } = await c.query<{ n: string }>(
     `SELECT count(*)::text AS n
        FROM evidence
       WHERE contributor_id = $1
-        AND server_received_at > now() - interval '1 hour'`,
+        AND server_received_at > GREATEST(
+              now() - interval '1 hour',
+              COALESCE(
+                (SELECT max(a.created_at) FROM audit_event a
+                  WHERE a.action = 'rate_limit_reset'
+                    AND a.entity_type = 'contributor'
+                    AND a.entity_id = $1),
+                to_timestamp(0)
+              )
+            )`,
     [input.contributorId],
   );
   const used = Number(rl[0].n);
