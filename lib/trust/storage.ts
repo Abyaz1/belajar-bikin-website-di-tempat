@@ -161,5 +161,6 @@ export async function readPublic(key: string): Promise<Buffer> {
     const [isi] = await (await ambilBucket()).file(key).download();
     return isi;
   }
-  return readFile(join(process.env.STORAGE_LOCAL_ROOT ?? '.storage', key));
+  // Driver lokal hanya untuk pengembangan; jangan biarkan pelacak build menyalin seluruh proyek.
+  return readFile(/*turbopackIgnore: true*/ join(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_ROOT ?? '.storage', key));
 }
