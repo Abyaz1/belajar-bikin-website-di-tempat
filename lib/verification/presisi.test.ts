@@ -146,8 +146,8 @@ describe("keputusan gerbang", () => {
     const labels = [ukur("a.jpg", { ramp_wheelchair: "no", step_count: "tidak_ada" })];
     const jawaban = [jawab("a.jpg", { ramp_wheelchair: "yes", step_count: "0" })];
     expect(sqlGerbang(hitungPresisi(labels, jawaban).per_atribut)).toEqual([
-      "update attribute_type set ai_suggestion_enabled = false where code = 'ramp_wheelchair';",
-      "update attribute_type set ai_suggestion_enabled = false where code = 'tactile_paving';",
+      "update attribute_type set ai_suggestable = false where code = 'ramp_wheelchair';",
+      "update attribute_type set ai_suggestable = false where code = 'tactile_paving';",
     ]);
   });
 });

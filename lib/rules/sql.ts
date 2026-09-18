@@ -1,5 +1,5 @@
 /**
- * Pembangkit isi data acuan dari reference.ts (label atribut + aturan profil). Hasilnya ditempel di migrasi
+ * Pembangkit INSERT data acuan dari reference.ts. Hasilnya ditempel di migrasi
  * db/migrations/*_verifikasi_referensi.sql, dan tes sql.test.ts memastikan
  * migrasi itu tidak pernah bergeser dari reference.ts.
  */
@@ -10,11 +10,20 @@ function lit(v: string | null): string {
   return v === null ? "null" : `'${v.replace(/'/g, "''")}'`;
 }
 
+function arr(values: string[]): string {
+  return `array[${values.map(lit).join(", ")}]::text[]`;
+}
+
 export function referenceInsertSql(): string {
   const baris: string[] = [];
 
-  // attribute_type sudah diisi migrasi Trust 001; di sini hanya label_id.
-  baris.push(...ATTRIBUTE_TYPES.map((a) => `update attribute_type set label_id = ${lit(a.label_id)} where code = ${lit(a.code)};`));
+  baris.push("insert into attribute_type (code, value_type, allowed_values, vantage, is_required_at_vantage, review_interval_days, ai_suggestable, label_id) values");
+  baris.push(
+    ATTRIBUTE_TYPES.map(
+      (a) =>
+        `  (${lit(a.code)}, ${lit(a.value_type)}, ${arr(a.allowed_values)}, ${lit(a.vantage)}, ${a.is_required_at_vantage}, ${a.review_interval_days}, ${a.ai_suggestable}, ${lit(a.label_id)})`,
+    ).join(",\n") + ";",
+  );
 
   baris.push("", "insert into profile_rule_group (id, profile_code, verdict, message_id, priority) values");
   baris.push(

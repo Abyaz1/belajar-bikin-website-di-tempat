@@ -219,7 +219,7 @@ export function hitungPresisi(labels: EntriLabel[], jawaban: JawabanModel[]): Ha
 export function sqlGerbang(per_atribut: HasilAtribut[]): string[] {
   return per_atribut
     .filter((h) => !h.lolos_gerbang)
-    .map((h) => `update attribute_type set ai_suggestion_enabled = false where code = '${h.attribute_code}';`);
+    .map((h) => `update attribute_type set ai_suggestable = false where code = '${h.attribute_code}';`);
 }
 
 const persen = (x: number | null) => (x === null ? "—" : `${(x * 100).toFixed(1).replace(".", ",")}%`);

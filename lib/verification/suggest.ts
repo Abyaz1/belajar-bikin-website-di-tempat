@@ -6,7 +6,7 @@ import "server-only";
  * `import("@/lib/verification/suggest")` dan memakai ekspor `port`.
  *
  * E4 memanggilnya HANYA setelah semua pemeriksaan keaslian lolos, dengan
- * atribut yang ai_suggestion_enabled-nya menyala di tabel. Yang kembali
+ * atribut yang ai_suggestable-nya menyala di tabel. Yang kembali
  * membawa confidence untuk disimpan E4 di draft_suggestion; E4 yang
  * membuangnya sebelum respons ke klien (aturan 5).
  *
@@ -16,7 +16,7 @@ import "server-only";
 
 import type { SuggestionPort } from "@/lib/trust/verification-port";
 import { isVantage } from "@/lib/ui/api/types";
-import { ATTRIBUTE_TYPES, nilaiSah } from "@/lib/rules/reference";
+import { ATTRIBUTE_TYPES } from "@/lib/rules/reference";
 import { MEASURED, suggestAttributes, type AttributeFlag, type ModelCaller } from "./core";
 import { vertexCaller } from "./vertex-caller";
 
@@ -31,7 +31,7 @@ export const port: SuggestionPort = {
     // yang terukur tidak pernah ditanyakan (penjaga di core.ts).
     const attributes: AttributeFlag[] = ATTRIBUTE_TYPES.filter(
       (a) => attributeCodes.includes(a.code) && (MEASURED as readonly string[]).includes(a.code),
-    ).map((a) => ({ attribute_code: a.code, ai_suggestion_enabled: true, allowed_values: nilaiSah(a) }));
+    ).map((a) => ({ attribute_code: a.code, ai_suggestable: true, allowed_values: a.allowed_values }));
 
     try {
       caller ??= vertexCaller({ project, location });

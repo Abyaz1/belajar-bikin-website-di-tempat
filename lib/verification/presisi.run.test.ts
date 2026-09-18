@@ -40,7 +40,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ATTRIBUTE_TYPES, nilaiSah } from "@/lib/rules/reference";
+import { ATTRIBUTE_TYPES } from "@/lib/rules/reference";
 import { verificationConfig } from "./config";
 import { MEASURED, PROMPT_VERSION, TIMEOUT_MS, suggestAttributes } from "./core";
 import {
@@ -61,8 +61,8 @@ const PARALEL = 3;
 /** Ketiga atribut terukur SELALU ditanyakan saat mengukur, apa pun status gerbangnya sekarang. */
 const ATRIBUT_UKUR = ATTRIBUTE_TYPES.filter((a) => (MEASURED as readonly string[]).includes(a.code)).map((a) => ({
   attribute_code: a.code,
-  ai_suggestion_enabled: true,
-  allowed_values: nilaiSah(a),
+  ai_suggestable: true,
+  allowed_values: a.allowed_values,
 }));
 
 async function sepertiKameraProduksi(berkas: string): Promise<Buffer> {
