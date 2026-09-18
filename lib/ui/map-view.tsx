@@ -29,10 +29,12 @@ export interface MapPlace {
   href: string;
 }
 
+// Warna sama dengan token penilaian di globals.css (Leaflet butuh nilai
+// literal di dalam SVG). Ubah keduanya bersamaan.
 const SHAPE: Record<Verdict, { fill: string; line: string; path: string }> = {
   tidak_dapat_diakses: {
-    fill: "#fcedec",
-    line: "#b3261e",
+    fill: "#fdefea",
+    line: "#b5452b",
     path: '<path d="M8.2 2.5h7.6l5.7 5.7v7.6l-5.7 5.7H8.2l-5.7-5.7V8.2z"/><path d="M7.5 12h9" stroke-width="3"/>',
   },
   dengan_catatan: {
@@ -54,7 +56,7 @@ const SHAPE: Record<Verdict, { fill: string; line: string; path: string }> = {
 
 function iconHtml(v: Verdict) {
   const s = SHAPE[v];
-  return `<svg viewBox="0 0 24 24" width="28" height="28" fill="${s.fill}" stroke="${s.line}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${s.path}</svg>`;
+  return `<svg viewBox="0 0 24 24" width="36" height="36" fill="${s.fill}" stroke="${s.line}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${s.path}</svg>`;
 }
 
 function escapeHtml(s: string) {
@@ -73,7 +75,10 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
       if (cancelled || !ref.current) return;
 
       map = L.map(ref.current, { scrollWheelZoom: false, zoomControl: false });
-      L.control.zoom({ zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" }).addTo(map);
+      // Kanan bawah: paling mudah dijangkau ibu jari. Ukurannya 48px (globals.css).
+      L.control
+        .zoom({ position: "bottomright", zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" })
+        .addTo(map);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">kontributor OpenStreetMap</a>',
@@ -83,7 +88,7 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
         L.marker([p.lat, p.lon], {
           keyboard: false,
           title: p.name,
-          icon: L.divIcon({ html: iconHtml(p.verdict), className: "", iconSize: [28, 28], iconAnchor: [14, 14] }),
+          icon: L.divIcon({ html: iconHtml(p.verdict), className: "", iconSize: [36, 36], iconAnchor: [18, 18] }),
         }).bindPopup(
           `<strong>${escapeHtml(p.name)}</strong><br>${escapeHtml(p.verdictText)}<br><a href="${escapeHtml(p.href)}">Buka laporan tempat</a>`,
         ),
