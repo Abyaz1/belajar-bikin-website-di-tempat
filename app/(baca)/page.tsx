@@ -83,10 +83,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </p>
         </div>
 
-        {/* Peta berlabuh di formulir: mulai setengah tinggi formulir dan
-            memanjang sampai akhir hero, di ukuran layar apa pun. */}
+        {/* Peta berlabuh di formulir: mulai di belakang judul (memudar ke atas
+            supaya teks tetap terbaca) dan memanjang sampai akhir hero, di
+            ukuran layar apa pun. */}
         <div className="relative mt-6 flex flex-1 flex-col md:mt-8">
-          <div className="absolute bottom-0 left-1/2 top-8 -z-10 w-screen -translate-x-1/2 [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]">
+          <div className="absolute bottom-0 left-1/2 -top-52 -z-10 w-screen -translate-x-1/2 md:-top-64 [mask-image:linear-gradient(to_bottom,transparent,black_28%,black_88%,transparent)]">
             <MapView
               latar
               label=""
