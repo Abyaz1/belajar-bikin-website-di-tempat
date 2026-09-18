@@ -3,8 +3,10 @@
 Tim: **belajar bikin website di tempat** · Hack Day IFEST 2026 · 18–19 September 2026
 Nama produk: **Astara** (satu sumber di `lib/ui/brand.ts`, jangan ditulis ulang di tempat lain)
 
-Berkas ini adalah padatan dari PRD v2.1 dan TRD v2.1 untuk dibaca asisten koding dan manusia.
-**Kalau isi berkas ini bentrok dengan `docs/00-KONTRAK.md`, yang menang `docs/00-KONTRAK.md`.**
+Berkas ini adalah kontrak bersama tim, dipadatkan dari dokumen kerja internal (PRD dan TRD
+v2.1, serta kontrak lengkap `docs/00-KONTRAK.md`) yang tidak di-commit. Dibaca asisten koding
+dan manusia. **Kalau isi berkas ini bentrok dengan kontrak lengkap, yang menang kontrak lengkap,
+dan perbedaannya dicatat di `PERUBAHAN.md`.**
 Kontrak dibekukan jam 10:00. Perubahan sesudahnya butuh persetujuan tiga engineer dan satu
 entri di `PERUBAHAN.md`.
 

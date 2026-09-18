@@ -31,6 +31,20 @@ Langkah demo singkat:
    lokasi lain, dan kirim ulang foto lama. Setiap penolakan menampilkan alasan dan
    nilai terukurnya.
 
+## Dokumen di repositori ini
+
+| Berkas | Isi |
+|---|---|
+| `PERUBAHAN.md` | Setiap perbedaan antara Exsum (proposal penyisihan) dan implementasi, dalam format empat bagian |
+| `CLAUDE.md` | Kontrak bersama tim: aturan yang tidak boleh dilanggar kode, kamus atribut, kode alasan penolakan, konfigurasi, dan endpoint. Rujukan "kontrak §…" di dokumen lain mengacu ke pasal di berkas ini |
+| `PROGRESS.md` | Keadaan di tiap checkpoint panitia, dengan angka dan cara mengukurnya |
+| `tools/metrics/testset/README.md` | Himpunan uji precision dan cara mengukurnya |
+
+Selama babak final, tim juga memakai dokumen kerja internal: PRD, TRD, dan
+spesifikasi per peran. Dokumen-dokumen itu tidak di-commit. Isi yang mengikat kode
+sudah dipadatkan di `CLAUDE.md`, dan setiap penyimpangan darinya dicatat di
+`PERUBAHAN.md` beserta alasannya.
+
 ## Prerequisite Project
 
 ### Perangkat lunak
@@ -56,24 +70,16 @@ Vertex AI. Tidak memakai component library; komponen UI ditulis sendiri di `lib/
   di [How to deploy](#how-to-deploy).
 - Instance Cloud SQL beserta database dan user-nya, serta satu bucket Cloud Storage.
 
-### Dependency opsional
+### Penyimpanan bukti
 
-`@google-cloud/storage` **tidak** ada di `package.json` dan tidak terpasang oleh
-`npm ci`. Paket itu hanya dibutuhkan ketika penyimpanan bukti dipindah ke Cloud
-Storage. Impornya dinamis, jadi selama `STORAGE_DRIVER=local` aplikasi berjalan
-normal tanpanya; `npm run build` hanya memunculkan satu peringatan
-`Module not found`, bukan galat.
+`@google-cloud/storage` ada di `dependencies` `package.json` dan ikut terpasang oleh
+`npm ci`. Paket itu dimuat dinamis dan hanya dipakai ketika `STORAGE_DRIVER=gcs`.
+Selama `STORAGE_DRIVER=local` (nilai bawaan untuk pengembangan), foto bukti
+disimpan di folder `.storage/` dan tidak dibutuhkan kredensial Cloud Storage.
 
-**Sebelum mengubah `STORAGE_DRIVER` menjadi `gcs`, paket itu wajib dipasang:**
-
-```bash
-npm install @google-cloud/storage
-```
-
-Tanpa itu, setiap unggahan bukti membalas HTTP 500 dengan pesan
-`STORAGE_DRIVER=gcs tetapi paket @google-cloud/storage belum terpasang`.
-Tidak ada baris `evidence` yang tertulis saat itu terjadi, jadi basis data tidak
-meninggalkan bukti separuh jadi.
+Di Cloud Run, `STORAGE_DRIVER=gcs` wajib, karena disk container hilang begitu
+container berhenti. Kalau bucket tidak bisa ditulis, unggahan bukti membalas HTTP 500
+sebelum baris `evidence` ditulis, jadi basis data tidak menyimpan bukti separuh jadi.
 
 ### Variabel lingkungan
 
@@ -257,6 +263,14 @@ terdekat pada kelompok kedua, dan rentang ambang yang memisahkan keduanya.
 Kalau celahnya sempit, sebut apa adanya sebagai batasan. Memilih satu angka di
 celah yang tidak memisahkan apa pun bukan kalibrasi.
 
+Tanpa mengumpulkan berkas foto, jarak yang sama bisa dihitung dari hash yang sudah
+disimpan server untuk kontribusi nyata (`evidence.phash`), setelah dua orang mengirim
+foto pintu yang sama lewat alur kontribusi:
+
+```bash
+npm run phash:dari-bukti
+```
+
 #### Kalau batas laju menyala saat latihan demo
 
 Satu sesi hanya boleh sepuluh kontribusi per jam, dan kontribusi yang ditolak
@@ -301,7 +315,7 @@ TRUST_RUN_SALT=1758170000000000000 pytest tests/rejection -v
 
 ### Ukur beban kontribusi
 
-Metrik docs-40 §3: kontribusi selesai di bawah 60 detik, lima percobaan.
+Metrik Exsum Lampiran 6 (Tabel L4): kontribusi selesai di bawah 60 detik per lokasi, lima percobaan.
 
 Tidak perlu stopwatch. Basis data sudah menyimpan jam server di tiap tahap, dan
 jam server tidak bisa salah tekan:
@@ -312,7 +326,7 @@ jam server tidak bisa salah tekan:
 | `evidence.server_received_at` | foto sampai di server, E4 selesai |
 | `min(observation.observed_at)` | kontributor menekan konfirmasi, E5 selesai |
 
-Jendela yang dihitung persis jendela yang dianggarkan docs-30 §4: pemantauan GPS
+Jendela yang dihitung persis jendela yang dianggarkan untuk alur kontribusi: pemantauan GPS
 dimulai saat layar titik pandang dibuka, jadi dari situlah waktu berjalan.
 `client_captured_at` sengaja tidak dipakai membelah tahap — itu jam klien dan
 bisa dinyatakan apa saja.
