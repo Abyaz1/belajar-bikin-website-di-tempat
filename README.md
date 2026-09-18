@@ -37,7 +37,6 @@ Langkah demo singkat:
 |---|---|
 | `PERUBAHAN.md` | Setiap perbedaan antara Exsum (proposal penyisihan) dan implementasi, dalam format empat bagian |
 | `CLAUDE.md` | Kontrak bersama tim: aturan yang tidak boleh dilanggar kode, kamus atribut, kode alasan penolakan, konfigurasi, dan endpoint. Rujukan "kontrak §…" di dokumen lain mengacu ke pasal di berkas ini |
-| `PROGRESS.md` | Keadaan di tiap checkpoint panitia, dengan angka dan cara mengukurnya |
 | `tools/metrics/testset/README.md` | Himpunan uji precision dan cara mengukurnya |
 
 Selama babak final, tim juga memakai dokumen kerja internal: PRD, TRD, dan
