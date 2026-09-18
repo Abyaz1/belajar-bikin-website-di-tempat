@@ -323,15 +323,23 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             </div>
             <div
               aria-hidden="true"
-              className="relative min-h-52 rounded-md [background-image:radial-gradient(var(--color-p2)_1.2px,transparent_1.2px)] [background-size:12px_12px]"
+              className="relative min-h-60 rounded-md [background-image:radial-gradient(var(--color-p2)_1.2px,transparent_1.2px)] [background-size:12px_12px]"
             >
+              {/* Tiga kartu menaik diagonal dari kiri bawah ke kanan atas.
+                  Kartu berikutnya selalu lebih tinggi dari label kartu di
+                  bawahnya (naik 2,75rem, cukup untuk label dua baris), jadi
+                  yang tertimpa hanya bagian gambar dan semua nama profil
+                  tetap terbaca. Lebar kartu tetap 7rem. */}
               {PROFILES.map((p, i) => {
                 const Ilustrasi = ILUSTRASI_PROFIL[p];
                 return (
                   <div
                     key={p}
                     className="absolute w-28 rounded-md border border-line bg-surface p-1"
-                    style={{ right: `${8 + i * 20}%`, top: `${6 + i * 10}%` }}
+                    style={{
+                      left: `calc((100% - 8rem) * ${i / 2} + 0.5rem)`,
+                      bottom: `${0.75 + i * 2.75}rem`,
+                    }}
                   >
                     <Ilustrasi className="w-full rounded-sm" />
                     <p className="px-1 pt-1 text-label">{PROFILE_TITLE[p]}</p>
