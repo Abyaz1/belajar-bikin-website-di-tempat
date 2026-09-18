@@ -87,7 +87,6 @@ Untuk menjalankannya tanpa Docker, salin aset statis ke sana, lalu jalankan
 `server.js`. Env dibaca dari shell.
 
 ```bash
-mkdir -p public
 cp -r public .next/standalone/
 cp -r .next/static .next/standalone/.next/
 set -a && . ./.env.local && set +a
