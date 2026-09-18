@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAnnounce } from "@/lib/ui/announcer";
 import { Button } from "@/lib/ui/button";
 import { CAMERA_PROBLEM, useCamera } from "@/lib/ui/camera";
+import type { CaptureLimits } from "@/lib/ui/capture-config";
 import { sniffMetadata, type MetadataReport } from "@/lib/ui/exif-sniff";
 import { GeoWatch, useGeo } from "@/lib/ui/geo";
 import { useIsClient } from "@/lib/ui/use-client";
@@ -18,9 +19,6 @@ interface Hasil {
   sw?: number;
   sh?: number;
 }
-
-/** Target 00-KONTRAK §7: sisi terpanjang tangkapan 1600 px. */
-const TARGET_SISI = 1600;
 
 async function ukuranBerkas(file: Blob): Promise<{ w: number; h: number }> {
   try {
@@ -40,7 +38,7 @@ interface Env {
   ua: string;
 }
 
-export function UjiKamera() {
+export function UjiKamera({ limits }: { limits: CaptureLimits }) {
   const isClient = useIsClient();
   const [a, setA] = useState<Hasil | null>(null);
   const [b, setB] = useState<Hasil | null>(null);
@@ -85,7 +83,7 @@ export function UjiKamera() {
         )}
       </section>
 
-      <CaraA onReport={setA} report={a} />
+      <CaraA onReport={setA} report={a} limits={limits} />
       <CaraB onReport={setB} report={b} />
 
       <section aria-labelledby="h-geo" className="space-y-3">
@@ -125,19 +123,29 @@ function line({ meta: r, w, h, sw, sh }: Hasil) {
 function CaraA({
   report,
   onReport,
+  limits,
 }: {
   report: Hasil | null;
   onReport: (r: Hasil) => void;
+  limits: CaptureLimits;
 }) {
-  const { videoRef, state, detail, start, capture } = useCamera();
+  const { videoRef, state, detail, start, capture } = useCamera(limits);
+  const TARGET_SISI = limits.maxEdgePx;
   const announce = useAnnounce();
   const [busy, setBusy] = useState(false);
+  // Berkas yang persis akan dikirim layar kamera produk — untuk uji Vertex
+  // (lib/verification/vertex.live.test.ts) dan untuk himpunan uji precision.
+  const [unduhan, setUnduhan] = useState<string | null>(null);
   const problem = CAMERA_PROBLEM[state];
 
   async function shoot() {
     setBusy(true);
     try {
       const shot = await capture();
+      setUnduhan((lama) => {
+        if (lama) URL.revokeObjectURL(lama);
+        return URL.createObjectURL(shot.blob);
+      });
       const r = await sniffMetadata(shot.blob);
       onReport({ meta: r, w: shot.width, h: shot.height, sw: shot.sourceWidth, sh: shot.sourceHeight });
       announce(
@@ -183,7 +191,14 @@ function CaraA({
           </Button>
         )}
       </div>
-      {report ? <ReportView report={report} /> : null}
+      {report ? <ReportView report={report} target={TARGET_SISI} /> : null}
+      {unduhan ? (
+        <p>
+          <a href={unduhan} download="kamera-produk.jpg" className="inline-flex min-h-11 items-center">
+            Unduh foto ini (JPEG persis seperti yang dikirim ke server)
+          </a>
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -228,7 +243,7 @@ function CaraB({
   );
 }
 
-function ReportView({ report: hasil }: { report: Hasil }) {
+function ReportView({ report: hasil, target: TARGET_SISI = 0 }: { report: Hasil; target?: number }) {
   const report = hasil.meta;
   const sisi = Math.max(hasil.w, hasil.h);
   return (

@@ -213,7 +213,11 @@ export interface SessionInfo {
 export interface Claimable {
   attribute_code: string;
   required: boolean;
+  /** Untuk enum sudah memuat not_visible; null untuk integer (pakai min/max). */
   allowed_values?: string[] | null;
+  value_type?: "integer" | "enum";
+  min_value?: number | null;
+  max_value?: number | null;
 }
 
 export interface CaptureSession {
@@ -259,7 +263,8 @@ export interface StateChange {
   attribute_code: string;
   label?: string;
   before: { current_value: string | null; is_disputed?: boolean } | null;
-  after: { current_value: string | null; is_disputed: boolean; corroboration_count: number };
+  /** null bila atributnya tidak membentuk state (E5 Trust: StateSnapshot | null). */
+  after: { current_value: string | null; is_disputed: boolean; corroboration_count: number } | null;
 }
 
 export type ConfirmResult =
