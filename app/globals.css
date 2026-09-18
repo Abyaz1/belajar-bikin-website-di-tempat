@@ -87,6 +87,19 @@
   --color-demo-bg: #fbf3d0;
 
   /* ── Tipografi: rem, TIDAK PERNAH px. Batas bawah mutlak 0,875rem ── */
+  /* Tiga ukuran pajangan (DESIGN.md: Hero, Display, Stat). Hero dan Display
+     mengalir mengikuti lebar layar di antara dua batas rem, jadi tetap ikut
+     membesar saat pengguna memperbesar huruf. */
+  --text-hero: clamp(2rem, 1.25rem + 3vw, 3.5rem);
+  --text-hero--line-height: 1.15;
+  --text-hero--letter-spacing: -0.025em;
+  --text-hero--font-weight: 700;
+  --text-display: clamp(2rem, 1.5rem + 1.5vw, 2.5rem);
+  --text-display--line-height: 1.2;
+  --text-display--font-weight: 700;
+  --text-stat: 2.5rem;
+  --text-stat--line-height: 1;
+  --text-stat--font-weight: 700;
   --text-screen: 1.75rem;
   --text-screen--line-height: 1.25;
   --text-screen--font-weight: 700;
@@ -408,7 +421,7 @@
   block-size: 2.75rem;
   display: grid;
   place-items: center;
-  font-size: 1.5rem;
+  font-size: var(--text-section);
   color: var(--color-ink-muted);
 }
 .leaflet-container .leaflet-popup .leaflet-popup-content {

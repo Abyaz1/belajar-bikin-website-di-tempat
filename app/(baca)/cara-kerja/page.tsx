@@ -12,7 +12,7 @@ export default function Page() {
     <div className="max-w-3xl space-y-10">
       <LatarDoodle />
       <section className="space-y-4">
-        <h1 className="text-[2.25rem] leading-tight font-bold">Cara kerja Astara</h1>
+        <h1 className="text-display">Cara kerja Astara</h1>
         <p className="text-card font-normal">
           Astara mencatat kondisi fisik pintu masuk, lift, dan toilet fasilitas publik. Setiap catatan membawa foto,
           tanggal foto diambil, dan hasil pemeriksaan keasliannya.

@@ -93,7 +93,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
       <section className="relative isolate flex min-h-[calc(100dvh-8rem)] flex-col">
         <div className="relative z-10 mx-auto max-w-3xl space-y-4 px-2 pt-2 text-center md:space-y-6 md:px-4 md:pt-10">
 
-          <h1 style={{ "--i": 0 } as CSSProperties} className="masuk text-[2rem] leading-[1.15] font-bold tracking-tight text-ink sm:text-[2.5rem] md:text-[3.5rem]">
+          <h1 style={{ "--i": 0 } as CSSProperties} className="masuk text-hero text-ink">
             Periksa kondisi tempat sebelum berangkat
           </h1>
 
@@ -264,7 +264,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           { angka: "3", label: "Profil kebutuhan" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-center gap-3">
-            <span className="text-[2.5rem] leading-none font-bold text-ink">{s.angka}</span>
+            <span className="text-stat text-ink">{s.angka}</span>
             <span className="max-w-[8rem] text-label font-normal text-ink-muted uppercase">{s.label}</span>
           </div>
         ))}
@@ -274,7 +274,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
       {/* ── Kenapa Astara ── */}
       <section aria-labelledby="kenapa" className="grid gap-10 md:grid-cols-[2fr_3fr] md:gap-12">
         <div className="flex flex-col gap-6">
-          <h2 id="kenapa" className="text-[2rem] leading-tight font-bold text-ink md:text-[2.5rem]">
+          <h2 id="kenapa" className="text-display text-ink">
             Fakta berbukti di balik setiap penilaian
           </h2>
           <div className="mt-auto space-y-6">
