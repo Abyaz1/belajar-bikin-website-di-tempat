@@ -8,7 +8,14 @@
  * mengubah satu baris pun di engine.ts.
  */
 
-import type { AttributeType, MinimumAttribute, RuleCondition, RuleGroup } from "./types";
+import type { AttributeType, MinimumAttribute, ProfileCode, RuleCondition, RuleGroup } from "./types";
+
+/** Nama profil untuk ditampilkan (E6). Urutan kunci = urutan tampil. */
+export const PROFILE_LABELS: Record<ProfileCode, string> = {
+  kursi_roda_manual: "Kursi roda manual",
+  alat_bantu_jalan: "Alat bantu jalan",
+  netra: "Netra",
+};
 
 const ANGKA_0_SAMPAI_20 = Array.from({ length: 21 }, (_, i) => String(i));
 
