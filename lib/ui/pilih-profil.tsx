@@ -15,7 +15,7 @@ const ARTI: Record<Verdict, string> = {
   tidak_dapat_diakses: "Ada hambatan tercatat untuk profil ini, misalnya anak tangga tanpa ramp.",
   dengan_catatan: "Bisa dimasuki, tetapi ada kondisi yang perlu diperhatikan.",
   dapat_diakses: "Kondisi penting untuk profil ini sudah diperiksa dan tidak ada hambatan.",
-  belum_dapat_dipastikan: "Kondisi penting belum diperiksa. Kami tidak menebak.",
+  belum_dapat_dipastikan: "Kondisi penting untuk profil ini belum diperiksa, jadi belum ada penilaian.",
 };
 
 /** Urutan legenda: dari yang terbaik ke hambatan; "belum" dipisah di bawahnya. */
@@ -78,11 +78,17 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
             </div>
           ))}
         </dl>
-        <dl className="grid gap-2 lg:grid-cols-[27rem_1fr] lg:items-center lg:gap-8">
+        {/* Puncak legenda: kejujuran "belum tahu" adalah janji inti produk,
+            jadi ditaruh di Kertas Arsip, bidang yang sama dengan pernyataan
+            "Kami tidak menebak" di halaman Cara kerja. */}
+        <dl className="grid gap-3 rounded-md bg-accent p-5 md:p-6 lg:grid-cols-[calc(27rem-1.5rem)_1fr] lg:items-center lg:gap-8">
           <dt>
             <VerdictBadge verdict="belum_dapat_dipastikan" profile={CONTOH} />
           </dt>
-          <dd className="text-ink-muted">{ARTI.belum_dapat_dipastikan}</dd>
+          <dd className="space-y-1">
+            <p className="text-card font-bold text-ink">Kami tidak menebak.</p>
+            <p className="text-ink">{ARTI.belum_dapat_dipastikan}</p>
+          </dd>
         </dl>
         <p className="text-meta">
           Aturan lengkap tiap profil ada di <Link href="/profil">aturan penilaian</Link>.
