@@ -13,9 +13,9 @@ import { ILUSTRASI_PROFIL } from "./ilustrasi";
 
 const ARTI: Record<Verdict, string> = {
   tidak_dapat_diakses: "Ada hambatan tercatat untuk profil ini, misalnya anak tangga tanpa ramp.",
-  dengan_catatan: "Bisa dimasuki, tetapi ada kondisi yang perlu diperhatikan.",
-  dapat_diakses: "Kondisi penting untuk profil ini sudah diperiksa dan tidak ada hambatan.",
-  belum_dapat_dipastikan: "Kondisi penting untuk profil ini belum diperiksa, jadi belum ada penilaian.",
+  dengan_catatan: "Tidak ada hambatan tercatat, tetapi ada kondisi yang perlu diperhatikan, misalnya permukaan rusak.",
+  dapat_diakses: "Semua kondisi yang dinilai untuk profil ini sudah diperiksa, dan tidak ada hambatan tercatat.",
+  belum_dapat_dipastikan: "Sebagian kondisi yang dinilai untuk profil ini belum diperiksa, jadi hasilnya belum bisa disimpulkan.",
 };
 
 /** Urutan legenda: dari yang terbaik ke hambatan; "belum" dipisah di bawahnya. */
@@ -66,7 +66,9 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
           <h2 id="judul-arti" className="text-section">
             Cara membaca penilaian
           </h2>
-          <p className="text-ink-muted">Contoh berikut untuk profil kursi roda manual.</p>
+          <p className="text-ink-muted">
+            Label yang sama muncul di setiap tempat pada daftar. Contoh di bawah untuk profil kursi roda manual.
+          </p>
         </div>
         <dl className="divide-y divide-line border-y border-line">
           {TIGA_PENILAIAN.map((v) => (
@@ -90,9 +92,12 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
             <p className="text-ink">{ARTI.belum_dapat_dipastikan}</p>
           </dd>
         </dl>
-        <p className="text-meta">
-          Aturan lengkap tiap profil ada di <Link href="/profil">aturan penilaian</Link>.
-        </p>
+        <Link
+          href="/profil"
+          className="inline-flex min-h-12 items-center gap-2 rounded-pill border-2 border-line-control bg-surface px-5 font-semibold text-ink no-underline hover:border-brand hover:bg-surface-alt"
+        >
+          Lihat aturan tiap profil <span aria-hidden="true">›</span>
+        </Link>
       </section>
     </div>
   );
