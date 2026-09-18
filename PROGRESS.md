@@ -129,6 +129,24 @@ Dan `corroboration_count` di mesin status tidak memakai pHash sama sekali; dia
 menghitung `contributor_id` berbeda dengan nilai sama. Penguatan sebagai fitur
 produk tetap hidup. Yang mati hanya satu cabang penandaan di audit.
 
+Alasan paling menentukan untuk tidak melebarkannya datang dari kodenya sendiri.
+Di dalam pita, classifyDuplicate mengembalikan `flag` HANYA untuk kombinasi
+"kontributor beda + tempat dan vantage sama"; semua kombinasi lain berujung
+`fail`. Jadi melebarkan pita dari 6 ke 18 tidak cuma menyalakan penandaan, dia
+juga membuat dua kelas kontribusi sah jadi ditolak: kontributor yang sama
+memotret pintu yang sama dua kali — menyumbang ulang setelah renovasi, misalnya —
+jatuh di sekitar 14 dan langsung `fail`; dan tempat berbeda yang kebetulan di
+bawah 18 juga `fail`, padahal sisa ruang ke lantai pintu-berbeda cuma 6 dan itu
+baru dari 66 pasangan. Menukar satu penandaan di audit dengan dua kelas penolakan
+salah adalah pertukaran yang merugikan.
+
+Lagipula penguatan sebagai fitur produk tidak bergantung pada penandaan itu.
+`corroboration_count` menghitung `contributor_id` berbeda yang nilainya sama —
+lebih tepat daripada kemiripan citra, karena yang menguatkan sebuah fakta adalah
+dua orang menyatakan hal yang sama, bukan dua foto yang mirip. Pita pHash itu
+sedari awal jalur kedua untuk sesuatu yang sudah punya jalur pertama yang lebih
+baik. Yang hilang karena ia tidak terjangkau, karena itu, kecil.
+
 Skrip kalibrasinya sendiri sempat menutupi ini: dia hanya menganggap hasil `fail`
 sebagai masalah, sehingga pasangan yang terlewat (`none`) dilaporkan sebagai
 "semua masuk pita penguatan" sambil memperlihatkan sisa ruang negatif. Sudah
