@@ -287,15 +287,23 @@ SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/ifest/ifest"
 ```
 
-**2. Simpan password database di Secret Manager** (sekali per project)
+**2. Simpan rahasia di Secret Manager** (sekali per project)
 
-Password diketik tanpa tampil di layar dan langsung dikirim ke Secret Manager, tanpa
-lewat file:
+Dua rahasia wajib ada sebelum deploy pertama. Keduanya tidak lewat file dan tidak
+tercetak di layar:
+
+- `db-password`: password `DB_USER`. `DB_USER` harus peran aplikasi (`app_rw`),
+  bukan superuser, karena penegakan append-only jejak audit bersandar pada RLS.
+- `session-secret`: kunci penandatangan cookie sesi anonim, minimal 32 karakter.
+  Tanpa ini E7 melempar galat di request pertama dan seluruh alur kontribusi mati.
 
 ```bash
 read -rsp "DB password: " P && printf '%s' "$P" | gcloud secrets create db-password --data-file=- && unset P
-gcloud secrets add-iam-policy-binding db-password \
-  --member "serviceAccount:$SA" --role roles/secretmanager.secretAccessor
+openssl rand -base64 48 | tr -d '\n' | gcloud secrets create session-secret --data-file=-
+for s in db-password session-secret; do
+  gcloud secrets add-iam-policy-binding "$s" \
+    --member "serviceAccount:$SA" --role roles/secretmanager.secretAccessor
+done
 ```
 
 **3. Build dan deploy** (ulangi setiap kali rilis)
@@ -307,9 +315,14 @@ gcloud run deploy ifest \
   --region "$GCP_REGION" \
   --service-account "$SA" \
   --allow-unauthenticated \
-  --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,GCS_BUCKET=$GCS_BUCKET" \
-  --set-secrets "DB_PASSWORD=db-password:latest"
+  --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,STORAGE_DRIVER=gcs,GCS_BUCKET=$GCS_BUCKET" \
+  --set-secrets "DB_PASSWORD=db-password:latest,SESSION_SECRET=session-secret:latest"
 ```
+
+`STORAGE_DRIVER=gcs` wajib. Nilai bawaannya `local`, yang di Cloud Run menulis foto
+bukti ke disk container dan hilang begitu container berhenti. `DATABASE_URL`
+sengaja tidak dikirim: tanpa variabel itu seluruh aplikasi memakai satu pool lewat
+Cloud SQL Connector.
 
 Deploy pertama membuat layanan `ifest`. Setelah selesai, `gcloud` menampilkan URL
 HTTPS layanan.
