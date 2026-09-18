@@ -1,0 +1,53 @@
+# LEMBAR ISIAN LABEL — himpunan uji precision
+#
+# Isi tiga kolom kode. Titik (.) artinya belum diisi.
+#
+#   tangga  : A = ada anak tangga   T = tidak ada (rata)   ? = tidak terlihat
+#   ramp    : Y = ada ramp          N = tidak ada          ? = tidak terlihat
+#   tactile : Y = ada ubin pemandu  N = tidak ada          ? = tidak terlihat
+#
+# RAGU = ?  Nilai ? dikeluarkan dari hitungan precision dan dilaporkan
+# terpisah sebagai cakupan, jadi tidak menurunkan angka. Menebak menurunkan.
+#
+# Baris yang masih ada titiknya akan DIKELUARKAN dari pengukuran, bukan bikin
+# gagal. Jadi isi sebanyak yang sempat saja; 20 citra sudah cukup.
+#
+# pelabel: ____________________   <- isi namamu di sini
+
+# berkas          tangga  ramp  tactile
+layak-01.jpg        A      Y       .   
+layak-02.jpg        .      .       .   
+layak-03.jpg        .      .       .   
+layak-04.jpg        .      .       .   
+layak-05.jpg        .      .       .   
+kurang-01.jpg       A      .       .   
+kurang-02.jpg       A      Y       .   
+kurang-03.jpg       .      .       .   
+kurang-04.jpg       A      .       .   
+kurang-05.jpg       A      .       .   
+kurang-06.jpg       .      .       .   
+kurang-07.jpg       .      .       .   
+kurang-08.jpg       .      .       .   
+kurang-09.jpg       .      .       .   
+kurang-10.jpg       .      .       .   
+kurang-11.jpg       .      .       .   
+kurang-12.jpg       .      .       .   
+kurang-13.jpg       .      .       .   
+kurang-14.jpg       .      .       .   
+kurang-15.jpg       .      .       .   
+kurang-16.jpg       .      .       .   
+kurang-17.jpg       .      .       .   
+kurang-18.jpg       .      .       .   
+kurang-19.jpg       .      .       .   
+tidak-01.jpg        A      .       .   
+tidak-02.jpg        A      .       .   
+tidak-03.jpg        A      .       .   
+tidak-04.jpg        A      .       .   
+tidak-05.jpg        A      .       .   
+tidak-06.jpg        .      .       .   
+tidak-07.jpg        .      .       .   
+tidak-08.jpg        .      .       .   
+tidak-09.jpg        .      .       .   
+tidak-10.jpg        .      .       .   
+tidak-11.jpg        .      .       .   
+tidak-12.jpg        .      .       .   
