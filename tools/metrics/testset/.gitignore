@@ -1,0 +1,6 @@
+# Citra uji adalah foto nyata dan tidak ikut ter-commit.
+# labels.json ikut, supaya pemisahan dan pelabelnya terlacak.
+*.jpg
+*.jpeg
+*.png
+hasil/
