@@ -46,22 +46,24 @@ export class RequestFailed extends Error {
 
 const NETWORK: RequestFailed = new RequestFailed(0, null);
 
-/**
- * E7 lalu E8. E8 tanpa sesi menjawab 400 SESSION_REQUIRED, jadi sesi dibuat
- * lebih dulu. E7 milik Trust idempoten: cookie sesi yang sah dipakai lagi,
- * sehingga memanggilnya setiap kali tidak membuat kontributor baru dan tidak
- * mengelabui hitungan penguat maupun rate limit C1.
- */
+/** E8, dengan E7 hanya bila belum ada sesi (server menjawab 401/403). Memanggil
+ *  E7 setiap kali akan membuat kontributor baru dan merusak rate limit C1. */
 export async function openCaptureSession(placeId: string, vantage: Vantage): Promise<CaptureSession> {
-  let res: Response;
-  try {
-    const s = await call("/api/session", { method: "POST" });
-    if (!s.ok) throw new RequestFailed(s.status, await errorBody(s));
-    res = await call("/api/capture-sessions", {
+  const request = () =>
+    call("/api/capture-sessions", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ place_id: placeId, vantage }),
     });
+  let res: Response;
+  try {
+    res = await request();
+    // Belum ada sesi: buat kontributor anonim (E7), lalu ulangi E8 sekali.
+    if (res.status === 401 || res.status === 403) {
+      const s = await call("/api/session", { method: "POST" });
+      if (!s.ok) throw new RequestFailed(s.status, await errorBody(s));
+      res = await request();
+    }
   } catch (e) {
     if (e instanceof RequestFailed) throw e;
     throw NETWORK;

@@ -1,5 +1,5 @@
 -- =====================================================================
--- 002_trust_functions.sql — padanan SQL untuk C7 dan C8
+-- 202609181301_trust_fungsi.sql — padanan SQL untuk C7 dan C8
 -- =====================================================================
 
 BEGIN;
@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION trust_phash_candidates(
   evidence_id    uuid,
   phash          text,
   place_id       uuid,
-  vantage        vantage_kind,
+  vantage        vantage,
   contributor_id uuid,
   hamming        integer
 )

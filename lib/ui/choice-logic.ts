@@ -23,9 +23,7 @@ export const STEP_MORE = "lebih";
 export function optionsFor(code: string, allowed?: string[] | null): ChoiceOption[] {
   let values: string[];
   if (code === "step_count") values = ["0", "1", "2", "3", STEP_MORE];
-  // E4/E8 sudah menambahkan not_visible ke allowed_values; opsinya ditambah
-  // sekali di bawah, jadi dibuang dulu dari sini.
-  else values = (allowed && allowed.length > 0 ? allowed : (ATTRIBUTE[code]?.values ?? [])).filter((v) => v !== NOT_VISIBLE);
+  else values = allowed && allowed.length > 0 ? allowed : (ATTRIBUTE[code]?.values ?? []);
   return [
     ...values.map((v) => ({
       value: v,

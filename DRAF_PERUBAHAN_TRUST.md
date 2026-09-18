@@ -31,7 +31,7 @@ Satu kolom itu dipecah jadi dua. `claimed_capture_token` menyimpan token persis
 sebagaimana dikirim klien: `NOT NULL`, tanpa foreign key, tanpa `UNIQUE`.
 `capture_session_token` berupa foreign key `UNIQUE` yang boleh `NULL`, dan
 hanya terisi ketika C0 berhasil mencocokkan token itu ke sesi penangkapan yang
-sah. Perubahannya ada di `db/migrations/003_trust_fixups.sql`.
+sah. Perubahannya ada di `db/migrations/202609181302_trust_perbaikan.sql`.
 
 **Alasan perubahan.**
 Rancangan semula tidak bisa dijalankan. Penyebab paling umum C0 gagal adalah
@@ -67,7 +67,7 @@ menurunkan `was_corrected` dari perbandingan keduanya terhadap
 Ditambahkan tabel `draft_suggestion` (`evidence_id`, `attribute_code`,
 `ai_suggested_value`, `ai_confidence`), bersifat append-only, ditulis oleh E4
 segera setelah model menjawab dan dibaca oleh E5 saat membentuk `observation`.
-Ada di `db/migrations/004_draft_suggestion.sql`.
+Ada di `db/migrations/202609181303_trust_draft_suggestion.sql`.
 
 **Alasan perubahan.**
 Tanpa tabel ini, server tidak punya cara mengingat apa yang diusulkan model di
@@ -97,7 +97,7 @@ di-`UPDATE` dan di-`DELETE`.
 **Hal yang diubah.**
 `observation` diberi Row Level Security tanpa policy `UPDATE` maupun `DELETE`,
 ditambah trigger penolak mutasi dan pencabutan hak di level `GRANT`. Tiga
-lapis, di `db/migrations/001_trust_schema.sql` §10.3. Konsekuensinya, satu-satunya
+lapis, di `db/migrations/202609181300_trust_skema.sql` §10.3. Konsekuensinya, satu-satunya
 cara mengubah nilai yang sudah dikonfirmasi adalah lewat kontribusi baru.
 
 **Alasan perubahan.**
@@ -128,7 +128,7 @@ keterangan "true kalau confirmed ≠ suggested".
 **Hal yang diubah.**
 Menjadi `GENERATED ALWAYS AS (ai_suggested_value IS NOT NULL AND confirmed_value
 IS DISTINCT FROM ai_suggested_value) STORED`. Ada di
-`db/migrations/001_trust_schema.sql` §7.
+`db/migrations/202609181300_trust_skema.sql` §7.
 
 **Alasan perubahan.**
 Rumus di TRD ambigu untuk kasus yang justru paling sering terjadi: lima dari

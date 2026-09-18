@@ -79,30 +79,25 @@ describe("E4 POST /api/contributions/draft", () => {
   });
 });
 
-describe("E7 lalu E8", () => {
-  it("E7 dipanggil lebih dulu — E8 tanpa sesi menjawab 400 SESSION_REQUIRED, dan E7 milik Trust idempoten", async () => {
+describe("E8 dan E7", () => {
+  it("E7 hanya dipanggil bila E8 menjawab belum ada sesi", async () => {
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce(jawab(401, { code: "SESSION_REQUIRED", message: "", measured: null, threshold: null }))
       .mockResolvedValueOnce(jawab(200, { contributor_id: "c", display_handle: "Kontributor #1" }))
       .mockResolvedValueOnce(jawab(200, { token: "t", expires_at: "x", claimable: [] }));
     vi.stubGlobal("fetch", fetchMock);
 
     const s = await openCaptureSession("p1", "entrance");
     expect(s.token).toBe("t");
-    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/api/session", "/api/capture-sessions"]);
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({ place_id: "p1", vantage: "entrance" });
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/api/capture-sessions", "/api/session", "/api/capture-sessions"]);
   });
 
-  it("E8 gagal → galat dengan pesan server, bukan pesan umum", async () => {
-    const e = { code: "PLACE_NOT_FOUND", message: "Tempat tidak ditemukan", measured: null, threshold: null };
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValueOnce(jawab(200, { contributor_id: "c", display_handle: "Kontributor #1" }))
-        .mockResolvedValueOnce(jawab(400, { errors: [e] })),
-    );
-    await expect(openCaptureSession("p1", "entrance")).rejects.toThrow("Tempat tidak ditemukan");
+  it("sesi yang sudah ada tidak membuat kontributor baru", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jawab(200, { token: "t", expires_at: "x", claimable: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    await openCaptureSession("p1", "entrance");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

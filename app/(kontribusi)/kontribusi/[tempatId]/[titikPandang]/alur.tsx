@@ -28,7 +28,6 @@ import {
 import { useAnnounce } from "@/lib/ui/announcer";
 import { Button, ButtonLink } from "@/lib/ui/button";
 import { CAMERA_PROBLEM, useCamera, type Capture } from "@/lib/ui/camera";
-import type { CaptureLimits } from "@/lib/ui/capture-config";
 import { ChecksTable, FlagNotice, RejectionView } from "@/lib/ui/checks";
 import { AttributeChoice, EMPTY_CHOICE, optionsFor, resolveChoice, type ChoiceValue } from "@/lib/ui/choice";
 import {
@@ -63,17 +62,15 @@ export function Alur({
   vantage,
   placeHref,
   vantageHref,
-  limits,
 }: {
   place: { id: string; name: string; lat: number; lon: number };
   vantage: Vantage;
   placeHref: string;
   vantageHref: string;
-  limits: CaptureLimits;
 }) {
   const geo = useGeo();
   const announce = useAnnounce();
-  const { videoRef, state: cameraState, detail: cameraDetail, start, stop, capture } = useCamera(limits);
+  const { videoRef, state: cameraState, detail: cameraDetail, start, stop, capture } = useCamera();
   const [step, setStep] = useState<Step>({ name: "membuka" });
   const heading = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
@@ -475,10 +472,9 @@ function Konfirmasi({
                   });
               }}
               suggestion={s}
-              // E4 memberi active=false baik untuk atribut yang memang tidak pernah
-              // diusulkan maupun saat model tidak menjawab — tidak ada catatan
-              // per atribut yang bisa jujur membedakan keduanya.
-              modelNote={null}
+              modelNote={
+                s && !s.active ? "Usulan sistem dimatikan untuk kondisi ini karena ketepatannya belum lolos ambang." : null
+              }
               error={errors[code] ?? null}
             />
           );
@@ -535,8 +531,7 @@ function Ringkasan({
 
       {step.changes.length > 0 ? (
         <ul className="space-y-3">
-          {step.changes.flatMap((c) => {
-            if (!c.after) return [];
+          {step.changes.map((c) => {
             const before = c.before?.current_value ?? null;
             const after = c.after.current_value;
             const kind = before === null ? "baru" : before === after ? "sama" : "berbeda";
@@ -548,11 +543,11 @@ function Ringkasan({
                   {kind === "baru"
                     ? "Baru tercatat — sebelumnya belum ada bukti."
                     : kind === "sama"
-                      ? (c.after?.corroboration_count ?? 0) > 1
-                        ? `Menguatkan nilai yang sama. Sekarang dikuatkan ${c.after?.corroboration_count} kontributor berbeda.`
+                      ? c.after.corroboration_count > 1
+                        ? `Menguatkan nilai yang sama. Sekarang dikuatkan ${c.after.corroboration_count} kontributor berbeda.`
                         : "Sama dengan nilai yang sudah tercatat."
                       : `Berbeda dari catatan sebelumnya (${valueOption(c.attribute_code, before).toLowerCase()}). ${
-                          c.after?.is_disputed ? "Kondisi ini ditandai bersengketa, dan keduanya tetap ditampilkan." : ""
+                          c.after.is_disputed ? "Kondisi ini ditandai bersengketa, dan keduanya tetap ditampilkan." : ""
                         }`}
                 </p>
               </li>
