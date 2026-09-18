@@ -93,6 +93,33 @@ describe("E8 dan E7", () => {
     expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/api/capture-sessions", "/api/session", "/api/capture-sessions"]);
   });
 
+  it("E7 tetap dipanggil walau server menjawab 400, bukan 401", async () => {
+    // Bentuk ini disalin dari jawaban produksi yang sebenarnya: status 400,
+    // badan dibungkus { errors: [...] }. Uji di atas memalsukan 401 dan karena
+    // itu lolos sementara alur kontribusi di peramban bersih mati total --
+    // pengunjung baru tidak pernah bisa membuka sesi kamera.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jawab(400, { errors: [{ code: "SESSION_REQUIRED", message: "Mulai sesi dulu sebelum mengambil foto", measured: null, threshold: null }] }))
+      .mockResolvedValueOnce(jawab(200, { contributor_id: "c", display_handle: "Kontributor #1" }))
+      .mockResolvedValueOnce(jawab(200, { token: "t", expires_at: "x", claimable: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const s = await openCaptureSession("p1", "entrance");
+    expect(s.token).toBe("t");
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/api/capture-sessions", "/api/session", "/api/capture-sessions"]);
+  });
+
+  it("galat 400 yang BUKAN soal sesi tidak memicu E7", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jawab(400, { code: "VANTAGE_INVALID", message: "", measured: null, threshold: null }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(openCaptureSession("p1", "entrance")).rejects.toMatchObject({ status: 400 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("sesi yang sudah ada tidak membuat kontributor baru", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jawab(200, { token: "t", expires_at: "x", claimable: [] }));
     vi.stubGlobal("fetch", fetchMock);

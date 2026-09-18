@@ -19,7 +19,7 @@ type HasilFoto = {
 
 type FotoSesi = { label: string; hash: string };
 
-type Fix = { akurasi: number; lat: number; lon: number; waktu: number };
+type Fix = { akurasi: number; lat: number; lon: number; waktu: number; rendah: boolean };
 
 const tidakBerlangganan = () => () => {};
 
@@ -161,6 +161,7 @@ export function UjiKamera() {
   const [fixes, setFixes] = useState<Fix[]>([]);
   const [fixPertamaMs, setFixPertamaMs] = useState<number | null>(null);
   const [galatGps, setGalatGps] = useState<string | null>(null);
+  const [turunKeRendah, setTurunKeRendah] = useState(false);
   const [detik, setDetik] = useState(0);
 
   const [pengumuman, setPengumuman] = useState("");
@@ -179,22 +180,55 @@ export function UjiKamera() {
   useEffect(() => {
     if (!memantau) return;
     const mulai = performance.now();
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
-        setFixPertamaMs((p) => p ?? Math.round(performance.now() - mulai));
-        setFixes((f) => [
-          ...f,
-          {
-            akurasi: pos.coords.accuracy,
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude,
-            waktu: pos.timestamp,
-          },
-        ]);
-      },
-      (e) => setGalatGps(`${namaGalatGps[e.code] ?? "galat"}: ${e.message}`),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
-    );
+    let adaFix = false;
+    let sudahTurun = false;
+    let id = 0;
+
+    setTurunKeRendah(false);
+
+    const terima = (rendah: boolean) => (pos: GeolocationPosition) => {
+      adaFix = true;
+      setFixPertamaMs((p) => p ?? Math.round(performance.now() - mulai));
+      setFixes((f) => [
+        ...f,
+        {
+          akurasi: pos.coords.accuracy,
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          waktu: pos.timestamp,
+          rendah,
+        },
+      ]);
+    };
+
+    // Cermin dari lib/ui/geo.tsx: kalau percobaan akurasi tinggi kehabisan waktu
+    // tanpa satu pun fix, turun ke akurasi rendah TANPA batas waktu dan terus
+    // memantau. Tanpa ini halaman diagnostik lebih ketat daripada alur
+    // kontribusi yang seharusnya diwakilinya, dan melaporkan "0 fix" untuk
+    // keadaan yang sebetulnya berhasil di alur sungguhan — persis yang terjadi
+    // pada uji perangkat pertama 18 September.
+    const galat = (e: GeolocationPositionError) => {
+      if (e.code === e.TIMEOUT && !adaFix && !sudahTurun) {
+        sudahTurun = true;
+        setTurunKeRendah(true);
+        setGalatGps(null);
+        navigator.geolocation.clearWatch(id);
+        id = navigator.geolocation.watchPosition(terima(true), galat, {
+          enableHighAccuracy: false,
+          maximumAge: 0,
+        });
+        return;
+      }
+      // Timeout sesudah ada fix diabaikan: pantauan tetap berjalan.
+      if (e.code === e.TIMEOUT && adaFix) return;
+      setGalatGps(`${namaGalatGps[e.code] ?? "galat"}: ${e.message}`);
+    };
+
+    id = navigator.geolocation.watchPosition(terima(false), galat, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 20000,
+    });
     const jam = setInterval(() => setDetik(Date.now()), 1000);
     return () => {
       navigator.geolocation.clearWatch(id);
@@ -375,6 +409,13 @@ export function UjiKamera() {
 
       <section className="space-y-3" aria-labelledby="judul-gps">
         <h2 id="judul-gps" className="text-xl font-bold">3. Akurasi lokasi</h2>
+        <p>
+          Dua tahap, sama persis dengan alur kontribusi: akurasi tinggi dulu selama 20 detik, dan
+          kalau tidak ada satu pun fix, turun sendiri ke akurasi rendah tanpa batas waktu. Tahap
+          kedua memakai WiFi dan menara seluler, jadi ia bekerja di dalam gedung ketika GPS satelit
+          tidak dapat apa-apa — nyalakan WiFi walau tidak tersambung ke jaringan mana pun. Kontrak
+          §7: akurasi di atas 150 m ditolak C6, dan radius efektif C7 adalah min(75 + akurasi, 120).
+        </p>
         <div className="flex flex-wrap gap-2">
           <button type="button" className={kelasTombol} onClick={mulaiPantau} disabled={memantau}>
             Mulai pantau
@@ -394,6 +435,12 @@ export function UjiKamera() {
           <dd>{terbaik === null ? "-" : `${Math.round(terbaik)} m`}</dd>
           <dt>Umur fix terakhir</dt>
           <dd>{umurFix === null ? "-" : `${umurFix} detik`}</dd>
+          <dt>Mode pemantauan</dt>
+          <dd>
+            {turunKeRendah
+              ? "akurasi rendah — turun sendiri setelah 20 detik tanpa fix"
+              : "akurasi tinggi"}
+          </dd>
           <dt>Koordinat terakhir</dt>
           <dd>{terakhir ? `${terakhir.lat.toFixed(5)}, ${terakhir.lon.toFixed(5)}` : "-"}</dd>
         </dl>

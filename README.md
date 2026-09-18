@@ -299,6 +299,46 @@ garamnya — nilainya dicetak di kepala keluaran pytest:
 TRUST_RUN_SALT=1758170000000000000 pytest tests/rejection -v
 ```
 
+### Ukur beban kontribusi
+
+Metrik docs-40 §3: kontribusi selesai di bawah 60 detik, lima percobaan.
+
+Tidak perlu stopwatch. Basis data sudah menyimpan jam server di tiap tahap, dan
+jam server tidak bisa salah tekan:
+
+| stempel | artinya |
+|---|---|
+| `capture_session.issued_at` | layar titik pandang dibuka, E8 dipanggil |
+| `evidence.server_received_at` | foto sampai di server, E4 selesai |
+| `min(observation.observed_at)` | kontributor menekan konfirmasi, E5 selesai |
+
+Jendela yang dihitung persis jendela yang dianggarkan docs-30 §4: pemantauan GPS
+dimulai saat layar titik pandang dibuka, jadi dari situlah waktu berjalan.
+`client_captured_at` sengaja tidak dipakai membelah tahap — itu jam klien dan
+bisa dinyatakan apa saja.
+
+**Cara menjalankannya, lima percobaan:**
+
+1. Catat jam sekarang, lalu jalankan dengan `--sejak` supaya kontribusi lama dan
+   kiriman dari skrip tidak ikut terhitung. Ini penting: kiriman skrip
+   menghasilkan tahap "siapkan+kirim" satu detik, dan itu akan memperbagus angka
+   tanpa ada manusia yang mengalaminya.
+2. Di HP, lakukan lima kontribusi utuh sampai layar ringkasan. **Isi atribut
+   wajib saja** — `step_count` dan `ramp_wheelchair` untuk titik pandang pintu
+   masuk. Metriknya mengukur beban minimum, bukan beban maksimum.
+3. Jalankan:
+
+```bash
+npm run ukur:beban -- --sejak 2026-09-19T01:00:00+07:00
+```
+
+Keluarannya memecah tiap kontribusi jadi dua tahap dan menandai yang melewati 60
+detik. Yang lewat **tetap dilaporkan**, tidak dibuang dari hitungan; membuang
+percobaan yang lambat adalah cara paling mudah membuat angka terlihat bagus.
+
+Hanya kontribusi yang selesai sampai E5 yang dihitung. Draf yang ditinggalkan
+bukan kontribusi yang selesai.
+
 ## How to deploy
 
 Aplikasi berjalan di Cloud Run sebagai layanan `ifest`. Cloud Build membangun image

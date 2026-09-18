@@ -1,0 +1,53 @@
+# LEMBAR ISIAN LABEL — himpunan uji precision
+#
+# Isi tiga kolom kode. Titik (.) artinya belum diisi.
+#
+#   tangga  : A = ada anak tangga   T = tidak ada (rata)   ? = tidak terlihat
+#   ramp    : Y = ada ramp          N = tidak ada          ? = tidak terlihat
+#   tactile : Y = ada ubin pemandu  N = tidak ada          ? = tidak terlihat
+#
+# RAGU = ?  Nilai ? dikeluarkan dari hitungan precision dan dilaporkan
+# terpisah sebagai cakupan, jadi tidak menurunkan angka. Menebak menurunkan.
+#
+# Baris yang masih ada titiknya akan DIKELUARKAN dari pengukuran, bukan bikin
+# gagal. Jadi isi sebanyak yang sempat saja; 20 citra sudah cukup.
+#
+# pelabel: Ghulam (Abyss yg ngasi krn Ghulam tepar)  <- isi namamu di sini
+
+# berkas          tangga  ramp  tactile
+layak-01.jpg        A      Y       N
+layak-02.jpg        A      Y       N   
+layak-03.jpg        T      N       N   
+layak-04.jpg        T      N       N   
+layak-05.jpg        T      N       N   
+kurang-01.jpg       A      N       N   
+kurang-02.jpg       A      Y       N   
+kurang-03.jpg       T      N       N   
+kurang-04.jpg       A      N       N   
+kurang-05.jpg       A      N       N   
+kurang-06.jpg       N      N       N   
+kurang-07.jpg       A      N       N   
+kurang-08.jpg       A      N       N   
+kurang-09.jpg       A      N       N   
+kurang-10.jpg       A      N       N   
+kurang-11.jpg       N      N       N   
+kurang-12.jpg       N      N       N   
+kurang-13.jpg       N      N       N   
+kurang-14.jpg       A      N       N   
+kurang-15.jpg       A      N       N   
+kurang-16.jpg       N      N       N   
+kurang-17.jpg       N      N       N   
+kurang-18.jpg       N      N       N   
+kurang-19.jpg       A      N       N   
+tidak-01.jpg        A      Y       N   
+tidak-02.jpg        A      Y       N   
+tidak-03.jpg        A      Y       N   
+tidak-04.jpg        A      Y       N   
+tidak-05.jpg        A      N       N   
+tidak-06.jpg        N      N       N   
+tidak-07.jpg        N      N       N   
+tidak-08.jpg        A      N       N   
+tidak-09.jpg        N      N       N   
+tidak-10.jpg        A      N       N   
+tidak-11.jpg        A      N       N   
+tidak-12.jpg        A      N       N   

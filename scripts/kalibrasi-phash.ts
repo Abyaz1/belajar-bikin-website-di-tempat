@@ -123,7 +123,21 @@ async function main() {
       console.log(`    ${tertolak.length} pasangan DITOLAK. Ambang mirip terlalu ketat,`);
       console.log(`    atau jaraknya <= ${trustConfig.phashIdenticalMax} sehingga dianggap berkas yang sama.`);
       for (const p of tertolak) console.log(`      ${p.jarak}  ${p.a.nama} <-> ${p.b.nama}`);
-    } else {
+    }
+    // Hasil yang BENAR untuk pasangan pintu-sama adalah `flag`, bukan sekadar
+    // "tidak ditolak". Hasil `none` berarti jaraknya di atas pita penguatan,
+    // sehingga dua kontributor yang memotret pintu yang sama dianggap tidak
+    // berhubungan sama sekali — penguatan terlewat, bukan penguatan tertangkap.
+    const terlewat = pintuSama.filter((p) => p.hasil === 'none');
+    if (terlewat.length) {
+      sehat = false;
+      console.log(`    ${terlewat.length} pasangan TIDAK tertangkap sebagai penguatan.`);
+      console.log(`    Jaraknya di atas ambang mirip ${trustConfig.phashSimilarMax}, jadi dua kontributor`);
+      console.log(`    yang memotret pintu sama dianggap tidak berhubungan. Pita penguatan`);
+      console.log(`    tidak terjangkau oleh tangkapan yang benar-benar terpisah.`);
+      for (const p of terlewat) console.log(`      ${p.jarak}  ${p.a.nama} <-> ${p.b.nama}`);
+    }
+    if (!tertolak.length && !terlewat.length) {
       console.log(`    Semua masuk pita penguatan. Ambang mirip ${trustConfig.phashSimilarMax} memadai`);
       console.log(`    dengan sisa ruang ${trustConfig.phashSimilarMax - maks}.`);
     }

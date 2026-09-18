@@ -92,6 +92,19 @@ describe("hitungPresisi", () => {
     expect(h.per_atribut.find((a) => a.attribute_code === "ramp_wheelchair")!.dijawab).toBe(0);
   });
 
+  it("panggilan yang gagal memberi peringatan di TIAP atribut, supaya n kecil tidak terbaca sebagai model menolak menebak", () => {
+    const h = hitungPresisi(
+      [ukur("a.jpg", { ramp_wheelchair: "yes" }), ukur("b.jpg", { ramp_wheelchair: "no" })],
+      [jawab("a.jpg", { ramp_wheelchair: "yes" }), jawab("b.jpg", {}, "timeout")],
+    );
+    for (const a of h.per_atribut) expect(a.peringatan.join(" ")).toMatch(/1 dari 2 citra tidak menghasilkan jawaban model/);
+  });
+
+  it("tanpa kegagalan, peringatan itu tidak muncul", () => {
+    const h = hitungPresisi([ukur("a.jpg", { ramp_wheelchair: "no" })], [jawab("a.jpg", { ramp_wheelchair: "no" })]);
+    for (const a of h.per_atribut) expect(a.peringatan.join(" ")).not.toMatch(/tidak menghasilkan jawaban model/);
+  });
+
   it("model tidak pernah mengusulkan kelas positif → precision tidak terdefinisi → TIDAK lolos gerbang", () => {
     const r = hitungPresisi([ukur("a.jpg", { ramp_wheelchair: "no" })], [jawab("a.jpg", { ramp_wheelchair: "no" })]).per_atribut.find(
       (a) => a.attribute_code === "ramp_wheelchair",

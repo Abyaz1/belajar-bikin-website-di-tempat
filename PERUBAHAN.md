@@ -583,3 +583,249 @@ dasar apa", bukan hanya jejak di basis data. Batasnya diakui:
 - Kalau deteksi gagal atau lewat batas waktu, fotonya tidak tayang sama sekali.
   Menayangkan foto yang belum diperiksa wajahnya tidak pernah jadi cadangan.
 - Bukti demo tidak punya citra sungguhan, jadi tetap tanpa foto.
+
+---
+
+## 25. Usulan model untuk jalur pemandu dimatikan setelah precision-nya diukur
+
+**Kondisi di proposal:** Kamus atribut menetapkan tiga atribut yang boleh menerima
+usulan model — `step_count`, `ramp_wheelchair`, dan `tactile_paving` — dengan
+alasan bahwa ketiganya adalah yang precision-nya diukur. Kontrak §7 menetapkan
+ambang aktivasi 0,85 per atribut. Tabel `attribute_type` menyalakan ketiganya.
+
+**Yang diubah:** `tactile_paving` dimatikan, `ai_suggestable = false`. Dua atribut
+lainnya dibiarkan menyala. Perubahannya berupa migrasi
+`202609182330_verifikasi_gerbang_precision.sql`, sudah diterapkan ke basis data
+produksi.
+
+**Alasan perubahan:** Ambangnya diukur, bukan diperkirakan. Tiga puluh enam foto
+pintu masuk dilabeli manusia lebih dulu, prompt dibekukan di `2026-09-18.v1`
+sebelum foto-foto itu ada, lalu model gemini-3.8-flash ditanya satu per satu.
+Hasilnya: `step_count` precision 1,00 (n=3), `ramp_wheelchair` 1,00 (n=2),
+`tactile_paving` **tidak terdefinisi**. Model tidak pernah sekali pun mengusulkan
+"ada jalur pemandu", jadi tidak ada satu pun usulan yang bisa dinilai benar atau
+salah. Terpisah dari itu, himpunan ujinya sendiri tidak punya contoh positif: 36
+dari 36 citra dilabeli "tidak ada ubin pemandu". Dua alasan yang berdiri sendiri,
+dan keduanya soal bukti yang tidak ada — bukan soal model yang terbukti salah.
+
+Dua atribut lain dibiarkan menyala karena aturan gerbang yang dibekukan sebelum
+pengukuran memang terpenuhi, dan tidak ada satu pun salah positif. Tapi n-nya 3
+dan 2, dan batas bawah selang kepercayaan 95% ada di 0,44 dan 0,34 — jauh di
+bawah 0,85. Angka itu tidak boleh disebut tanpa menyebut n-nya. Memperketat
+ambang sesudah melihat hasil sama menyesatkannya dengan melonggarkannya, jadi
+aturannya diterapkan apa adanya dan ketidakpastiannya dilaporkan terbuka.
+
+**Dampak terhadap masalah inti:** Masalah inti kami adalah platform yang menyimpan
+klaim tanpa dasar. Kalau gerbang precision cuma angka di dokumen dan tidak pernah
+benar-benar mematikan apa pun, dia adalah janji, bukan pengaman — persis bentuk
+klaim tanpa dasar yang kami tuduhkan ke sistem lain, hanya saja tuduhannya
+mengarah ke diri sendiri. Satu atribut benar-benar mati hari ini karena tidak
+lolos, dan yang mematikannya adalah pengukuran, bukan pendapat. Perlu dicatat
+juga bahwa yang menahan nilai salah masuk ke basis data bukan gerbang ini,
+melainkan aturan 2: usulan model tidak pernah jadi nilai berlaku tanpa konfirmasi
+kontributor. Gerbang ini mengurangi usulan yang mengganggu; dia tidak sendirian
+menjaga pintunya.
+
+---
+
+## 26. Ambang pHash 6 ditetapkan final, dan pita penguatan diakui tidak terjangkau
+
+**Kondisi di proposal:** Entri 22 menyatakan ambang 6 berlaku **sementara** sampai
+kalibrasi ulang dijalankan dengan hash yang dihitung server. Pita penguatan C8
+(Hamming 3–6) dirancang menandai keadaan ketika dua kontributor berbeda memotret
+pintu yang sama di titik pandang yang sama.
+
+**Yang diubah:** Kalibrasi server dijalankan, dan ambang 6 ditetapkan **final** —
+tidak diturunkan ke 4, tidak pula dilebarkan. Yang berubah bukan angkanya,
+melainkan status pengetahuannya: dari asumsi yang menunggu bukti menjadi keputusan
+yang punya angka. Bersamaan dengan itu, pita penguatan 3–6 dinyatakan **tidak
+terjangkau** oleh tangkapan yang benar-benar terpisah, dan itu dicatat sebagai
+batasan yang diketahui, bukan sebagai sesuatu yang akan diperbaiki dengan
+melebarkan pita.
+
+Dua pengukuran, keduanya lewat modul yang persis menegakkan C8 di E4:
+
+| yang diukur | hasil |
+|---|---|
+| 66 pasangan pintu **berbeda** | jarak terdekat **24** — tidak satu pun salah dianggap duplikat |
+| dua HP, pintu **sama**, jarak 2 cm | **14** — hasil klasifikasi `none`, penguatan terlewat |
+
+**Alasan perubahan:** Sisi pintu-berbeda menjawab kekhawatiran lama. CLAUDE.md §17
+mengantisipasi "turunkan ke 4 kalau salah tolak"; dengan pasangan terdekat di 24
+dan ambang di 6, jarak amannya 18 dan kekhawatiran itu tidak terbukti. Ambangnya
+tidak perlu turun.
+
+Sisi pintu-sama justru menemukan hal yang tidak diantisipasi. Dua sentimeter
+praktis titik pandang yang sama — kasus paling menguntungkan yang bisa diatur —
+dan hasilnya sudah 14, jauh di atas pita 3–6. Dua kontributor sungguhan, dengan
+beda posisi dan waktu, akan lebih jauh lagi. Cabang "flag, bukan fail" karena itu
+tidak pernah menyala dalam pemakaian nyata.
+
+Pita **tidak** dilebarkan meski pengukurannya memperlihatkan celah 14–24 yang
+bersih. Alasannya ada di dalam kode: di dalam pita, `classifyDuplicate`
+mengembalikan `flag` hanya untuk kombinasi kontributor-beda-tempat-dan-vantage-sama;
+semua kombinasi lain berujung `fail`. Melebarkan pita ke 18 karena itu tidak cuma
+menyalakan penandaan — ia juga membuat **kontributor yang sama memotret ulang
+pintu yang sama** (menyumbang lagi setelah renovasi, misalnya) jatuh di sekitar 14
+dan langsung ditolak, dan membuat tempat berbeda di bawah 18 ikut ditolak padahal
+sisa ruang ke lantai pintu-berbeda cuma 6. Menukar satu penandaan di jejak audit
+dengan dua kelas penolakan salah adalah pertukaran yang merugikan. Ditambah lagi,
+angka pintu-sama itu baru satu pasang, dan menetapkan ambang dari satu kasus
+terbaik berarti menukar cacat yang diketahui dengan cacat yang tidak diketahui.
+
+**Dampak terhadap masalah inti:** Entri 22 sudah melaporkan batasan ini sebagai
+dugaan dari angka peramban. Sekarang batasan itu punya angka dari modul yang
+benar, dan kalimatnya bisa dipertanggungjawabkan: C8 menaikkan biaya mengirim
+ulang berkas yang sama, dan **tidak** mendeteksi dua orang yang memotret pintu
+yang sama. Yang perlu ditegaskan supaya tidak salah dibaca: penguatan sebagai
+fitur produk tidak ikut mati. `corroboration_count` di mesin status menghitung
+`contributor_id` berbeda yang nilai terkonfirmasinya sama — ukuran yang justru
+lebih tepat, karena yang menguatkan sebuah fakta adalah dua orang menyatakan hal
+yang sama, bukan dua foto yang terlihat mirip. Pita pHash sedari awal jalur kedua
+untuk sesuatu yang sudah punya jalur pertama yang lebih baik.
+
+Kami juga menemukan bahwa skrip kalibrasi kami sendiri sempat menyembunyikan
+temuan ini: ia hanya menganggap hasil `fail` sebagai masalah, sehingga pasangan
+yang justru tidak tertangkap sebagai penguatan dilaporkan sebagai "semua masuk
+pita penguatan" — sambil mencetak sisa ruang negatif di baris berikutnya. Sudah
+diperbaiki. Perkakas ukur yang salah baca lebih berbahaya daripada tidak punya
+perkakas, karena ia menghasilkan keyakinan.
+
+---
+
+## 27. Penalaran model dimatikan supaya panggilan muat di anggaran 8 detik
+
+**Kondisi di proposal:** Kontrak §7 menetapkan batas waktu model 8 detik tanpa
+retry, dan docs-20 §4 menetapkan satu panggilan per bukti. Angka 8 detik dipilih
+karena separuh anggaran 60 detik beban kontribusi tidak boleh habis di satu
+panggilan. Nama model `gemini-3.8-flash` dicatat di §10 sebagai "lolos tes di
+lokasi global". Yang tidak pernah diuji adalah pasangan lengkapnya: model itu,
+prompt `2026-09-18.v1`, skema berbatas, dan foto pintu masuk sungguhan berukuran
+1600 px.
+
+**Yang diubah:** `lib/verification/vertex-caller.ts` sekarang mengirim
+`thinkingConfig: { thinkingBudget: 0 }`. Tidak ada perubahan pada prompt, skema,
+nama model, batas waktu, maupun kebijakan tanpa retry.
+
+**Alasan perubahan:** Diukur pada foto pintu masuk 1200×1600 px, lewat jalur kode
+repo dan batas waktu kontrak 8 detik, usulan model **tidak pernah sampai** ke
+layar konfirmasi.
+
+| Pengukuran | Hasil |
+|---|---|
+| Jalur repo, batas 8 dtk, penalaran bawaan | 3 dari 3 `timeout` (8.006 · 8.016 · 8.011 ms) |
+| Panggilan langsung, prompt dan skema sama, penalaran bawaan | 9.633 ms |
+| Panggilan langsung, prompt dan skema sama, `thinkingBudget: 0` | 4.164 ms |
+
+`gemini-3.8-flash` menalar secara bawaan, dan penalaran itu memakan sekitar 5,5
+detik dari anggaran 8 detik. Konsekuensinya bukan usulan yang lambat, melainkan
+usulan yang tidak pernah ada: setiap kontribusi berakhir di cabang `timeout`,
+layar konfirmasi selalu tampil dengan checklist kosong, dan `draft_suggestion`
+tidak pernah terisi. Fitur yang menjadi alasan Vertex AI dipakai sama sekali
+tidak berjalan, tanpa satu pun galat yang terlihat.
+
+**Dampak terhadap masalah inti:** Konfirmasi wajib kontributor tetap satu-satunya
+gerbang, dan aturan 2 tidak tersentuh — perubahan ini hanya membuat usulan
+benar-benar tiba, bukan membuatnya berwenang. Batas yang diakui, dan semuanya
+belum selesai:
+
+- **Perubahan ini perlu, tetapi belum cukup.** Sesudah diterapkan, tes §10 pada
+  batas 8 detik lolos 2 dari 5 kali. Tiga sisanya tetap `timeout`.
+- **Ekor latensinya menempel di batas.** Enam panggilan berjarak 12 detik:
+  3.856 · 3.123 · 7.545 · 2.738 · 2.819 ms. Rata-ratanya 4,0 detik, tetapi satu
+  panggilan menyentuh 7,5 detik. Anggaran 8 detik nyaris tanpa ruang gerak.
+- **Kuota menolak sebagian panggilan.** HTTP 429 muncul 1 dari 6 panggilan
+  meskipun sudah dijarakkan, dan satu penolakan baru terjawab setelah 15.090 ms.
+  Ini penyebab kegagalan yang tersisa, dan bukan sesuatu yang bisa diperbaiki
+  dari sisi kode.
+- **Semua diukur dari satu laptop ke endpoint `global`.** Cloud Run di
+  `asia-southeast2` belum diukur dan bisa berbeda.
+
+**Akibat untuk entri 25, dan ini perlu diperiksa sebelum angkanya dipakai.**
+Gerbang precision di entri 25 dijalankan ketika baris ini belum ada, yaitu dengan
+penalaran menyala. Dua hal menyusul dari situ:
+
+1. Menurut docs-20 §5, precision hanya sah untuk pasangan model dan prompt yang
+   diukur. Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
+   dalam, jawabannya berubah dari `not_visible` menjadi `no` untuk
+   `tactile_paving`. Gerbang 0,85 karena itu perlu dijalankan ulang di atas
+   konfigurasi ini.
+2. **Angka n yang kecil di entri 25 belum tentu berarti model menolak menebak.**
+   `presisi.run.test.ts` memanggil `suggestAttributes` lewat jalur yang sama yang
+   di sini timeout 3 dari 3 kali, dan menjalankannya tiga paralel sehingga
+   penolakan kuota lebih mungkin. Kalau sebagian besar dari 36 citra itu berakhir
+   `timeout`, daftar usulannya kosong bukan karena model diam, melainkan karena
+   jawabannya tidak pernah datang. Itu akan menjelaskan n=3 dan n=2 dari 36
+   citra. Laporan hasil ukur menyimpan `status` dan `latency_ms` per citra, jadi
+   ini bisa dipastikan dengan menghitung berapa yang `ok` dan berapa yang
+   `timeout` — sebelum kesimpulan "model tidak pernah mengusulkan ada jalur
+   pemandu" dibawa ke deck.
+
+Perubahan ini tidak membatalkan entri 25 dan tidak menyentuh migrasi yang sudah
+diterapkan. Yang diminta hanya satu: hitung ulang statusnya, lalu putuskan.
+
+Syarat pembekuan kontrak §10 no. 1 sendiri **belum terpenuhi**. Yang berubah
+adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
+
+---
+
+## 28. Gerbang precision diukur ulang di atas penalaran yang dimatikan
+
+**Kondisi di proposal:** Entri 25 mencatat keputusan gerbang precision, dan entri
+27 mematikan penalaran model supaya panggilan muat di anggaran 8 detik. Entri 27
+sendiri menyatakan konsekuensinya: mematikan penalaran mengubah jawaban model,
+jadi gerbang 0,85 harus diukur ulang di atas konfigurasi itu (docs-20 §5).
+
+**Yang diubah:** Pengukuran diulang atas 36 citra berlabel yang sama, prompt yang
+sama `2026-09-18.v1`, dengan `thinkingBudget: 0` dan batas waktu kontrak 8 detik —
+bukan 45 detik seperti pengukuran pertama.
+
+| atribut | precision | n | 95% | gerbang |
+|---|---|---|---|---|
+| `step_count` | 1,00 | 2 | 0,34–1,00 | lolos |
+| `ramp_wheelchair` | 1,00 | 1 | 0,21–1,00 | lolos |
+| `tactile_paving` | tidak terdefinisi | 0 | — | **dimatikan** |
+
+**Keputusannya tidak berubah.** `tactile_paving` tetap mati, dua atribut lain
+tetap menyala, dan tidak ada satu pun salah positif di ketiganya. Yang berubah
+angka pendukungnya, dan itu justru menguatkan: kali ini diukur di bawah batas
+waktu yang sama dengan produksi, jadi angkanya berlaku untuk konfigurasi yang
+benar-benar dipakai. Latensi median turun ke 4.955 ms dari 10.643 ms, dan 30 dari
+36 citra terjawab — dibanding 7 dari 36 pada percobaan pertama dengan batas waktu
+kontrak.
+
+**Alasan perubahan:** Angka precision hanya berlaku untuk pasangan model, prompt,
+dan konfigurasi tertentu. Membiarkan angka lama berdiri sesudah penalaran
+dimatikan berarti memajang angka yang tidak pernah diukur pada sistem yang
+dijalankan. Entri 25 sengaja tidak diubah: angkanya benar untuk konfigurasi saat
+itu, dan menghapusnya diam-diam akan menghilangkan jejak bahwa konfigurasinya
+pernah berbeda.
+
+Pengukuran ulang ini juga membongkar cacat di perkakas ukurnya sendiri. Percobaan
+pertama sesudah penalaran dimatikan melaporkan 16 panggilan "failed", dan angka
+precision-nya tetap terlihat baik. Sebabnya ternyata bukan model, melainkan
+**HTTP 429, kuota Vertex habis** karena satu sesi pengukuran menembak 36
+panggilan beruntun dan sesi itu sudah dijalankan berkali-kali. Panggilan yang
+gagal dikeluarkan dari hitungan, sehingga precision dihitung dari sisa citra yang
+kebetulan terjawab — makin banyak yang gagal, makin sedikit kesempatan model
+berbuat salah, dan makin bagus angkanya. Perkakas ukur yang diam saat gagal
+menghasilkan angka yang menyanjung.
+
+Dua perbaikan dipasang di pengukur, keduanya **tidak menyentuh jalur produksi**:
+sebab kegagalan kini ikut dicatat dan dicetak, sehingga "16 gagal" tidak lagi
+perlu ditebak apakah itu kuota, skema, atau jaringan; dan kegagalan kuota
+ditunggu lalu diulang dengan jeda berlipat, paralelisme diturunkan dari tiga ke
+dua. Kontrak §7 melarang retry di jalur produksi dan larangan itu tetap berlaku
+utuh untuk E4 — yang diukur di sini adalah ketepatan model, bukan perilaku E4
+saat sibuk, dan keduanya menuntut aturan yang berbeda.
+
+**Dampak terhadap masalah inti:** Gerbang precision adalah janji bahwa usulan
+model tidak dinyalakan tanpa bukti. Janji itu kosong kalau angkanya diukur pada
+konfigurasi yang bukan konfigurasi yang dijalankan, atau dihitung dari citra yang
+kebetulan lolos sementara sisanya hilang tanpa suara. Sesudah dua perbaikan ini,
+angka yang kami sebut adalah angka dari sistem yang sama dengan yang dipakai
+kontributor, dengan jumlah citra yang gagal disebutkan terang-terangan di
+laporannya. Enam citra masih melewati 8 detik dan dilaporkan apa adanya; itu
+berarti sekitar satu dari enam kontribusi tidak akan menerima usulan model sama
+sekali, dan kontributor mengisi formulirnya sendiri — perilaku yang memang
+dirancang, bukan kegagalan.

@@ -12,7 +12,9 @@
     "db:seed-demo": "node --env-file-if-exists=.env.local scripts/db/seed-demo.mts",
     "phash:kalibrasi": "vite-node scripts/kalibrasi-phash.ts",
     "phash:dari-bukti": "vite-node scripts/kalibrasi-phash-bukti.ts",
-    "seed:osm": "vite-node scripts/seed/osm-seed.ts"
+    "seed:osm": "vite-node scripts/seed/osm-seed.ts",
+    "periksa:keutuhan": "node --env-file-if-exists=.env.local scripts/periksa-keutuhan.mjs",
+    "ukur:beban": "node --env-file-if-exists=.env.local scripts/ukur-beban.mjs"
   },
   "dependencies": {
     "@google-cloud/cloud-sql-connector": "^1.12.0",
