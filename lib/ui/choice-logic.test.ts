@@ -17,6 +17,11 @@ describe("pilihan jawaban", () => {
     expect(optionsFor("step_count").map((o) => o.value)).toEqual(["0", "1", "2", "3", STEP_MORE, NOT_VISIBLE]);
   });
 
+  it("allowed_values dari E4/E8 sudah memuat not_visible — opsinya tetap muncul sekali saja", () => {
+    const opts = optionsFor("ramp_wheelchair", ["yes", "no", NOT_VISIBLE]);
+    expect(opts.map((o) => o.value)).toEqual(["yes", "no", NOT_VISIBLE]);
+  });
+
   it("nilai sah dari server (claimable.allowed_values) dipakai bila ada", () => {
     expect(optionsFor("kerb", ["flush", "raised"]).map((o) => o.value)).toEqual(["flush", "raised", NOT_VISIBLE]);
   });
