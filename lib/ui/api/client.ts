@@ -56,19 +56,30 @@ export async function openCaptureSession(placeId: string, vantage: Vantage): Pro
       body: JSON.stringify({ place_id: placeId, vantage }),
     });
   let res: Response;
+  let galat: ApiErrorBody | null = null;
   try {
     res = await request();
-    // Belum ada sesi: buat kontributor anonim (E7), lalu ulangi E8 sekali.
-    if (res.status === 401 || res.status === 403) {
-      const s = await call("/api/session", { method: "POST" });
-      if (!s.ok) throw new RequestFailed(s.status, await errorBody(s));
-      res = await request();
+    if (!res.ok) {
+      galat = await errorBody(res);
+      // Belum ada sesi: buat kontributor anonim (E7), lalu ulangi E8 sekali.
+      //
+      // Yang dicocokkan KODE-nya, bukan statusnya. Server menjawab 400 untuk
+      // sesi yang belum ada, bukan 401, dan versi sebelumnya hanya mengenali
+      // 401/403 sehingga pengunjung dengan peramban bersih tidak pernah bisa
+      // membuka sesi kamera sama sekali. Uji unitnya memalsukan jawaban 401,
+      // jadi yang teruji adalah asumsi tentang server, bukan servernya.
+      if (res.status === 401 || res.status === 403 || galat?.code === "SESSION_REQUIRED") {
+        const s = await call("/api/session", { method: "POST" });
+        if (!s.ok) throw new RequestFailed(s.status, await errorBody(s));
+        res = await request();
+        galat = res.ok ? null : await errorBody(res);
+      }
     }
   } catch (e) {
     if (e instanceof RequestFailed) throw e;
     throw NETWORK;
   }
-  if (!res.ok) throw new RequestFailed(res.status, await errorBody(res));
+  if (!res.ok) throw new RequestFailed(res.status, galat);
   const json = (await res.json()) as CaptureSession;
   return { ...json, claimable: json.claimable ?? [] };
 }
