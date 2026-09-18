@@ -1,14 +1,14 @@
 /**
  * Layar "pilih profil dulu" yang visual: tiga kartu profil berilustrasi
- * (seluruh kartu satu sasaran tekan) dan panduan membaca empat penilaian.
+ * (seluruh kartu satu sasaran tekan) dan legenda empat penilaian dalam bentuk
+ * badge yang sama dengan daftar tempat.
  * Dipakai di Daftar tempat saat URL belum membawa profil.
  */
 
 import Link from "next/link";
-import { PROFILES, VERDICTS, type ProfileCode, type Verdict } from "./api/types";
-import { PROFILE_HINT, PROFILE_TITLE, VERDICT_LABEL } from "./copy";
-import { cx } from "./cx";
-import { VERDICT_ICON } from "./icons";
+import { PROFILES, type ProfileCode, type Verdict } from "./api/types";
+import { VerdictBadge } from "./badges";
+import { PROFILE_HINT, PROFILE_TITLE } from "./copy";
 import { ILUSTRASI_PROFIL } from "./ilustrasi";
 
 const ARTI: Record<Verdict, string> = {
@@ -18,12 +18,11 @@ const ARTI: Record<Verdict, string> = {
   belum_dapat_dipastikan: "Kondisi penting belum diperiksa. Kami tidak menebak.",
 };
 
-const WARNA: Record<Verdict, string> = {
-  tidak_dapat_diakses: "bg-tidak-fill text-tidak-ink border-tidak-line",
-  dengan_catatan: "bg-catatan-fill text-catatan-ink border-catatan-line",
-  dapat_diakses: "bg-dapat-fill text-dapat-ink border-dapat-line",
-  belum_dapat_dipastikan: "bg-belum-fill text-belum-ink border-belum-line",
-};
+/** Urutan legenda: dari yang terbaik ke hambatan; "belum" dipisah di bawahnya. */
+const TIGA_PENILAIAN: Verdict[] = ["dapat_diakses", "dengan_catatan", "tidak_dapat_diakses"];
+
+/** Profil contoh untuk badge legenda (badge selalu menyebut profil). */
+const CONTOH: ProfileCode = "kursi_roda_manual";
 
 export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string> }) {
   return (
@@ -58,29 +57,33 @@ export function PilihProfilVisual({ hrefs }: { hrefs: Record<ProfileCode, string
         </ul>
       </section>
 
+      {/* Legenda memakai badge yang SAMA dengan daftar tempat, supaya yang
+          dipelajari di sini persis yang nanti ditemui. "Belum dapat
+          dipastikan" dipisah: ia bukan tingkat keempat, tapi tanda belum ada
+          bukti. */}
       <section aria-labelledby="judul-arti" className="space-y-6 rounded-lg bg-surface p-6 md:p-8">
         <div className="space-y-2">
           <h2 id="judul-arti" className="text-section">
             Cara membaca penilaian
           </h2>
-          <p className="text-ink-muted">
-            Setiap tempat mendapat satu dari empat penilaian, selalu dengan bentuk ikon, teks, dan nama profilnya.
-          </p>
+          <p className="text-ink-muted">Contoh berikut untuk profil kursi roda manual.</p>
         </div>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {VERDICTS.map((v) => {
-            const Icon = VERDICT_ICON[v];
-            return (
-              <li key={v} className={cx("flex flex-col gap-3 rounded-md border-s-[6px] bg-canvas p-4", WARNA[v].split(" ")[2])}>
-                <span className={cx("inline-flex size-12 items-center justify-center rounded-pill border text-[1.5rem]", WARNA[v])}>
-                  <Icon />
-                </span>
-                <p className="text-card">{VERDICT_LABEL[v]}</p>
-                <p className="text-meta text-ink-muted">{ARTI[v]}</p>
-              </li>
-            );
-          })}
-        </ul>
+        <dl className="divide-y divide-line border-y border-line">
+          {TIGA_PENILAIAN.map((v) => (
+            <div key={v} className="grid gap-2 py-4 lg:grid-cols-[27rem_1fr] lg:items-center lg:gap-8">
+              <dt>
+                <VerdictBadge verdict={v} profile={CONTOH} />
+              </dt>
+              <dd className="text-ink-muted">{ARTI[v]}</dd>
+            </div>
+          ))}
+        </dl>
+        <dl className="grid gap-2 lg:grid-cols-[27rem_1fr] lg:items-center lg:gap-8">
+          <dt>
+            <VerdictBadge verdict="belum_dapat_dipastikan" profile={CONTOH} />
+          </dt>
+          <dd className="text-ink-muted">{ARTI.belum_dapat_dipastikan}</dd>
+        </dl>
         <p className="text-meta">
           Aturan lengkap tiap profil ada di <Link href="/profil">aturan penilaian</Link>.
         </p>
