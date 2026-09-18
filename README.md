@@ -257,6 +257,26 @@ terdekat pada kelompok kedua, dan rentang ambang yang memisahkan keduanya.
 Kalau celahnya sempit, sebut apa adanya sebagai batasan. Memilih satu angka di
 celah yang tidak memisahkan apa pun bukan kalibrasi.
 
+#### Kalau batas laju menyala saat latihan demo
+
+Satu sesi hanya boleh sepuluh kontribusi per jam, dan kontribusi yang ditolak
+ikut dihitung — jadi batas itu bisa menyala di tengah latihan. Jalan keluarnya
+satu, dan bukan membuka sesi anonim baru:
+
+```bash
+curl -X POST -b cookie.txt -H "x-demo-reset-token: $DEMO_RESET_TOKEN" \
+  http://localhost:3000/api/contributions/reset-rate-limit
+```
+
+Rute ini **membalas 404 selama `DEMO_RESET_TOKEN` kosong**, termasuk di
+deployment. Itu disengaja: endpoint reset yang terbuka membuat pembatas laju
+kehilangan artinya. Isi env-nya hanya selama latihan, lalu kosongkan lagi.
+
+Resetnya tidak menghapus apa pun. Satu `audit_event` bertindakan
+`rate_limit_reset` ditulis beserta jumlah kontribusi sebelum reset, dan
+pemeriksaan C1 menghitung sejak reset terakhir itu. Jejaknya permanen dan
+terbaca publik di layar jejak audit — itu memang maksudnya.
+
 #### Mengulang satu jalan uji yang gagal
 
 Tabel `evidence` bersifat append-only dan memang tidak boleh dibersihkan, jadi
