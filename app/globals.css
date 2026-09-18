@@ -29,23 +29,40 @@
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
+  /* ── Arah visual: tenang dan terpercaya ──
+     Latar krem lembut, bukan putih murni, untuk menekan silau (pemicu beban
+     sensorik). Kartu dan kendali tetap putih supaya lapisan terbaca dari
+     perbedaan latar dan garis, tanpa bayangan. */
+
   /* ── Netral ── */
-  --color-ink: #17191c; /* 17,61 vs putih */
-  --color-ink-muted: #5a6068; /* 6,35 vs putih · 5,87 vs surface-alt */
-  --color-surface: #ffffff;
-  --color-surface-alt: #f5f6f8;
-  --color-line: #d6d9de; /* 1,42 — DEKORATIF SAJA, tidak untuk batas kendali */
-  --color-line-control: #767d86; /* 4,16 vs putih · 3,85 vs surface-alt */
+  --color-canvas: #f8f9fa; /* latar halaman */
+  --color-ink: #212529; /* 14,63 vs canvas · 15,43 vs putih */
+  --color-ink-muted: #555c64; /* 6,42 vs canvas · 5,97 vs surface-alt */
+  --color-surface: #ffffff; /* kartu, kendali */
+  --color-surface-alt: #eef1f4; /* hover, bagian */
+  --color-line: #dee2e6; /* 1,30 vs putih. DEKORATIF SAJA, tidak untuk batas kendali */
+  --color-line-control: #6b7280; /* 4,59 vs canvas · 4,26 vs surface-alt */
+
+  /* ── Merek: navy untuk kepala halaman, judul, dan tautan ── */
+  --color-brand: #1d3557; /* 11,72 vs canvas · 12,36 vs putih */
+  --color-on-brand: #f8f9fa; /* teks di atas navy, 11,72 */
+  --color-on-brand-focus: #c9d6e8; /* cincin fokus di atas navy, 8,40 */
+  /* Teal usulan (#2A9D8F) hanya 3,32 dengan teks putih, jadi tidak dipakai
+     untuk teks atau isian tombol. Ia tinggal sebagai aksen dekoratif. */
+  --color-accent: #2a9d8f;
 
   /* ── Aksi dan fokus ── */
-  --color-action: #1b5ead; /* 6,46 vs putih; putih di atasnya juga 6,46 */
-  --color-focus-ring: #0b63ce; /* 5,69 vs putih · 5,26 vs surface-alt */
+  --color-action: #1e7268; /* teal gelap. 5,73 vs putih; putih di atasnya juga 5,73 · 5,44 vs canvas */
+  --color-focus-ring: #1d3557; /* 11,72 vs canvas. Beda hue dari tombol teal */
 
   /* ── Penilaian: SATU-SATUNYA warna semantik di produk ──
-     garis vs isian (WCAG 1.4.11): tidak 5,75 · catatan 3,57 · dapat 4,47 · belum 3,71 */
-  --color-tidak-ink: #8c1d18; /* 8,01 di isian */
-  --color-tidak-fill: #fcedec;
-  --color-tidak-line: #b3261e;
+     garis vs isian (WCAG 1.4.11): tidak 4,86 · catatan 3,57 · dapat 4,47 · belum 3,71
+     "Tidak dapat diakses" memakai oranye karat, bukan merah menyala, supaya
+     memperingatkan tanpa memicu panik. #E76F51 hanya 2,93 vs latar, jadi
+     teks dan garisnya memakai varian yang lebih gelap. */
+  --color-tidak-ink: #9c3a1e; /* 6,16 di isian */
+  --color-tidak-fill: #fdefea;
+  --color-tidak-line: #b5452b;
   --color-catatan-ink: #7a4a00; /* 6,80 di isian */
   --color-catatan-fill: #fdf3e2;
   --color-catatan-line: #b07400;
@@ -100,7 +117,7 @@
   }
 
   body {
-    background: var(--color-surface);
+    background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: var(--text-body);
@@ -118,7 +135,7 @@
   }
 
   a {
-    color: var(--color-action);
+    color: var(--color-brand);
     text-decoration-line: underline;
     text-underline-offset: 0.15em;
   }
@@ -127,8 +144,8 @@
   }
 
   /* ── A1: fokus selalu terlihat ──
-     focus-ring vs action cuma 1,14 — praktis tidak terbedakan. Cincin fokus di
-     tombol utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
+     focus-ring (navy) vs action (teal) hanya 2,16. Cincin fokus di tombol
+     utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
      halaman, bukan di atas isian tombol. outline-offset 2px JANGAN diubah atau
      dihapus. Satu-satunya `outline: none` di produk ini ada di tautan kartu
      di bawah, dan itu karena cincinnya dipindah ke kartunya, bukan dihapus. */
@@ -150,6 +167,11 @@
   }
   .skip-link:focus {
     inset-block-start: 1rem;
+  }
+
+  /* Di atas latar navy, cincin navy tidak terlihat: pakai biru pucat. */
+  .on-brand :where(a, button):focus-visible {
+    outline-color: var(--color-on-brand-focus);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -223,12 +245,12 @@
     border-color: var(--color-action);
   }
 
-  /* Tautan jejak halaman: sasaran sentuh 44px (spek 30 §2) walau tampil
-     sebagai teks meta satu baris. */
+  /* Tautan jejak halaman: sasaran sentuh 48px walau tampil sebagai teks meta
+     satu baris. */
   .breadcrumb a {
     display: inline-flex;
     align-items: center;
-    min-block-size: 2.75rem;
+    min-block-size: 3rem;
   }
 
   /* Label data demonstrasi: garis tepi kiri bermotif diagonal. */
@@ -248,5 +270,36 @@
   font: inherit;
 }
 .leaflet-container a {
-  color: var(--color-action);
+  color: var(--color-brand);
+}
+
+/* Tombol perbesar dan perkecil yang besar dan selalu tampil: pengguna dengan
+   keterbatasan motorik tidak dipaksa mencubit layar. Tiap tombol 48px,
+   ditaruh di kanan bawah supaya terjangkau ibu jari. */
+/* leaflet.css dimuat setelah berkas ini, jadi selektornya diawali
+   .leaflet-container supaya lebih spesifik dari gaya bawaan pustaka. */
+.leaflet-container .leaflet-bar,
+.leaflet-container.leaflet-touch .leaflet-bar {
+  border: 2px solid var(--color-line-control);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.leaflet-container .leaflet-bar a,
+.leaflet-container.leaflet-touch .leaflet-bar a {
+  width: 3rem;
+  height: 3rem;
+  line-height: 3rem;
+  font-size: 1.75rem;
+  color: var(--color-brand);
+  background: var(--color-surface);
+}
+.leaflet-container .leaflet-bar a + a {
+  border-top: 2px solid var(--color-line);
+}
+.leaflet-container .leaflet-bar a:hover {
+  background: var(--color-surface-alt);
+}
+.leaflet-container .leaflet-bar a:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
