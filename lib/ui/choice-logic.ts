@@ -24,6 +24,14 @@ export function optionsFor(code: string, allowed?: string[] | null): ChoiceOptio
   let values: string[];
   if (code === "step_count") values = ["0", "1", "2", "3", STEP_MORE];
   else values = allowed && allowed.length > 0 ? allowed : (ATTRIBUTE[code]?.values ?? []);
+  // E8 menyertakan not_visible di allowed_values, dan itu benar: kontrak §3
+  // menyatakan not_visible sah untuk atribut mana pun, dan E5 memvalidasi
+  // terhadap daftar yang sama. Tapi opsi itu SELALU ditambahkan di baris bawah
+  // sini, jadi tanpa penyaringan ini ia muncul dua kali dengan nilai yang sama
+  // persis -- pilihan pengguna tidak terdaftar, dan kolomnya dianggap belum
+  // diisi sehingga tombol kirim menolak. Nilai lain yang kebetulan berulang
+  // ikut dibuang supaya satu nilai selalu satu pilihan.
+  values = [...new Set(values)].filter((v) => v !== NOT_VISIBLE);
   return [
     ...values.map((v) => ({
       value: v,
