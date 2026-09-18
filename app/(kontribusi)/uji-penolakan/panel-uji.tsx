@@ -7,6 +7,7 @@ import { useAnnounce } from "@/lib/ui/announcer";
 import { Button } from "@/lib/ui/button";
 import { CAMERA_PROBLEM, useCamera } from "@/lib/ui/camera";
 import { ChecksTable, FlagNotice, ReasonBlock } from "@/lib/ui/checks";
+import { REQUEST_ERROR_HINT } from "@/lib/ui/copy";
 import { formatMeters } from "@/lib/ui/format";
 import { distanceMeters, useGeo } from "@/lib/ui/geo";
 import { GeoStatus } from "@/lib/ui/geo-status";
@@ -29,7 +30,7 @@ const ATTACK_TITLE: Record<Attack, string> = {
 type Outcome =
   | { kind: "ditolak"; attack: Attack; errors: ApiErrorBody[] }
   | { kind: "diterima"; attack: Attack; checks: CheckOutcome[] }
-  | { kind: "galat"; attack: Attack; message: string };
+  | { kind: "galat"; attack: Attack; message: string; code: string | null };
 
 export function PanelUji({ places }: { places: Target[] }) {
   const geo = useGeo();
@@ -80,9 +81,19 @@ export function PanelUji({ places }: { places: Target[] }) {
           ? { kind: "ditolak", attack: kind, errors: r.errors }
           : r.kind === "accepted"
             ? { kind: "diterima", attack: kind, checks: r.draft.checks }
-            : { kind: "galat", attack: kind, message: r.error?.message ?? `Server menjawab galat ${r.status}.` };
+            : {
+                kind: "galat",
+                attack: kind,
+                message: r.error?.message ?? `Server menjawab galat ${r.status}.`,
+                code: r.error?.code ?? null,
+              };
     } catch (e) {
-      result = { kind: "galat", attack: kind, message: e instanceof RequestFailed ? e.message : "Tidak dapat menghubungi server." };
+      result = {
+        kind: "galat",
+        attack: kind,
+        message: e instanceof RequestFailed ? e.message : "Tidak dapat menghubungi server.",
+        code: e instanceof RequestFailed ? (e.body?.code ?? null) : null,
+      };
     }
     setBusy(null);
     setOutcome(result);
@@ -114,7 +125,7 @@ export function PanelUji({ places }: { places: Target[] }) {
           id="sasaran"
           value={targetId}
           onChange={(e) => setTargetId(e.target.value)}
-          className="block min-h-11 w-full rounded-md border-2 border-line-control bg-surface px-3"
+          className="block min-h-12 w-full rounded-md border-2 border-line-control bg-surface px-3"
         >
           {places.map((p) => (
             <option key={p.id} value={p.id}>
@@ -137,7 +148,8 @@ export function PanelUji({ places }: { places: Target[] }) {
         </h2>
         <p className="text-meta text-ink-muted">
           Berkas dari galeri biasanya membawa metadata (EXIF). Foto dari kamera aplikasi tidak pernah membawanya.
-          Diharapkan: <code className="font-mono">file_metadata_present</code>.
+          Diharapkan: <code className="font-mono">file_metadata_present</code>. Hanya JPEG yang diterima; di iPhone,
+          pemilih berkas mengubah foto HEIC menjadi JPEG.
         </p>
         <label htmlFor="berkas-galeri" className="block font-semibold">
           Pilih foto dari galeri
@@ -145,12 +157,12 @@ export function PanelUji({ places }: { places: Target[] }) {
         <input
           id="berkas-galeri"
           type="file"
-          accept="image/jpeg,image/*"
+          accept="image/jpeg"
           onChange={(e) => setGalleryFile(e.target.files?.[0] ?? null)}
-          className="block min-h-11 w-full rounded-md border-2 border-line-control p-2"
+          className="block min-h-12 w-full rounded-md border-2 border-line-control p-2"
         />
-        <Button
-          onClick={() => galleryFile && attack("galeri", galleryFile, "gallery")}
+        <Button large
+          onClick={() => galleryFile && attack("galeri", galleryFile, "galeri")}
           disabled={!galleryFile || !target}
           loading={busy === "galeri"}
           loadingText="Mengirim berkas galeri…"
@@ -182,11 +194,11 @@ export function PanelUji({ places }: { places: Target[] }) {
           className={cameraState === "live" ? "block max-h-72 w-full rounded-md bg-ink object-contain" : "hidden"}
         />
         {cameraState === "live" ? (
-          <Button onClick={shootAndSend} loading={busy === "lokasi_lain"} loadingText="Mengirim foto…" disabled={!target}>
+          <Button large onClick={shootAndSend} loading={busy === "lokasi_lain"} loadingText="Mengirim foto…" disabled={!target}>
             Ambil foto dan kirim
           </Button>
         ) : (
-          <Button variant="sekunder" onClick={() => void start()} loading={cameraState === "starting"} loadingText="Membuka kamera…">
+          <Button large variant="sekunder" onClick={() => void start()} loading={cameraState === "starting"} loadingText="Membuka kamera…">
             Buka kamera
           </Button>
         )}
@@ -200,7 +212,7 @@ export function PanelUji({ places }: { places: Target[] }) {
           Mengirim ulang berkas terakhir yang dikirim dari panel ini. Diharapkan:{" "}
           <code className="font-mono">duplicate_image</code> dengan jarak kemiripan terukur.
         </p>
-        <Button
+        <Button large
           onClick={() => lastSent && attack("kirim_ulang", lastSent, "getusermedia")}
           disabled={!lastSent || !target}
           loading={busy === "kirim_ulang"}
@@ -246,7 +258,13 @@ export function PanelUji({ places }: { places: Target[] }) {
             <ChecksTable checks={outcome.checks} caption="Hasil tiap pemeriksaan" />
           </>
         ) : null}
-        {outcome?.kind === "galat" ? <p role="alert">{outcome.message}</p> : null}
+        {outcome?.kind === "galat" ? (
+          <div role="alert" className="space-y-1">
+            <p>{outcome.message}</p>
+            {outcome.code && REQUEST_ERROR_HINT[outcome.code] ? <p>{REQUEST_ERROR_HINT[outcome.code]}</p> : null}
+            {outcome.code ? <code className="font-mono text-label">{outcome.code.toLowerCase()}</code> : null}
+          </div>
+        ) : null}
       </section>
     </div>
   );
