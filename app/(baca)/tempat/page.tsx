@@ -7,6 +7,7 @@ import { Button, ButtonLink } from "@/lib/ui/button";
 import { PROFILE_LABEL, VERDICT_LABEL, verdictWithProfile } from "@/lib/ui/copy";
 import { cx } from "@/lib/ui/cx";
 import { MapView } from "@/lib/ui/map-view";
+import { PilihProfilVisual } from "@/lib/ui/pilih-profil";
 import { PlaceCard } from "@/lib/ui/place-card";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
@@ -58,11 +59,9 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
 
   if (!profile) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-screen">Daftar tempat</h1>
-        <p>Penilaian selalu untuk profil tertentu. Pilih profil dulu.</p>
-        <ProfilePicker
-          current={null}
+      <div className="space-y-8">
+        <h1 className="text-[2rem] leading-tight font-bold md:text-[2.5rem]">Daftar tempat</h1>
+        <PilihProfilVisual
           hrefs={Object.fromEntries(PROFILES.map((p) => [p, href(p, "daftar", q)])) as Record<ProfileCode, string>}
         />
       </div>
