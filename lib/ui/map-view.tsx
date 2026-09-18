@@ -63,7 +63,12 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-export function MapView({ places, label }: { places: MapPlace[]; label: string }) {
+/**
+ * `penuh`: peta memenuhi layar di beranda. Roda tetikus boleh memperbesar
+ * (tidak ada isi halaman lain yang perlu digulir), dan batas tampilan diberi
+ * ruang untuk kepala halaman di atas serta panel profil di bawah.
+ */
+export function MapView({ places, label, penuh = false }: { places: MapPlace[]; label: string; penuh?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,7 +79,7 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
       const L = (await import("leaflet")).default;
       if (cancelled || !ref.current) return;
 
-      map = L.map(ref.current, { scrollWheelZoom: false, zoomControl: false });
+      map = L.map(ref.current, { scrollWheelZoom: penuh, zoomControl: false });
       // Kanan bawah: paling mudah dijangkau ibu jari. Ukurannya 48px (globals.css).
       L.control
         .zoom({ position: "bottomright", zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" })
@@ -94,7 +99,8 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
         ),
       );
       markers.forEach((m) => m.addTo(map!));
-      if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
+      const ruang = penuh ? { paddingTopLeft: [24, 120] as [number, number], paddingBottomRight: [24, 200] as [number, number] } : {};
+      if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), ruang);
       else if (markers.length === 1) map.setView(markers[0].getLatLng(), 17);
       else map.setView([-6.8915, 107.616], 15);
     })();
@@ -103,14 +109,14 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
       cancelled = true;
       map?.remove();
     };
-  }, [places]);
+  }, [places, penuh]);
 
   return (
     <div
       ref={ref}
       role="region"
       aria-label={label}
-      className="h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
+      className={penuh ? "peta-penuh h-full w-full" : "h-[28rem] w-full overflow-hidden rounded-md border border-line-control"}
     />
   );
 }
