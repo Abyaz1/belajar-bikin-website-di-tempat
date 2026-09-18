@@ -29,10 +29,12 @@ export interface MapPlace {
   href: string;
 }
 
+// Warna sama dengan token penilaian di globals.css (Leaflet butuh nilai
+// literal di dalam SVG). Ubah keduanya bersamaan.
 const SHAPE: Record<Verdict, { fill: string; line: string; path: string }> = {
   tidak_dapat_diakses: {
-    fill: "#fcedec",
-    line: "#b3261e",
+    fill: "#fdefea",
+    line: "#b5452b",
     path: '<path d="M8.2 2.5h7.6l5.7 5.7v7.6l-5.7 5.7H8.2l-5.7-5.7V8.2z"/><path d="M7.5 12h9" stroke-width="3"/>',
   },
   dengan_catatan: {
@@ -54,14 +56,35 @@ const SHAPE: Record<Verdict, { fill: string; line: string; path: string }> = {
 
 function iconHtml(v: Verdict) {
   const s = SHAPE[v];
-  return `<svg viewBox="0 0 24 24" width="28" height="28" fill="${s.fill}" stroke="${s.line}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${s.path}</svg>`;
+  return `<svg viewBox="0 0 24 24" width="36" height="36" fill="${s.fill}" stroke="${s.line}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${s.path}</svg>`;
 }
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-export function MapView({ places, label }: { places: MapPlace[]; label: string }) {
+/**
+ * `penuh`: peta memenuhi layar di beranda. Roda tetikus boleh memperbesar
+ * (tidak ada isi halaman lain yang perlu digulir), dan batas tampilan diberi
+ * ruang untuk kepala halaman di atas serta panel profil di bawah.
+ */
+/**
+ * `latar`: peta pudar di balik hero beranda. Hiasan saja: tidak bisa digeser,
+ * tanpa tombol, tanpa popup, dan disembunyikan dari pembaca layar. Karena
+ * disembunyikan, atribusi OpenStreetMap WAJIB ditulis halaman pemakainya di
+ * luar peta (tautan di dalam wilayah aria-hidden tidak boleh bisa difokus).
+ */
+export function MapView({
+  places,
+  label,
+  penuh = false,
+  latar = false,
+}: {
+  places: MapPlace[];
+  label: string;
+  penuh?: boolean;
+  latar?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,8 +95,16 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
       const L = (await import("leaflet")).default;
       if (cancelled || !ref.current) return;
 
-      map = L.map(ref.current, { scrollWheelZoom: false, zoomControl: false });
-      L.control.zoom({ zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" }).addTo(map);
+      map = L.map(ref.current, {
+        scrollWheelZoom: penuh,
+        zoomControl: false,
+        ...(latar ? { attributionControl: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false } : {}),
+      });
+      // Kanan bawah: paling mudah dijangkau ibu jari. Ukurannya 48px (globals.css).
+      if (!latar)
+        L.control
+          .zoom({ position: "bottomright", zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" })
+          .addTo(map);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">kontributor OpenStreetMap</a>',
@@ -83,13 +114,19 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
         L.marker([p.lat, p.lon], {
           keyboard: false,
           title: p.name,
-          icon: L.divIcon({ html: iconHtml(p.verdict), className: "", iconSize: [28, 28], iconAnchor: [14, 14] }),
-        }).bindPopup(
-          `<strong>${escapeHtml(p.name)}</strong><br>${escapeHtml(p.verdictText)}<br><a href="${escapeHtml(p.href)}">Buka laporan tempat</a>`,
-        ),
+          interactive: !latar,
+          icon: L.divIcon({ html: iconHtml(p.verdict), className: "", iconSize: [36, 36], iconAnchor: [18, 18] }),
+        }),
       );
+      if (!latar)
+        markers.forEach((m, i) =>
+          m.bindPopup(
+            `<strong>${escapeHtml(places[i].name)}</strong><br>${escapeHtml(places[i].verdictText)}<br><a href="${escapeHtml(places[i].href)}">Buka laporan tempat</a>`,
+          ),
+        );
       markers.forEach((m) => m.addTo(map!));
-      if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
+      const ruang = penuh ? { paddingTopLeft: [24, 120] as [number, number], paddingBottomRight: [24, 200] as [number, number] } : {};
+      if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), ruang);
       else if (markers.length === 1) map.setView(markers[0].getLatLng(), 17);
       else map.setView([-6.8915, 107.616], 15);
     })();
@@ -98,14 +135,21 @@ export function MapView({ places, label }: { places: MapPlace[]; label: string }
       cancelled = true;
       map?.remove();
     };
-  }, [places]);
+  }, [places, penuh, latar]);
 
   return (
     <div
       ref={ref}
-      role="region"
-      aria-label={label}
-      className="h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
+      role={latar ? undefined : "region"}
+      aria-label={latar ? undefined : label}
+      aria-hidden={latar || undefined}
+      className={
+        latar
+          ? "peta-latar h-full w-full"
+          : penuh
+            ? "peta-penuh h-full w-full"
+            : "h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
+      }
     />
   );
 }

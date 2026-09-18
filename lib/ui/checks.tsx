@@ -177,8 +177,8 @@ export function ChecksTable({ checks, caption }: { checks: CheckOutcome[]; capti
               <td className={c.result === "fail" ? "py-2 pe-3 font-semibold text-tidak-ink" : "py-2 pe-3 font-semibold"}>
                 {CHECK_RESULT_LABEL[c.result] ?? c.result}
               </td>
-              <td className="py-2 pe-3">{c.measured ?? "—"}</td>
-              <td className="py-2">{c.threshold ?? "—"}</td>
+              <td className="py-2 pe-3">{c.measured ?? "tidak ada"}</td>
+              <td className="py-2">{c.threshold ?? "tidak ada"}</td>
             </tr>
           ))}
         </tbody>

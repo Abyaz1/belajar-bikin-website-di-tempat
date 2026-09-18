@@ -42,6 +42,9 @@ export const trustConfig = {
   uploadMaxBytes: num('UPLOAD_MAX_BYTES', 5 * 1024 * 1024),
   captureMaxEdgePx: num('CAPTURE_MAX_EDGE_PX', 1600),
   displayMaxEdgePx: num('DISPLAY_MAX_EDGE_PX', 1200),
+
+  /** Foto tayang — batas waktu deteksi wajah. Lewat batas = foto tidak tayang. */
+  faceDetectTimeoutMs: num('FACE_DETECT_TIMEOUT_MS', 5000),
 } as const;
 
 /**

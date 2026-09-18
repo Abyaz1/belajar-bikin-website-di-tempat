@@ -33,10 +33,10 @@ export function ProfilePicker({
                 aria-current={active ? "true" : undefined}
                 scroll={false}
                 className={cx(
-                  "inline-flex min-h-11 items-center gap-2 rounded-pill border-2 px-4 font-semibold no-underline",
+                  "inline-flex min-h-12 items-center gap-2 rounded-pill border-2 px-5 font-semibold no-underline",
                   active
                     ? "border-action bg-action text-surface"
-                    : "border-line-control bg-surface text-ink hover:border-action hover:bg-surface-alt",
+                    : "border-line-control bg-surface text-ink hover:border-brand hover:bg-surface-alt",
                 )}
               >
                 {active ? <IconCheck /> : null}

@@ -49,7 +49,7 @@ export async function sniffMetadata(blob: Blob): Promise<MetadataReport> {
   } else if (/^ftyp(heic|heix|mif1|msf1|hevc)/.test(ascii(buf, 4, 8))) {
     report.kind = "heic";
     report.exif = indexOfAscii(buf, "Exif") >= 0;
-    report.segments.push("HEIC — metadata tidak diurai rinci");
+    report.segments.push("HEIC: metadata tidak diurai rinci");
   }
   return report;
 }

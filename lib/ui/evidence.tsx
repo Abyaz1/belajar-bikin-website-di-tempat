@@ -53,7 +53,7 @@ export function EvidencePanel({
         </p>
         {ev?.capture_method ? (
           <p className="text-meta text-ink-muted">
-            Cara ambil menurut perangkat: <code className="font-mono">{ev.capture_method}</code> — dicatat, bukan diperiksa,
+            Cara ambil menurut perangkat: <code className="font-mono">{ev.capture_method}</code>. Dicatat, bukan diperiksa,
             karena nilainya dinyatakan sendiri oleh klien.
           </p>
         ) : null}

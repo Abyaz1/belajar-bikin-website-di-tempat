@@ -18,6 +18,8 @@ import {
 import { formatDate } from "@/lib/ui/format";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
+import { naskahLaporan } from "../../_bacakan/naskah";
+import { TombolBacakan } from "../../_bacakan/tombol-bacakan";
 
 // L4 — laporan kesiapan. Keadaan: lengkap, sebagian, semua belum terverifikasi.
 
@@ -26,7 +28,7 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/tem
   const raw = (await searchParams).profil;
   const facts = await getPlaceFacts(id).catch(() => null);
   if (!facts) return { title: "Tempat" };
-  return { title: isProfile(raw) ? `${facts.name} — ${PROFILE_LABEL[raw]}` : facts.name };
+  return { title: isProfile(raw) ? `${facts.name} · ${PROFILE_LABEL[raw]}` : facts.name };
 }
 
 function orderIndex(code: string) {
@@ -87,6 +89,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
         {place.is_demo_seed ? <DemoLabel detail="sebagian riwayat tempat ini disemai untuk memperagakan penguatan, peluruhan, dan sengketa" /> : null}
         <ProfilePicker current={profile} hrefs={hrefs} />
         <ProfileAnnouncer profile={profile} message={announce} />
+        <TombolBacakan naskah={naskahLaporan(place, profile, ATTRIBUTE_ORDER)} />
       </header>
 
       <section aria-labelledby="judul-penilaian" className="space-y-4">
@@ -178,7 +181,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
                   <th scope="row" className="py-3 pe-3 text-start font-semibold">
                     {PROFILE_TITLE[p]}
                   </th>
-                  <td className="py-3">{r ? <VerdictBadge verdict={r.verdict} profile={p} /> : "—"}</td>
+                  <td className="py-3">{r ? <VerdictBadge verdict={r.verdict} profile={p} /> : "Tidak tersedia"}</td>
                 </tr>
               );
             })}
@@ -205,7 +208,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
                 <h3 id={`judul-${v}`} className="text-card">
                   {VANTAGE_LABEL[v]}
                 </h3>
-                <Link href={`/kontribusi/${encodeURIComponent(id)}/${v}?profil=${profile}`} className="inline-flex min-h-11 items-center text-meta">
+                <Link href={`/kontribusi/${encodeURIComponent(id)}/${v}?profil=${profile}`} className="inline-flex min-h-12 items-center text-meta">
                   Kirim foto {VANTAGE_LABEL[v].toLowerCase()}
                 </Link>
               </div>

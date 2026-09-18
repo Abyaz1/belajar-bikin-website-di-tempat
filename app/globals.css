@@ -29,23 +29,49 @@
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
-  /* ── Netral ── */
-  --color-ink: #17191c; /* 17,61 vs putih */
-  --color-ink-muted: #5a6068; /* 6,35 vs putih · 5,87 vs surface-alt */
-  --color-surface: #ffffff;
-  --color-surface-alt: #f5f6f8;
-  --color-line: #d6d9de; /* 1,42 — DEKORATIF SAJA, tidak untuk batas kendali */
-  --color-line-control: #767d86; /* 4,16 vs putih · 3,85 vs surface-alt */
+  /* ── Palet pilihan pemilik produk, bernomor 1 sampai 6 ──
+     Arahan penyesuaian cukup menyebut nomornya ("ganti 6 jadi ...").
+     Rasio kontras (WCAG 2.1):
+       1 vs 5 = 9,16 · 1 vs putih = 10,92 · 1 vs 6 = 7,93 · 1 vs 4 = 7,73
+       2 sampai 6 di bawah 3 terhadap latar terang mana pun, jadi HANYA untuk
+       latar, garis dekoratif, dan aksen, tidak pernah untuk teks. */
+  --color-p1: #363b58; /* teks, merek, tombol utama */
+  --color-p2: #a2a8b4; /* garis dekoratif tegas, ikon pasif */
+  --color-p3: #c1c5ce; /* garis dekoratif */
+  --color-p4: #d5d9e4; /* latar bagian, hover */
+  --color-p5: #ecebe9; /* latar halaman */
+  --color-p6: #e7dac7; /* aksen hangat: sorotan, ilustrasi */
 
-  /* ── Aksi dan fokus ── */
-  --color-action: #1b5ead; /* 6,46 vs putih; putih di atasnya juga 6,46 */
-  --color-focus-ring: #0b63ce; /* 5,69 vs putih · 5,26 vs surface-alt */
+  /* ── Peran, dipetakan ke palet ──
+     Dua nada turunan warna 1 (lebih terang, hue sama) mengisi kebutuhan yang
+     tidak bisa dipenuhi 2 sampai 6: teks sekunder dan batas kendali. */
+  --color-canvas: var(--color-p5);
+  --color-ink: var(--color-p1);
+  --color-ink-muted: #565b70; /* 1 lebih terang. 5,64 vs 5 · 4,76 vs 4 */
+  --color-surface: #ffffff; /* kartu dan kendali */
+  --color-surface-alt: var(--color-p4);
+  --color-line: var(--color-p3); /* DEKORATIF SAJA */
+  --color-line-control: #6b7080; /* 1 lebih terang. 4,14 vs 5 · 3,50 vs 4 (>= 3) */
+
+  --color-brand: var(--color-p1);
+  --color-on-brand: #ffffff; /* 10,92 di atas 1 */
+  --color-on-brand-focus: var(--color-p6); /* cincin fokus di atas 1, 7,93 */
+  --color-accent: var(--color-p6);
+
+  /* ── Aksi dan fokus ──
+     Tombol utama berisi 1. Cincin fokus juga 1: terlihat karena JARAKNYA
+     2px dari tombol, duduk di latar terang. */
+  --color-action: var(--color-p1);
+  --color-focus-ring: var(--color-p1);
 
   /* ── Penilaian: SATU-SATUNYA warna semantik di produk ──
-     garis vs isian (WCAG 1.4.11): tidak 5,75 · catatan 3,57 · dapat 4,47 · belum 3,71 */
-  --color-tidak-ink: #8c1d18; /* 8,01 di isian */
-  --color-tidak-fill: #fcedec;
-  --color-tidak-line: #b3261e;
+     garis vs isian (WCAG 1.4.11): tidak 4,86 · catatan 3,57 · dapat 4,47 · belum 3,71
+     "Tidak dapat diakses" memakai oranye karat, bukan merah menyala, supaya
+     memperingatkan tanpa memicu panik. #E76F51 hanya 2,93 vs latar, jadi
+     teks dan garisnya memakai varian yang lebih gelap. */
+  --color-tidak-ink: #9c3a1e; /* 6,16 di isian */
+  --color-tidak-fill: #fdefea;
+  --color-tidak-line: #b5452b;
   --color-catatan-ink: #7a4a00; /* 6,80 di isian */
   --color-catatan-fill: #fdf3e2;
   --color-catatan-line: #b07400;
@@ -78,9 +104,10 @@
   --text-label--line-height: 1.3;
   --text-label--font-weight: 600;
 
-  /* Radius: 4 kecil, 8 kartu dan kendali, 999 pil. */
+  /* Radius: 4 kecil, 8 kartu dan kendali, 16 panel mengambang, 999 pil. */
   --radius-sm: 4px;
   --radius-md: 8px;
+  --radius-lg: 16px;
   --radius-pill: 999px;
 
   /* Skala jarak satu-satunya: 4 8 12 16 24 32 48 64
@@ -100,7 +127,7 @@
   }
 
   body {
-    background: var(--color-surface);
+    background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: var(--text-body);
@@ -108,7 +135,12 @@
   }
 
   /* Kata panjang (kode alasan, URL) tidak boleh memaksa scroll mendatar saat
-     halaman diperbesar 200%. */
+     halaman diperbesar 200%. `overflow-x: clip` memotong elemen selebar layar
+     (100vw termasuk lebar scrollbar) tanpa membuat wadah gulir baru. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     overflow-wrap: break-word;
   }
@@ -118,7 +150,7 @@
   }
 
   a {
-    color: var(--color-action);
+    color: var(--color-brand);
     text-decoration-line: underline;
     text-underline-offset: 0.15em;
   }
@@ -127,8 +159,8 @@
   }
 
   /* ── A1: fokus selalu terlihat ──
-     focus-ring vs action cuma 1,14 — praktis tidak terbedakan. Cincin fokus di
-     tombol utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
+     focus-ring dan action sama-sama warna 1. Cincin fokus di tombol
+     utama terlihat karena JARAKNYA, bukan warnanya: ia duduk di latar
      halaman, bukan di atas isian tombol. outline-offset 2px JANGAN diubah atau
      dihapus. Satu-satunya `outline: none` di produk ini ada di tautan kartu
      di bawah, dan itu karena cincinnya dipindah ke kartunya, bukan dihapus. */
@@ -150,6 +182,11 @@
   }
   .skip-link:focus {
     inset-block-start: 1rem;
+  }
+
+  /* Di atas latar navy, cincin navy tidak terlihat: pakai biru pucat. */
+  .on-brand :where(a, button):focus-visible {
+    outline-color: var(--color-on-brand-focus);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -223,12 +260,12 @@
     border-color: var(--color-action);
   }
 
-  /* Tautan jejak halaman: sasaran sentuh 44px (spek 30 §2) walau tampil
-     sebagai teks meta satu baris. */
+  /* Tautan jejak halaman: sasaran sentuh 48px walau tampil sebagai teks meta
+     satu baris. */
   .breadcrumb a {
     display: inline-flex;
     align-items: center;
-    min-block-size: 2.75rem;
+    min-block-size: 3rem;
   }
 
   /* Label data demonstrasi: garis tepi kiri bermotif diagonal. */
@@ -248,5 +285,79 @@
   font: inherit;
 }
 .leaflet-container a {
-  color: var(--color-action);
+  color: var(--color-brand);
+}
+
+/* Tombol perbesar dan perkecil yang besar dan selalu tampil: pengguna dengan
+   keterbatasan motorik tidak dipaksa mencubit layar. Tiap tombol 48px,
+   ditaruh di kanan bawah supaya terjangkau ibu jari. */
+/* leaflet.css dimuat setelah berkas ini, jadi selektornya diawali
+   .leaflet-container supaya lebih spesifik dari gaya bawaan pustaka. */
+.leaflet-container .leaflet-bar,
+.leaflet-container.leaflet-touch .leaflet-bar {
+  border: 2px solid var(--color-line-control);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.leaflet-container .leaflet-bar a,
+.leaflet-container.leaflet-touch .leaflet-bar a {
+  width: 3rem;
+  height: 3rem;
+  line-height: 3rem;
+  font-size: 1.75rem;
+  color: var(--color-brand);
+  background: var(--color-surface);
+}
+.leaflet-container .leaflet-bar a + a {
+  border-top: 2px solid var(--color-line);
+}
+.leaflet-container .leaflet-bar a:hover {
+  background: var(--color-surface-alt);
+}
+.leaflet-container .leaflet-bar a:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Peta layar penuh di beranda: kendali Leaflet digeser supaya tidak tertutup
+   kepala halaman di atas dan panel profil di bawah. */
+.peta-penuh .leaflet-top {
+  top: 8.5rem;
+}
+.peta-penuh .leaflet-bottom {
+  bottom: 12rem;
+}
+@media (min-width: 48rem) {
+  .peta-penuh .leaflet-top {
+    top: 6rem;
+  }
+  .peta-penuh .leaflet-bottom {
+    bottom: 8.5rem;
+  }
+}
+
+/* Latar di balik dialog panduan: warna 1, tembus pandang. */
+.panduan::backdrop {
+  background: rgb(54 59 88 / 0.6);
+}
+
+/* Peta latar hero beranda: ubin dipudarkan dan diabukan supaya teks di atasnya
+   tetap terbaca; penanda tetap berwarna. */
+.peta-latar .leaflet-tile-pane {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.peta-latar.leaflet-container {
+  background: var(--color-p5);
+  cursor: default;
+}
+
+/* Kolom pilihan tanpa bingkai (formulir cari di beranda): panah kecil warna 1
+   supaya tetap terbaca sebagai dropdown. */
+.pilih {
+  padding-inline-end: 1.125rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23363b58' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 0.875rem;
 }

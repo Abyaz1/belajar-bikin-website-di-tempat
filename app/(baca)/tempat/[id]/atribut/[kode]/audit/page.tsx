@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/tempat/[id]/atrib
   const { id, kode } = await params;
   const trail = await getAudit(id, kode).catch(() => null);
   return {
-    title: trail ? `Jejak audit: ${attributeLabel(kode, trail.attribute.label)} — ${trail.place.name}` : "Jejak audit",
+    title: trail ? `Jejak audit: ${attributeLabel(kode, trail.attribute.label)} · ${trail.place.name}` : "Jejak audit",
   };
 }
 
@@ -44,7 +44,7 @@ export default async function Page({ params }: PageProps<"/tempat/[id]/atribut/[
         </p>
         {trail.is_demo_seed ? <DemoLabel detail="sebagian kejadian di sini disemai untuk peragaan" /> : null}
         <p className="text-meta">
-          <a href={jsonHref}>Unduh jejak ini sebagai JSON</a> — supaya bisa diperiksa sendiri, bukan hanya dilihat.
+          <a href={jsonHref}>Unduh jejak ini sebagai JSON</a>, supaya bisa diperiksa sendiri, bukan hanya dilihat.
         </p>
       </header>
 

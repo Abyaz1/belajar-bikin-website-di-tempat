@@ -7,6 +7,7 @@ import { Button, ButtonLink } from "@/lib/ui/button";
 import { PROFILE_LABEL, VERDICT_LABEL, verdictWithProfile } from "@/lib/ui/copy";
 import { cx } from "@/lib/ui/cx";
 import { MapView } from "@/lib/ui/map-view";
+import { PilihProfilVisual } from "@/lib/ui/pilih-profil";
 import { PlaceCard } from "@/lib/ui/place-card";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
@@ -15,6 +16,14 @@ import { ProfilePicker } from "@/lib/ui/profile-picker";
 // Kenapa daftar yang utama: (1) peta bukan antarmuka yang bisa dibaca screen
 // reader, dan (2) yang dicari orang adalah "bisakah saya masuk ke tempat X",
 // bukan "apa yang ada di sekitar titik ini".
+
+/** Pintasan kategori. Nilai `q` sama dengan kategori hasil penyemaian OSM. */
+const JENIS: { label: string; q: string }[] = [
+  { label: "Semua", q: "" },
+  { label: "Kampus", q: "kampus" },
+  { label: "Halte", q: "halte" },
+  { label: "Fasilitas kesehatan", q: "fasilitas kesehatan" },
+];
 
 type Search = Awaited<PageProps<"/tempat">["searchParams"]>;
 
@@ -34,7 +43,7 @@ function href(profile: ProfileCode, view: "daftar" | "peta", q: string) {
 
 export async function generateMetadata({ searchParams }: PageProps<"/tempat">): Promise<Metadata> {
   const { profile } = parse(await searchParams);
-  return { title: profile ? `Daftar tempat — ${PROFILE_LABEL[profile]}` : "Daftar tempat" };
+  return { title: profile ? `Daftar tempat · ${PROFILE_LABEL[profile]}` : "Daftar tempat" };
 }
 
 function summarize(places: PlaceSummary[], profile: ProfileCode): string {
@@ -50,11 +59,9 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
 
   if (!profile) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-screen">Daftar tempat</h1>
-        <p>Penilaian selalu untuk profil tertentu. Pilih profil dulu.</p>
-        <ProfilePicker
-          current={null}
+      <div className="space-y-8">
+        <h1 className="text-[2rem] leading-tight font-bold md:text-[2.5rem]">Daftar tempat</h1>
+        <PilihProfilVisual
           hrefs={Object.fromEntries(PROFILES.map((p) => [p, href(p, "daftar", q)])) as Record<ProfileCode, string>}
         />
       </div>
@@ -96,13 +103,42 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
             name="q"
             type="search"
             defaultValue={q}
-            className="mt-1 block min-h-11 w-full rounded-md border-2 border-line-control px-3"
+            className="mt-1 block min-h-12 w-full rounded-md border-2 border-line-control px-3"
           />
         </div>
         <Button type="submit" variant="sekunder">
           Cari
         </Button>
       </form>
+
+      {/* Pintasan pencarian per jenis tempat: satu ketukan, tanpa mengetik.
+          Hanya tautan ke ?q=, tidak ada yang disimpan di peramban. */}
+      <nav aria-label="Pintasan jenis tempat" className="space-y-2">
+        <p className="text-meta font-semibold">Tampilkan jenis tempat:</p>
+        <ul className="flex flex-wrap gap-2">
+          {JENIS.map((j) => {
+            const aktif = q.toLowerCase() === j.q;
+            return (
+              <li key={j.label}>
+                <Link
+                  href={href(profile, view, j.q)}
+                  aria-current={aktif ? "true" : undefined}
+                  scroll={false}
+                  className={cx(
+                    "inline-flex min-h-12 items-center rounded-pill border-2 px-5 font-semibold no-underline",
+                    aktif
+                      ? "border-brand bg-brand text-on-brand"
+                      : "border-line-control bg-surface text-ink hover:border-brand hover:bg-surface-alt",
+                  )}
+                >
+                  {j.label}
+                  {aktif ? <span className="sr-only"> (dipilih)</span> : null}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       {MAP_ENABLED ? (
         <nav aria-label="Tampilan" className="flex flex-wrap gap-2">
@@ -112,8 +148,8 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
               href={href(profile, v, q)}
               aria-current={view === v ? "page" : undefined}
               className={cx(
-                "inline-flex min-h-11 items-center rounded-md border-2 px-4 font-semibold no-underline",
-                view === v ? "border-ink bg-ink text-surface" : "border-line-control text-ink hover:bg-surface-alt",
+                "inline-flex min-h-12 items-center rounded-md border-2 px-4 font-semibold no-underline",
+                view === v ? "border-brand bg-brand text-on-brand" : "border-line-control bg-surface text-ink hover:bg-surface-alt",
               )}
             >
               {v === "daftar" ? "Daftar" : "Peta"}

@@ -46,10 +46,10 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   belum_dapat_dipastikan: "Belum dapat dipastikan",
 };
 
-/** "Tidak dapat diakses — kursi roda manual". Tanpa nama profil, badge
+/** "Tidak dapat diakses untuk kursi roda manual". Tanpa nama profil, badge
  *  penilaian terbaca sebagai penilaian mutlak. */
 export function verdictWithProfile(v: Verdict, p: ProfileCode): string {
-  return `${VERDICT_LABEL[v]} — ${PROFILE_LABEL[p]}`;
+  return `${VERDICT_LABEL[v]} untuk ${PROFILE_LABEL[p]}`;
 }
 
 // ── Status bukti ────────────────────────────────────────────────────────────
@@ -318,7 +318,7 @@ export function measuredSentence(code: string, measured: string | null, threshol
     case "RATE_LIMITED":
       return `${m ?? "?"} kiriman dalam satu jam terakhir dari sesi ini. Batas ${t ?? "?"} per jam.`;
     default:
-      return `Nilai terukur ${m ?? "—"}. Ambang ${t ?? "—"}.`;
+      return `Nilai terukur ${m ?? "tidak ada"}. Ambang ${t ?? "tidak ada"}.`;
   }
 }
 
@@ -348,7 +348,7 @@ export const CHECK_RESULT_LABEL = { pass: "Lolos", flag: "Ditandai", fail: "Tida
 
 export const AUDIT_ACTION_LABEL: Record<string, string> = {
   evidence_submitted: "Bukti foto dikirim dan diperiksa",
-  provenance_failed: "Pemeriksaan keaslian tidak lolos — bukti ditolak",
+  provenance_failed: "Pemeriksaan keaslian tidak lolos, bukti ditolak",
   observation_confirmed: "Nilai dikonfirmasi kontributor",
   state_updated: "Nilai berlaku diperbarui",
   rate_limit_reset: "Batas kontribusi direset secara tercatat",

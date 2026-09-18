@@ -9,6 +9,8 @@ import { ButtonLink } from "@/lib/ui/button";
 import { VANTAGE_LABEL, attributeLabel, attributeVantage, valueOption, valueSentence } from "@/lib/ui/copy";
 import { EvidencePanel } from "@/lib/ui/evidence";
 import { formatDate } from "@/lib/ui/format";
+import { naskahAtribut } from "../../../../_bacakan/naskah";
+import { TombolBacakan } from "../../../../_bacakan/tombol-bacakan";
 
 // L5 — rincian atribut. Keadaan: terverifikasi, belum, perlu ditinjau, bersengketa.
 // URL-nya tidak wajib membawa profil: fakta tidak bergantung profil.
@@ -17,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/tempat/[id]/atrib
   const { id, kode } = await params;
   const facts = await getPlaceFacts(id).catch(() => null);
   const a = facts?.attributes.find((x) => x.code === kode);
-  return { title: facts && a ? `${attributeLabel(kode, a.label)} — ${facts.name}` : "Rincian atribut" };
+  return { title: facts && a ? `${attributeLabel(kode, a.label)} · ${facts.name}` : "Rincian atribut" };
 }
 
 export default async function Page({ params, searchParams }: PageProps<"/tempat/[id]/atribut/[kode]">) {
@@ -70,6 +72,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
               : "Kondisi ini ditinjau tiap 365 hari karena perubahannya menuntut konstruksi."}
           </p>
         ) : null}
+        <TombolBacakan naskah={[`${facts.name}.`, ...naskahAtribut(a)]} judul="Bacakan kondisi ini" />
       </header>
 
       {a.is_disputed ? (

@@ -81,8 +81,8 @@ function tanpaModel(reason: string): SuggestResult {
 export async function mintaUsulan(input: SuggestInput): Promise<SuggestResult> {
   let modul: ModulVerifikasi;
   try {
-    // @ts-ignore - modul milik Verification engineer, belum tentu ada di cabang ini
-    modul = (await import('@/lib/verification')) as ModulVerifikasi;
+    // Modul milik Verification; impor dinamis supaya kegagalannya jadi status, bukan galat build.
+    modul = (await import('@/lib/verification')) as unknown as ModulVerifikasi;
   } catch {
     return tanpaModel('Modul lib/verification belum ada di build ini.');
   }

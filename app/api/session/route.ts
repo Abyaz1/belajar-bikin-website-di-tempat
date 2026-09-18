@@ -57,7 +57,7 @@ export async function POST() {
  *
  * docs/10-trust.md §1 semula mengunci daftar action audit ke lima nilai, dan
  * tidak ada satu pun yang berarti "sesi dibuat". Nilai keenam ditambahkan
- * lewat keputusan yang tercatat di DRAF_PERUBAHAN_TRUST.md entri 5.
+ * lewat keputusan yang tercatat di PERUBAHAN.md entri 5.
  *
  * Alasannya bukan kerapian. C1 menghitung kontribusi PER KONTRIBUTOR, jadi
  * meminta sesi anonim baru adalah cara paling murah memutar satu-satunya

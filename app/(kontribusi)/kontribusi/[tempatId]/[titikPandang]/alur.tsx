@@ -248,7 +248,7 @@ export function Alur({
         {shot ? "Periksa foto sebelum dikirim" : `Ambil foto ${VANTAGE_LABEL[vantage].toLowerCase()}`}
       </h2>
       <p className="rounded-md border border-line-control bg-surface-alt p-3 text-meta">
-        Arahkan kamera ke pintu, tangga, dan trotoar — bukan ke orang. Foto bukti tampil publik di jejak audit.
+        Arahkan kamera ke pintu, tangga, dan trotoar, bukan ke orang. Foto bukti tampil publik di jejak audit.
       </p>
       <GeoStatus compact />
 
@@ -419,7 +419,7 @@ function Konfirmasi({
         </h2>
         <p>
           Foto lolos pemeriksaan. Jawab sesuai foto ini saja. Usulan sistem ditandai, tapi tidak pernah dipilih untuk
-          Anda — nilai baru tersimpan setelah Anda memilihnya sendiri.
+          Anda. Nilai baru tersimpan setelah Anda memilihnya sendiri.
         </p>
       </div>
 
@@ -428,7 +428,7 @@ function Konfirmasi({
       {modelDown ? (
         <p className="rounded-md border border-line-control bg-surface-alt p-3">
           Usulan sistem tidak tersedia untuk foto ini
-          {draft.model_status === "timeout" ? " (melewati batas 8 detik)" : ""}. Isi sesuai yang Anda lihat — alur ini
+          {draft.model_status === "timeout" ? " (melewati batas 8 detik)" : ""}. Isi sesuai yang Anda lihat; alur ini
           sengaja tidak bergantung pada model.
         </p>
       ) : draft.model_status === "off" ? (
@@ -443,7 +443,7 @@ function Konfirmasi({
           className="h-40 w-full max-w-xs rounded-md border border-line object-cover"
         />
         <details className="min-w-0 flex-1 basis-64">
-          <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-action underline">
+          <summary className="inline-flex min-h-12 cursor-pointer items-center font-semibold text-action underline">
             Lihat hasil tiap pemeriksaan
           </summary>
           <ChecksTable checks={draft.checks} caption="Hasil pemeriksaan keaslian foto ini" />
@@ -541,7 +541,7 @@ function Ringkasan({
                 <p>{valueSentence(c.attribute_code, after)}</p>
                 <p className="text-meta">
                   {kind === "baru"
-                    ? "Baru tercatat — sebelumnya belum ada bukti."
+                    ? "Baru tercatat. Sebelumnya belum ada bukti."
                     : kind === "sama"
                       ? c.after.corroboration_count > 1
                         ? `Menguatkan nilai yang sama. Sekarang dikuatkan ${c.after.corroboration_count} kontributor berbeda.`

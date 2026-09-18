@@ -59,7 +59,7 @@ jangan kerjakan sendiri.** Satu cabang per orang, digabung ke `main` di tiap tit
 | **Product** | `app/(kontribusi)/`, `app/tempat/` (daftar + peta), `components/`, token design system, konfigurasi deploy |
 | **Trust** | `lib/trust/`, `app/api/contributions/`, `app/api/session/`, `app/api/capture-sessions/`, migrasi tabel jalur tulis |
 | **Verification** | `lib/rules/`, `lib/verification/`, `app/api/places/`, `app/api/profiles/`, `scripts/seed/`, dan **sejak jam 21:00** rute sisi baca L4/L5/L6 di direktori rute terpisah |
-| **Problem owner** | `PERUBAHAN.md`, `PROGRESS.md`, data uji, deck, video |
+| **Problem owner** | `PERUBAHAN.md`, `docs/PROGRESS.md` (tidak di-commit), data uji, deck, video |
 
 Yang membaca keluaran asisten koding adalah **pemilik folder itu**, sebelum di-commit. Panitia
 mengizinkan AI, jadi tidak ada yang perlu disembunyikan — tapi ada yang perlu dipahami, karena

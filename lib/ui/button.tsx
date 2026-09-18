@@ -17,11 +17,11 @@ export type ButtonVariant = "utama" | "sekunder" | "teks";
 
 const BASE =
   "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-body font-semibold " +
-  "min-h-11 text-center no-underline cursor-pointer select-none";
+  "min-h-12 text-center no-underline cursor-pointer select-none";
 
 const VARIANT: Record<ButtonVariant, string> = {
   utama:
-    "bg-action text-surface border-2 border-action hover:bg-ink hover:border-ink active:translate-y-px",
+    "bg-action text-surface border-2 border-action hover:bg-brand hover:border-brand active:translate-y-px",
   sekunder:
     "bg-surface text-action border-2 border-action hover:bg-surface-alt active:translate-y-px",
   teks: "bg-transparent text-action border-2 border-transparent underline underline-offset-2 hover:decoration-2",
@@ -29,9 +29,10 @@ const VARIANT: Record<ButtonVariant, string> = {
 
 const INERT = "aria-disabled:cursor-not-allowed aria-disabled:opacity-60 disabled:cursor-not-allowed disabled:opacity-60";
 
-/** 48px (3rem) di alur kontribusi, 44px (2.75rem) di tempat lain. */
+/** Semua tombol minimal 48px (3rem) untuk pengguna dengan tremor atau
+ *  keterbatasan motorik. `large` menambah ruang di alur kontribusi. */
 function size(large?: boolean) {
-  return large ? "min-h-12" : "min-h-11";
+  return large ? "min-h-14 px-6" : "min-h-12";
 }
 
 export function Button({

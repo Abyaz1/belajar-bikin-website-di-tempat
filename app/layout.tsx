@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#363b58",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AnnouncerProvider>
           <SiteHeader />
           <FixtureBanner />
-          <main id="isi" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+          <main id="isi" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-3 py-8 md:px-6 md:py-10">
             {children}
           </main>
           <SiteFooter />

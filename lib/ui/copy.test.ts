@@ -59,7 +59,7 @@ describe("aturan 2: penilaian selalu menyebut profil", () => {
   for (const v of VERDICTS)
     for (const p of PROFILES)
       it(`${v} × ${p}`, () => {
-        expect(verdictWithProfile(v, p)).toContain(`— ${PROFILE_LABEL[p]}`);
+        expect(verdictWithProfile(v, p)).toContain(`untuk ${PROFILE_LABEL[p]}`);
       });
 });
 

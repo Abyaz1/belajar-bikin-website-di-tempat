@@ -109,7 +109,7 @@ function Chip({ className, children }: { className: string; children: ReactNode 
 export function DemoLabel({ detail }: { detail?: string }) {
   return (
     <span className="demo-stripe inline-flex items-center rounded-sm bg-demo-bg px-2 py-1 text-label text-demo-ink">
-      Data demonstrasi{detail ? ` — ${detail}` : ""}
+      Data demonstrasi{detail ? `: ${detail}` : ""}
     </span>
   );
 }

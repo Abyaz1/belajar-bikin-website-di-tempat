@@ -70,10 +70,10 @@ export function AttributeRow({
           {a.is_demo_seed ? <DemoLabel /> : null}
         </div>
         <p className="flex flex-wrap gap-x-4 text-meta">
-          <Link href={detailHref} className="inline-flex min-h-11 items-center">
+          <Link href={detailHref} className="inline-flex min-h-12 items-center">
             Rincian dan bukti<span className="sr-only">: {label}</span>
           </Link>
-          <Link href={auditHref} className="inline-flex min-h-11 items-center">
+          <Link href={auditHref} className="inline-flex min-h-12 items-center">
             Jejak audit<span className="sr-only">: {label}</span>
           </Link>
         </p>

@@ -24,17 +24,17 @@ function parse(iso: string | null | undefined): Date | null {
 /** "12 Sep 2026" */
 export function formatDate(iso: string | null | undefined): string {
   const d = parse(iso);
-  return d ? DATE.format(d) : "—";
+  return d ? DATE.format(d) : "tanggal tidak diketahui";
 }
 
 /** "12 Sep 2026, 10.14 WIB" */
 export function formatDateTime(iso: string | null | undefined): string {
   const d = parse(iso);
-  return d ? `${DATE_TIME.format(d)} WIB` : "—";
+  return d ? `${DATE_TIME.format(d)} WIB` : "waktu tidak diketahui";
 }
 
 export function formatMeters(m: number | null | undefined): string {
-  if (m === null || m === undefined || !Number.isFinite(m)) return "—";
+  if (m === null || m === undefined || !Number.isFinite(m)) return "tidak diketahui";
   if (m >= 1000) return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 }).format(m / 1000)} km`;
   return `${Math.round(m)} m`;
 }
