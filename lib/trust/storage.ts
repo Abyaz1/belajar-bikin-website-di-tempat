@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 /**
@@ -45,11 +45,22 @@ export function objectKey(buf: Buffer, placeId: string): string {
   return `evidence/${placeId}/${digest}.jpg`;
 }
 
+/**
+ * Kunci objek TAYANG (hasil pengaburan wajah) untuk evidence.public_path.
+ * Awalan berbeda dari objek asli, jadi penyaji foto cukup menolak apa pun yang
+ * tidak berawalan `tayang/`, dan objek asli tidak pernah tersaji lewat sana.
+ */
+export function publicKey(buf: Buffer, placeId: string): string {
+  const digest = createHash('sha256').update(buf).digest('hex').slice(0, 32);
+  return `tayang/${placeId}/${digest}.jpg`;
+}
+
 // --- GCS -------------------------------------------------------------------
 // Bentuk minimal yang benar-benar dipakai, supaya berkas ini tidak bergantung
 // pada tipe paket yang belum tentu terpasang.
 interface GcsFileLike {
   save(data: Buffer, options: Record<string, unknown>): Promise<unknown>;
+  download(): Promise<[Buffer]>;
 }
 interface GcsBucketLike {
   file(name: string): GcsFileLike;
@@ -68,8 +79,8 @@ async function ambilBucket(): Promise<GcsBucketLike> {
     bucketPromise = (async () => {
       let mod: { Storage: new (...args: unknown[]) => { bucket(n: string): GcsBucketLike } };
       try {
-        // @ts-ignore - dependensi opsional, hanya dibutuhkan saat STORAGE_DRIVER=gcs
-        mod = await import('@google-cloud/storage');
+        // Paket terpasang (dependencies), tapi dipakai lewat bentuk minimal di atas.
+        mod = (await import('@google-cloud/storage')) as unknown as typeof mod;
       } catch {
         throw new Error(
           'STORAGE_DRIVER=gcs tetapi paket @google-cloud/storage belum terpasang. ' +
@@ -122,4 +133,33 @@ export async function putOriginal(buf: Buffer, placeId: string): Promise<string>
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, buf);
   return key;
+}
+
+/**
+ * Simpan foto TAYANG. Bucket-nya sama dan tetap privat: foto tayang sampai ke
+ * pengguna lewat rute baca aplikasi, bukan lewat URL publik bucket.
+ */
+export async function putPublic(buf: Buffer, placeId: string): Promise<string> {
+  const key = publicKey(buf, placeId);
+  if (storageDriver() === 'gcs') {
+    const bucket = await ambilBucket();
+    await bucket.file(key).save(buf, { contentType: 'image/jpeg', resumable: false });
+    return key;
+  }
+  const path = join(process.env.STORAGE_LOCAL_ROOT ?? '.storage', key);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, buf);
+  return key;
+}
+
+/** Baca objek TAYANG. Kunci di luar awalan `tayang/` ditolak: objek asli tidak pernah dibaca lewat sini. */
+export async function readPublic(key: string): Promise<Buffer> {
+  if (!/^tayang\/[0-9a-f-]{36}\/[0-9a-f]{32}\.jpg$/.test(key)) {
+    throw new Error('Kunci objek tayang tidak sah.');
+  }
+  if (storageDriver() === 'gcs') {
+    const [isi] = await (await ambilBucket()).file(key).download();
+    return isi;
+  }
+  return readFile(join(process.env.STORAGE_LOCAL_ROOT ?? '.storage', key));
 }

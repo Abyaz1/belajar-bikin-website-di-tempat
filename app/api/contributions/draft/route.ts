@@ -9,6 +9,7 @@ import { computePhash } from '@/lib/trust/image';
 import { runProvenancePipeline } from '@/lib/trust/pipeline';
 import { SESSION_COOKIE, verifySession } from '@/lib/trust/session';
 import { putOriginal } from '@/lib/trust/storage';
+import { simpanFotoTayang } from '@/lib/trust/tayang';
 import type { Vantage } from '@/lib/trust/types';
 import { mintaUsulan } from '@/lib/trust/verification-port';
 
@@ -231,16 +232,28 @@ export async function POST(req: Request) {
     // Seluruh kamus vantage dikirim, bukan hanya yang ai_suggestable, karena
     // penanda itu bagian dari masukan modul verifikasi — dia yang memutuskan
     // atribut mana yang ditanyakan ke model. Batas waktu 8 detik juga miliknya.
-    const usulan = await mintaUsulan({
-      image: bytes,
-      mimeType: 'image/jpeg',
-      vantage,
-      attributes: outcome.claimable.map((a) => ({
-        attribute_code: a.code,
-        ai_suggestable: a.ai_suggestable,
-        allowed_values: a.allowed_values,
-      })),
-    });
+    // Foto tayang (wajah dikaburkan) dibuat BERSAMAAN dengan panggilan model,
+    // supaya tidak menambah waktu tunggu kontributor. Hanya bukti yang lolos
+    // semua pemeriksaan yang punya foto tayang; yang ditolak tidak pernah tampil.
+    const [usulan, publicPath] = await Promise.all([
+      mintaUsulan({
+        image: bytes,
+        mimeType: 'image/jpeg',
+        vantage,
+        attributes: outcome.claimable.map((a) => ({
+          attribute_code: a.code,
+          ai_suggestable: a.ai_suggestable,
+          allowed_values: a.allowed_values,
+        })),
+      }),
+      simpanFotoTayang(bytes, placeId),
+    ]);
+    if (publicPath) {
+      // Satu-satunya kolom evidence yang boleh diubah (GRANT UPDATE (public_path)).
+      await withTx((c) =>
+        c.query('UPDATE evidence SET public_path = $1 WHERE id = $2 AND public_path IS NULL', [publicPath, outcome.draftId]),
+      );
+    }
 
     // Simpan usulan model apa adanya, termasuk confidence-nya, supaya E5
     // tidak perlu mempercayai klien soal apa yang diusulkan.
