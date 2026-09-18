@@ -197,14 +197,15 @@ export async function POST(req: Request) {
         });
       }
 
+      // Kolom mengikuti tabel attribute_type milik Verification.
+      // ai_suggestable adalah gerbang precision per atribut: dimatikan lewat
+      // UPDATE saat gerbang jam 21:00, tanpa deploy ulang.
       const { rows: claimable } = await c.query<{
-        code: string; is_required: boolean; allowed_values: string[] | null;
-        value_type: 'integer' | 'enum'; ai_suggestion_enabled: boolean;
-        min_value: number | null; max_value: number | null;
+        code: string; is_required_at_vantage: boolean; allowed_values: string[];
+        value_type: 'integer' | 'enum'; ai_suggestable: boolean;
       }>(
-        `SELECT code, is_required, allowed_values, value_type,
-                ai_suggestion_enabled, min_value, max_value
-           FROM attribute_type WHERE vantage = $1 ORDER BY sort_order`,
+        `SELECT code, is_required_at_vantage, allowed_values, value_type, ai_suggestable
+           FROM attribute_type WHERE vantage = $1 ORDER BY code`,
         [vantage],
       );
 
@@ -227,7 +228,7 @@ export async function POST(req: Request) {
     }
 
     // --- 200: baru di sini model dipanggil ----------------------------
-    const enabled = outcome.claimable.filter((a) => a.ai_suggestion_enabled);
+    const enabled = outcome.claimable.filter((a) => a.ai_suggestable);
     const port = await loadSuggestionPort();
     const raw = enabled.length
       ? await port
@@ -270,7 +271,7 @@ export async function POST(req: Request) {
       return {
         attribute_code: a.code,
         value: hit?.value ?? null,
-        active: a.ai_suggestion_enabled && hit !== undefined,
+        active: a.ai_suggestable && hit !== undefined,
       };
     });
 
@@ -285,12 +286,9 @@ export async function POST(req: Request) {
       suggestions,
       claimable: outcome.claimable.map((a) => ({
         attribute_code: a.code,
-        required: a.is_required,
+        required: a.is_required_at_vantage,
         value_type: a.value_type,
-        allowed_values:
-          a.value_type === 'enum' ? [...(a.allowed_values ?? []), 'not_visible'] : null,
-        min_value: a.min_value,
-        max_value: a.max_value,
+        allowed_values: [...a.allowed_values, 'not_visible'],
       })),
     });
   } catch (err) {

@@ -1,5 +1,5 @@
 -- =====================================================================
--- 003_trust_fixups.sql
+-- 202609181302_trust_perbaikan.sql
 --
 -- Dua koreksi yang ditemukan saat menulis E4 dan E7:
 --

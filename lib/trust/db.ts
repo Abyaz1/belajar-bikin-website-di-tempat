@@ -3,7 +3,7 @@ import { Pool, type PoolClient } from 'pg';
 /**
  * Satu pool untuk seluruh jalur tulis.
  * PGUSER wajib app_rw, bukan superuser. Kalau superuser, seluruh jaminan
- * append-only di db/migrations/001_trust_schema.sql §10 tidak berlaku —
+ * append-only di db/migrations/202609181300_trust_skema.sql §10 tidak berlaku —
  * lihat catatan jujur di kepala migrasi itu.
  */
 const globalPool = globalThis as unknown as { __trustPool?: Pool };

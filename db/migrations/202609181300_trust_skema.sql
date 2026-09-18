@@ -1,5 +1,5 @@
 -- =====================================================================
--- 001_trust_schema.sql — jalur tulis (Trust engineer)
+-- 202609181300_trust_skema.sql — jalur tulis (Trust engineer)
 -- Rujukan: docs/00-KONTRAK.md §2 §3 §7 · docs/10-trust.md §1
 --
 -- Keputusan skema yang perlu diketahui pembaca:
@@ -38,110 +38,27 @@ $$;
 -- ---------------------------------------------------------------------
 -- 1. Enum
 -- ---------------------------------------------------------------------
-CREATE TYPE contributor_kind      AS ENUM ('anonymous_session', 'account');
-CREATE TYPE vantage_kind          AS ENUM ('entrance', 'interior', 'toilet');
-CREATE TYPE check_result          AS ENUM ('pass', 'flag', 'fail');
-CREATE TYPE attribute_value_type  AS ENUM ('integer', 'enum');
-CREATE TYPE state_source          AS ENUM ('osm_seed', 'contribution');
+-- `vantage` dan tipe-tipe milik Verification dibuat migrasi mereka, tidak
+-- diulang di sini. Yang di bawah hanya milik jalur tulis.
+CREATE TYPE contributor_kind AS ENUM ('anonymous_session', 'account');
+CREATE TYPE check_result     AS ENUM ('pass', 'flag', 'fail');
+CREATE TYPE state_source     AS ENUM ('osm_seed', 'contribution');
 
 -- ---------------------------------------------------------------------
--- 2. Tabel rujukan — MILIK VERIFICATION ENGINEER
---    Trust hanya membaca. Dibuat di sini supaya skema jalur tulis bisa
---    dijalankan dan diuji berdiri sendiri. Kalau Verification sudah
---    punya migrasinya, HAPUS blok §2 ini dan pakai punya dia.
+-- 2. Tabel rujukan — MILIK VERIFICATION ENGINEER, dibuat migrasi mereka
+--
+-- `place` dan `attribute_type` dulu dibuat di sini dengan IF NOT EXISTS sebagai
+-- penyangga sementara, dengan catatan: "kalau Verification sudah punya
+-- migrasinya, hapus blok ini dan pakai punya dia". Migrasi itu sekarang ada
+-- (202609181245_verifikasi_referensi.sql), jadi blok ini dihapus.
+--
+-- Konsekuensi urutan: migrasi ini WAJIB berjalan SESUDAH migrasi Verification,
+-- karena capture_session, evidence, observation, dan attribute_state semuanya
+-- menunjuk ke kedua tabel itu. Penamaan berkas memakai cap waktu supaya urutan
+-- leksikal yang dipakai scripts/db/migrate.mts menghasilkan urutan yang benar.
+--
+-- Tipe `vantage`, dan bukan `vantage`, juga milik migrasi mereka.
 -- ---------------------------------------------------------------------
-
--- 2.1 place (minimal) — sumber koordinat acuan untuk C7
-CREATE TABLE IF NOT EXISTS place (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          text        NOT NULL,
-  lat           numeric(9,6)  NOT NULL CHECK (lat  BETWEEN  -90 AND  90),
-  lon           numeric(9,6)  NOT NULL CHECK (lon  BETWEEN -180 AND 180),
-  osm_type      text        NULL,
-  osm_id        bigint      NULL,
-  is_demo_seed  boolean     NOT NULL DEFAULT false,
-  created_at    timestamptz NOT NULL DEFAULT now()
-);
-COMMENT ON TABLE place IS
-  'Milik Verification engineer. Trust hanya SELECT, untuk koordinat acuan C7.';
-
--- 2.2 attribute_type — kamus atribut, docs/00-KONTRAK.md §3
--- Kamus disimpan di tabel, BUKAN di kode. Gerbang precision jam 21:00
--- mematikan usulan per atribut lewat ai_suggestion_enabled, tanpa deploy ulang.
-CREATE TABLE IF NOT EXISTS attribute_type (
-  code                    text PRIMARY KEY,
-  value_type              attribute_value_type NOT NULL,
-  allowed_values          text[]  NULL,      -- untuk value_type='enum'
-  min_value               integer NULL,      -- untuk value_type='integer'
-  max_value               integer NULL,
-  vantage                 vantage_kind NOT NULL,
-  is_required             boolean NOT NULL DEFAULT false,
-  ai_suggestion_enabled   boolean NOT NULL DEFAULT false,
-  review_interval_days    integer NOT NULL CHECK (review_interval_days > 0),
-  sort_order              integer NOT NULL DEFAULT 0,
-
-  -- Bentuk kamus harus konsisten dengan tipenya, ditegakkan database
-  CONSTRAINT attribute_type_shape CHECK (
-    (value_type = 'enum'
-       AND allowed_values IS NOT NULL AND array_length(allowed_values,1) > 0
-       AND min_value IS NULL AND max_value IS NULL)
-    OR
-    (value_type = 'integer'
-       AND allowed_values IS NULL
-       AND min_value IS NOT NULL AND max_value IS NOT NULL
-       AND min_value <= max_value)
-  ),
-  -- 'not_visible' sah di level observation untuk atribut mana pun, dan
-  -- karena itu TIDAK boleh ikut ditulis di allowed_values. Kalau ikut,
-  -- dia akan lolos jadi current_value dan membentuk attribute_state.
-  CONSTRAINT attribute_type_no_not_visible CHECK (
-    allowed_values IS NULL OR NOT ('not_visible' = ANY (allowed_values))
-  )
-);
-COMMENT ON COLUMN attribute_type.ai_suggestion_enabled IS
-  'Gerbang precision 0,85 per atribut. Dimatikan per atribut, bukan global.';
-
-INSERT INTO attribute_type
-  (code, value_type, allowed_values, min_value, max_value,
-   vantage, is_required, ai_suggestion_enabled, review_interval_days, sort_order)
-VALUES
-  ('step_count',        'integer', NULL,                                   0, 20,
-   'entrance', true,  true,  365, 10),
-  ('ramp_wheelchair',   'enum',    ARRAY['yes','no'],                   NULL, NULL,
-   'entrance', true,  true,  365, 20),
-  ('kerb',              'enum',    ARRAY['flush','lowered','raised'],   NULL, NULL,
-   'entrance', false, false, 365, 30),
-  ('door_width_band',   'enum',    ARRAY['lt80','80_90','gt90'],        NULL, NULL,
-   'entrance', false, false, 365, 40),
-  ('surface_condition', 'enum',    ARRAY['good','uneven','damaged'],    NULL, NULL,
-   'entrance', false, false, 365, 50),
-  ('tactile_paving',    'enum',    ARRAY['yes','no'],                   NULL, NULL,
-   'entrance', false, true,  365, 60),
-  ('elevator_status',   'enum',    ARRAY['none','working','not_working'], NULL, NULL,
-   'interior', false, false,  90, 70),
-  ('toilets_wheelchair','enum',    ARRAY['yes','no'],                   NULL, NULL,
-   'toilet',   false, false, 365, 80)
-ON CONFLICT (code) DO NOTHING;
-
--- Pagar aturan "hanya tiga atribut yang boleh dapat usulan AI".
--- Ditegakkan database supaya tidak bisa longgar diam-diam lewat UPDATE.
-CREATE OR REPLACE FUNCTION trust_assert_suggestion_whitelist()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-  IF NEW.ai_suggestion_enabled
-     AND NEW.code NOT IN ('step_count','ramp_wheelchair','tactile_paving') THEN
-    RAISE EXCEPTION
-      'Atribut % tidak boleh mendapat usulan AI (docs/00-KONTRAK.md §3)', NEW.code
-      USING ERRCODE = 'check_violation';
-  END IF;
-  RETURN NEW;
-END
-$$;
-
-DROP TRIGGER IF EXISTS attribute_type_suggestion_whitelist ON attribute_type;
-CREATE TRIGGER attribute_type_suggestion_whitelist
-  BEFORE INSERT OR UPDATE ON attribute_type
-  FOR EACH ROW EXECUTE FUNCTION trust_assert_suggestion_whitelist();
 
 -- ---------------------------------------------------------------------
 -- 3. contributor
@@ -162,7 +79,7 @@ CREATE TABLE capture_session (
   token           text PRIMARY KEY CHECK (length(token) >= 32),
   contributor_id  uuid NOT NULL REFERENCES contributor(id),
   place_id        uuid NOT NULL REFERENCES place(id),
-  vantage         vantage_kind NOT NULL,
+  vantage         vantage NOT NULL,
   issued_at       timestamptz NOT NULL DEFAULT now(),
   used_at         timestamptz NULL,
   CONSTRAINT capture_session_used_after_issued
@@ -181,7 +98,7 @@ CREATE INDEX capture_session_contributor_idx
 CREATE TABLE evidence (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   place_id              uuid NOT NULL REFERENCES place(id),
-  vantage               vantage_kind NOT NULL,
+  vantage               vantage NOT NULL,
   contributor_id        uuid NOT NULL REFERENCES contributor(id),
 
   -- satu token satu bukti, ditegakkan database, bukan aplikasi

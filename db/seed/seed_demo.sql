@@ -34,12 +34,12 @@ BEGIN;
 -- percobaan sebelumnya. Postgres membedakan fungsi berdasarkan tipe argumen,
 -- jadi CREATE OR REPLACE dengan tipe berbeda akan MENAMBAH overload, bukan
 -- menggantikan — dan dua overload membuat pemanggilan jadi rawan salah pilih.
-DROP FUNCTION IF EXISTS trust_seed_chain(uuid, uuid, vantage_kind, uuid, numeric, jsonb);
+DROP FUNCTION IF EXISTS trust_seed_chain(uuid, uuid, vantage, uuid, numeric, jsonb);
 
 CREATE OR REPLACE FUNCTION trust_seed_chain(
   p_evidence_id    uuid,
   p_place_id       uuid,
-  p_vantage        vantage_kind,
+  p_vantage        vantage,
   p_contributor_id uuid,
   p_days_ago       int,
   p_attrs          jsonb   -- [{"code":..,"confirmed":..,"suggested":..,"confidence":..}]
@@ -153,17 +153,19 @@ ON CONFLICT DO NOTHING;
 -- ---------------------------------------------------------------------
 -- 2. Tempat. Empat tempat demo, satu tempat LATIHAN yang terpisah.
 -- ---------------------------------------------------------------------
-INSERT INTO place (id, name, lat, lon, is_demo_seed) VALUES
-  ('11111111-1111-4111-8111-000000000001', 'Stasiun Uji Coba Jatinangor',   -6.930000, 107.772000, true),
-  ('11111111-1111-4111-8111-000000000002', 'Puskesmas Contoh',              -6.928500, 107.770500, true),
-  ('11111111-1111-4111-8111-000000000003', 'Kantor Kelurahan Contoh',       -6.927200, 107.771800, true),
-  ('11111111-1111-4111-8111-000000000004', 'Perpustakaan Contoh',           -6.929100, 107.773400, true),
-  ('11111111-1111-4111-8111-000000000005', 'Gedung Latihan Uji Penolakan',  -6.926000, 107.769000, true)
+-- Tabel place milik Verification. `source` NOT NULL tanpa nilai bawaan, jadi
+-- wajib disebut: kelima tempat ini dibuat tangan untuk demo, bukan hasil
+-- penyemaian OSM, sehingga source = 'manual'.
+--
+-- KELIMA UUID INI DIPESAN. Penyemaian Overpass tidak boleh memakainya, dan
+-- ...0005 khusus latihan uji penolakan.
+INSERT INTO place (id, name, lat, lon, source, is_demo_seed) VALUES
+  ('11111111-1111-4111-8111-000000000001', 'Stasiun Uji Coba Jatinangor',   -6.930000, 107.772000, 'manual', true),
+  ('11111111-1111-4111-8111-000000000002', 'Puskesmas Contoh',              -6.928500, 107.770500, 'manual', true),
+  ('11111111-1111-4111-8111-000000000003', 'Kantor Kelurahan Contoh',       -6.927200, 107.771800, 'manual', true),
+  ('11111111-1111-4111-8111-000000000004', 'Perpustakaan Contoh',           -6.929100, 107.773400, 'manual', true),
+  ('11111111-1111-4111-8111-000000000005', 'Gedung Latihan Uji Penolakan',  -6.926000, 107.769000, 'manual', true)
 ON CONFLICT DO NOTHING;
-
-COMMENT ON TABLE place IS
-  'Tempat id ...0005 dipakai KHUSUS untuk latihan uji penolakan, supaya jejak '
-  'audit empat tempat demo tidak kotor oleh percobaan yang gagal.';
 
 -- ---------------------------------------------------------------------
 -- 3. Kontribusi demo

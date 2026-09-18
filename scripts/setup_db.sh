@@ -50,7 +50,7 @@ Urutan yang dijalankan:
   1. Uji koneksi
   2. Periksa apakah peran koneksi seorang superuser
   3. (opsional) Buat role app_rw
-  4. db/migrations/00*.sql berurutan, ON_ERROR_STOP=1
+  4. db/migrations/*.sql berurutan menurut nama, ON_ERROR_STOP=1
   5. db/seed/seed_demo.sql, ON_ERROR_STOP=1
   6. Ringkasan status dan pemeriksaan keterlacakan
 USAGE
@@ -223,12 +223,24 @@ fi
 # ---------------------------------------------------------------------------
 langkah "Menjalankan migrasi"
 
+# Glob-nya *.sql, BUKAN 00*.sql.
+#
+# Pola lama hanya cocok dengan berkas bernomor 001-004 milik jalur tulis, dan
+# melewati migrasi Verification (202609181245_...) tanpa sepatah kata pun —
+# skrip tetap melaporkan sukses sementara separuh skema tidak pernah dibuat.
+# Kegagalan senyap seperti itu lebih mahal daripada kegagalan berisik.
+#
+# Urutan leksikal adalah kontraknya, sama dengan yang dipakai
+# scripts/db/migrate.mts. Penamaan memakai cap waktu supaya migrasi Verification
+# berjalan lebih dulu: tabel place dan attribute_type miliknya harus ada sebelum
+# tabel jalur tulis menunjuk ke sana.
 shopt -s nullglob
-MIGRASI=("$MIGRATIONS_DIR"/00*.sql)
+MIGRASI=("$MIGRATIONS_DIR"/*.sql)
 shopt -u nullglob
 
-[ "${#MIGRASI[@]}" -gt 0 ] || mati "Tidak ada berkas 00*.sql di $MIGRATIONS_DIR"
-info "Ditemukan ${#MIGRASI[@]} berkas migrasi. Urutan glob sudah leksikal, 001 lebih dulu."
+[ "${#MIGRASI[@]}" -gt 0 ] || mati "Tidak ada berkas .sql di $MIGRATIONS_DIR"
+info "Ditemukan ${#MIGRASI[@]} berkas migrasi, dijalankan menurut urutan nama:"
+for berkas in "${MIGRASI[@]}"; do info "  - $(basename "$berkas")"; done
 
 for berkas in "${MIGRASI[@]}"; do
   nama="$(basename "$berkas")"
