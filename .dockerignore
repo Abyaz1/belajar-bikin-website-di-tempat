@@ -1,0 +1,32 @@
+# Dependency dan hasil build: dibuat ulang di dalam image.
+node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Env dan kunci: jangan pernah masuk image. Nilai diberikan lewat Cloud Run.
+.env*
+*.pem
+
+# VCS, editor, OS
+.git
+.github
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Berkas Docker sendiri dan arahan agent AI lokal
+Dockerfile
+.dockerignore
+AGENTS.md
+CLAUDE.md
