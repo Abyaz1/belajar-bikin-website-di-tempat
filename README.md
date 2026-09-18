@@ -1,36 +1,212 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Astara
 
-## Getting Started
+Astara adalah sistem verifikasi atribut aksesibilitas tempat publik. Yang disimpan
+adalah fakta fisik yang bisa diamati, bukan penilaian, dan setiap atribut wajib
+disertai foto, hasil pemeriksaan keaslian, dan timestamp. Penilaian aksesibilitas
+dihitung saat request dengan menerapkan profil kebutuhan pengguna ke fakta tersebut.
 
-First, run the development server:
+Dibuat untuk Hackathon IFEST UNPAD 2026, 18–19 September 2026.
+
+## Verifikasi oleh panitia
+
+- Aplikasi: https://ifest-760278352894.asia-southeast2.run.app
+- Panel uji penolakan: https://ifest-760278352894.asia-southeast2.run.app/uji-penolakan
+
+Alur kontribusi memakai kamera dan lokasi, jadi **buka di ponsel** (Chrome di
+Android atau Safari di iOS) lalu izinkan akses kamera dan lokasi. Di laptop tanpa
+kamera, alur kontribusi tidak bisa dijalankan, tetapi daftar tempat, laporan, dan
+jejak audit tetap bisa diperiksa. Tidak perlu akun.
+
+Langkah demo singkat:
+
+1. Buka aplikasi, lalu pilih profil kebutuhan: kursi roda manual, alat bantu jalan,
+   atau netra.
+2. Pilih satu tempat dari daftar untuk membuka laporan kesiapannya. Ganti profil
+   dan perhatikan penilaiannya ikut berubah.
+3. Di laporan tempat, pilih **Perbarui data ini**, pilih titik pandang pintu masuk,
+   ambil foto, periksa usulan sistem, konfirmasi nilainya, lalu kirim.
+4. Buka jejak audit salah satu atribut untuk melihat bukti dan hasil setiap
+   pemeriksaan keaslian.
+5. Di panel uji penolakan, jalankan tiga serangan: unggah dari galeri, kirim foto
+   lokasi lain, dan kirim ulang foto lama. Setiap penolakan menampilkan alasan dan
+   nilai terukurnya.
+
+## Prerequisite Project
+
+### Perangkat lunak
+
+| Kebutuhan | Versi | Dipakai untuk |
+|---|---|---|
+| Node.js | 24 LTS (minimal 20.9) | build dan run lokal |
+| npm | 11 (bawaan Node.js 24) | instal dependency dari `package-lock.json` |
+| Git | terbaru | clone repo |
+| Docker | terbaru | build dan run image container secara lokal (opsional) |
+| Google Cloud CLI (`gcloud`) | terbaru | deploy ke Cloud Run, dan kredensial lokal ke Google Cloud |
+
+Stack: Next.js 16.3 (App Router), React 19.2, TypeScript 5.9, Tailwind CSS 4.3.
+Tidak memakai component library; komponen UI ditulis sendiri di `lib/ui/`.
+
+### Google Cloud
+
+- Project dengan billing aktif, dan akun `gcloud` berperan Owner di project itu
+  (dibutuhkan untuk memberi izin IAM).
+- Layanan yang dipakai: Cloud Run, Cloud Build, Artifact Registry, Vertex AI,
+  Cloud SQL, Cloud Storage, dan Secret Manager. Perintah untuk mengaktifkannya ada
+  di [How to deploy](#how-to-deploy).
+- Instance Cloud SQL beserta database dan user-nya, serta satu bucket Cloud Storage.
+
+### Variabel lingkungan
+
+Daftarnya ada di `.env.example`. Salin menjadi `.env.local`, lalu isi **tanpa tanda
+kutip** supaya terbaca sama oleh Next.js, Docker, dan bash.
+
+| Variabel | Isi |
+|---|---|
+| `GCP_PROJECT_ID` | ID project Google Cloud |
+| `GCP_REGION` | region Cloud Run, misalnya `asia-southeast2` (Jakarta) |
+| `VERTEX_LOCATION` | lokasi endpoint Vertex AI, misalnya `global` |
+| `VERTEX_MODEL` | nama model Vertex AI; tidak di-hardcode di kode |
+| `CLOUD_SQL_CONNECTION_NAME` | nama koneksi instance Cloud SQL, format `PROJECT:REGION:INSTANCE` |
+| `DB_NAME` | nama database |
+| `DB_USER` | user database |
+| `DB_PASSWORD` | password user database; di Cloud Run diambil dari Secret Manager |
+| `GCS_BUCKET` | nama bucket Cloud Storage untuk foto bukti |
+
+`.env` dan semua turunannya diabaikan git. Hanya `.env.example` yang di-commit.
+
+## How to build/run
+
+Semua perintah dijalankan dari root repo memakai bash (di Windows: Git Bash).
+
+### Mode pengembangan
 
 ```bash
+npm ci
+cp .env.example .env.local   # lalu isi nilainya
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Akses ke Vertex AI dan Cloud Storage dari lokal memakai Application Default
+Credentials (ADC), jadi tidak perlu file kunci JSON. Login sekali:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+gcloud auth application-default login
+```
 
-## Learn More
+Untuk Cloud SQL: kalau aplikasi memakai library Cloud SQL Connector, ADC saja
+cukup; kalau terhubung lewat socket atau TCP biasa, jalankan Cloud SQL Auth Proxy
+di laptop.
 
-To learn more about Next.js, take a look at the following resources:
+### Build produksi
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Build menghasilkan server mandiri (`output: "standalone"`) di `.next/standalone/`.
+Untuk menjalankannya tanpa Docker, salin aset statis ke sana, lalu jalankan
+`server.js`. Env dibaca dari shell.
 
-## Deploy on Vercel
+```bash
+cp -r public .next/standalone/
+cp -r .next/static .next/standalone/.next/
+set -a && . ./.env.local && set +a
+PORT=3000 node .next/standalone/server.js
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Buka http://localhost:3000.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Docker
+
+Image ini sama dengan yang dijalankan Cloud Run:
+
+```bash
+docker build -t astara .
+docker run --rm -p 8080:8080 --env-file .env.local astara
+```
+
+Buka http://localhost:8080. Container membaca port dari env `PORT` (bawaan `8080`)
+dan berjalan sebagai user non-root.
+
+## How to deploy
+
+Aplikasi berjalan di Cloud Run sebagai layanan `ifest`. Cloud Build membangun image
+dari `Dockerfile` dan menyimpannya di repository Artifact Registry `ifest`. Layanan
+memakai service account Compute Engine bawaan project, jadi tidak ada file kunci
+JSON. Semua perintah dijalankan dari root repo memakai bash.
+
+**1. Muat konfigurasi**
+
+```bash
+set -a && . ./.env.local && set +a
+gcloud auth login
+gcloud config set project "$GCP_PROJECT_ID"
+PROJECT_NUMBER=$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')
+SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/ifest/ifest"
+```
+
+**2. Simpan password database di Secret Manager** (sekali per project)
+
+Password diketik tanpa tampil di layar dan langsung dikirim ke Secret Manager, tanpa
+lewat file:
+
+```bash
+read -rsp "DB password: " P && printf '%s' "$P" | gcloud secrets create db-password --data-file=- && unset P
+gcloud secrets add-iam-policy-binding db-password \
+  --member "serviceAccount:$SA" --role roles/secretmanager.secretAccessor
+```
+
+**3. Build dan deploy** (ulangi setiap kali rilis)
+
+```bash
+gcloud builds submit --tag "$IMAGE"
+gcloud run deploy ifest \
+  --image "$IMAGE" \
+  --region "$GCP_REGION" \
+  --service-account "$SA" \
+  --allow-unauthenticated \
+  --add-cloudsql-instances "$CLOUD_SQL_CONNECTION_NAME" \
+  --set-env-vars "GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL,CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME,DB_NAME=$DB_NAME,DB_USER=$DB_USER,GCS_BUCKET=$GCS_BUCKET" \
+  --set-secrets "DB_PASSWORD=db-password:latest"
+```
+
+Deploy pertama membuat layanan `ifest`. Setelah selesai, `gcloud` menampilkan URL
+HTTPS layanan.
+
+### Menyiapkan project baru
+
+Di project tim, langkah ini sudah dikerjakan. Untuk project lain, jalankan setelah
+langkah 1 dan sebelum langkah 2:
+
+```bash
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com aiplatform.googleapis.com \
+  sqladmin.googleapis.com storage.googleapis.com secretmanager.googleapis.com
+
+gcloud artifacts repositories create ifest \
+  --repository-format=docker --location "$GCP_REGION"
+
+# Akses service account bawaan ke Vertex AI, Cloud SQL, dan bucket
+for role in roles/aiplatform.user roles/cloudsql.client; do
+  gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+    --member "serviceAccount:$SA" --role "$role"
+done
+gcloud storage buckets add-iam-policy-binding "gs://$GCS_BUCKET" \
+  --member "serviceAccount:$SA" --role roles/storage.objectAdmin
+```
+
+Kalau `gcloud builds submit` ditolak karena izin, beri service account yang sama
+peran `roles/cloudbuild.builds.builder`.
+
+Catatan:
+
+- `PORT` diisi otomatis oleh Cloud Run. Jangan dimasukkan ke `--set-env-vars`.
+- File `.env*` tidak ikut ter-upload ke Cloud Build dan tidak masuk image
+  (`.gitignore` dan `.dockerignore`), jadi nilai env di Cloud Run hanya berasal dari
+  flag di atas.
+- Variabel `NEXT_PUBLIC_*`, kalau nanti ada, dibaca saat build, bukan saat runtime,
+  sehingga harus tersedia di tahap build image.
