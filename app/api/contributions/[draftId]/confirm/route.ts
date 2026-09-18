@@ -247,8 +247,8 @@ export async function POST(
     });
 
     // 422 selamanya, dengan alasan aslinya
-    if ('rejected' in result && Array.isArray((result as any).rejected)) {
-      const rejected = (result as any).rejected;
+    if ('rejected' in result && result.rejected) {
+      const rejected = result.rejected;
       const CODE_TO_REASON: Record<string, ReasonCode> = {
         C0: 'CAPTURE_SESSION_INVALID', C1: 'RATE_LIMITED',
         C3: 'FILE_METADATA_PRESENT',   C4: 'TIMESTAMP_SKEW',
@@ -258,7 +258,7 @@ export async function POST(
       };
       return jsonError(
         422,
-        rejected.map((f: any) => {
+        rejected.map((f) => {
           const reason = CODE_TO_REASON[f.check_code];
           return {
             code: reason,
