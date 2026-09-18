@@ -16,6 +16,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { CaptureLimits } from "./capture-config";
 
 export type CameraState =
   | "idle"
@@ -27,10 +28,9 @@ export type CameraState =
   | "unsupported"
   | "error";
 
-/** Sisi terpanjang tangkapan dan mutu JPEG — 00-KONTRAK §7. */
-export const CAPTURE_MAX_SIDE = 1600;
-export const CAPTURE_QUALITY = 0.85;
-export const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+/** Nilai kontrak (00-KONTRAK §7) bila halaman tidak meneruskan batas dari env. */
+const BATAS_KONTRAK: CaptureLimits = { maxEdgePx: 1600, uploadMaxBytes: 5 * 1024 * 1024 };
+const CAPTURE_QUALITY = 0.85;
 
 export interface Capture {
   blob: Blob;
@@ -45,7 +45,8 @@ export interface Capture {
   capturedAt: Date;
 }
 
-export function useCamera() {
+export function useCamera(limits: CaptureLimits = BATAS_KONTRAK) {
+  const { maxEdgePx, uploadMaxBytes } = limits;
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [state, setState] = useState<CameraState>("idle");
@@ -107,7 +108,7 @@ export function useCamera() {
     const video = videoRef.current;
     if (!video || !video.videoWidth) throw new Error("Kamera belum siap.");
     const capturedAt = new Date();
-    const scale = Math.min(1, CAPTURE_MAX_SIDE / Math.max(video.videoWidth, video.videoHeight));
+    const scale = Math.min(1, maxEdgePx / Math.max(video.videoWidth, video.videoHeight));
     const width = Math.round(video.videoWidth * scale);
     const height = Math.round(video.videoHeight * scale);
     const canvas = document.createElement("canvas");
@@ -117,12 +118,12 @@ export function useCamera() {
 
     let quality = CAPTURE_QUALITY;
     let blob = await toJpeg(canvas, quality);
-    while (blob.size > UPLOAD_MAX_BYTES && quality > 0.5) {
+    while (blob.size > uploadMaxBytes && quality > 0.5) {
       quality -= 0.1;
       blob = await toJpeg(canvas, quality);
     }
     return { blob, width, height, sourceWidth: video.videoWidth, sourceHeight: video.videoHeight, capturedAt };
-  }, []);
+  }, [maxEdgePx, uploadMaxBytes]);
 
   return { videoRef, state, detail, start, stop, capture };
 }

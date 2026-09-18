@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPlaceFacts } from "@/lib/ui/api/server";
 import { isProfile, isVantage } from "@/lib/ui/api/types";
+import { captureLimits } from "@/lib/ui/capture-config";
 import { VANTAGE_LABEL } from "@/lib/ui/copy";
 import { Alur } from "./alur";
 
@@ -32,6 +33,7 @@ export default async function Page({ params, searchParams }: PageProps<"/kontrib
         vantage={titikPandang}
         placeHref={`/tempat/${encodeURIComponent(tempatId)}${q}`}
         vantageHref={`/kontribusi/${encodeURIComponent(tempatId)}${q}`}
+        limits={captureLimits()}
       />
     </div>
   );
