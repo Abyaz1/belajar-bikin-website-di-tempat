@@ -174,10 +174,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
               <div className="relative aspect-[16/10] overflow-hidden rounded-md bg-p4">
                 {unpad ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={FOTO_UNPAD.src} alt={FOTO_UNPAD.alt} className="h-full w-full object-cover" />
+                  <img src={FOTO_UNPAD.src} alt={FOTO_UNPAD.alt} decoding="async" className="h-full w-full object-cover" />
                 ) : foto?.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={foto.photo_url} alt={foto.photo_alt ?? ""} className="h-full w-full object-cover" />
+                  <img src={foto.photo_url} alt={foto.photo_alt ?? ""} decoding="async" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-1 text-ink-muted">
                     <IlustrasiKursiRoda className="h-2/3 w-auto" />
