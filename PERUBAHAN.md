@@ -690,3 +690,79 @@ yang justru tidak tertangkap sebagai penguatan dilaporkan sebagai "semua masuk
 pita penguatan" — sambil mencetak sisa ruang negatif di baris berikutnya. Sudah
 diperbaiki. Perkakas ukur yang salah baca lebih berbahaya daripada tidak punya
 perkakas, karena ia menghasilkan keyakinan.
+
+---
+
+## 27. Penalaran model dimatikan supaya panggilan muat di anggaran 8 detik
+
+**Kondisi di proposal:** Kontrak §7 menetapkan batas waktu model 8 detik tanpa
+retry, dan docs-20 §4 menetapkan satu panggilan per bukti. Angka 8 detik dipilih
+karena separuh anggaran 60 detik beban kontribusi tidak boleh habis di satu
+panggilan. Nama model `gemini-3.8-flash` dicatat di §10 sebagai "lolos tes di
+lokasi global". Yang tidak pernah diuji adalah pasangan lengkapnya: model itu,
+prompt `2026-09-18.v1`, skema berbatas, dan foto pintu masuk sungguhan berukuran
+1600 px.
+
+**Yang diubah:** `lib/verification/vertex-caller.ts` sekarang mengirim
+`thinkingConfig: { thinkingBudget: 0 }`. Tidak ada perubahan pada prompt, skema,
+nama model, batas waktu, maupun kebijakan tanpa retry.
+
+**Alasan perubahan:** Diukur pada foto pintu masuk 1200×1600 px, lewat jalur kode
+repo dan batas waktu kontrak 8 detik, usulan model **tidak pernah sampai** ke
+layar konfirmasi.
+
+| Pengukuran | Hasil |
+|---|---|
+| Jalur repo, batas 8 dtk, penalaran bawaan | 3 dari 3 `timeout` (8.006 · 8.016 · 8.011 ms) |
+| Panggilan langsung, prompt dan skema sama, penalaran bawaan | 9.633 ms |
+| Panggilan langsung, prompt dan skema sama, `thinkingBudget: 0` | 4.164 ms |
+
+`gemini-3.8-flash` menalar secara bawaan, dan penalaran itu memakan sekitar 5,5
+detik dari anggaran 8 detik. Konsekuensinya bukan usulan yang lambat, melainkan
+usulan yang tidak pernah ada: setiap kontribusi berakhir di cabang `timeout`,
+layar konfirmasi selalu tampil dengan checklist kosong, dan `draft_suggestion`
+tidak pernah terisi. Fitur yang menjadi alasan Vertex AI dipakai sama sekali
+tidak berjalan, tanpa satu pun galat yang terlihat.
+
+**Dampak terhadap masalah inti:** Konfirmasi wajib kontributor tetap satu-satunya
+gerbang, dan aturan 2 tidak tersentuh — perubahan ini hanya membuat usulan
+benar-benar tiba, bukan membuatnya berwenang. Batas yang diakui, dan semuanya
+belum selesai:
+
+- **Perubahan ini perlu, tetapi belum cukup.** Sesudah diterapkan, tes §10 pada
+  batas 8 detik lolos 2 dari 5 kali. Tiga sisanya tetap `timeout`.
+- **Ekor latensinya menempel di batas.** Enam panggilan berjarak 12 detik:
+  3.856 · 3.123 · 7.545 · 2.738 · 2.819 ms. Rata-ratanya 4,0 detik, tetapi satu
+  panggilan menyentuh 7,5 detik. Anggaran 8 detik nyaris tanpa ruang gerak.
+- **Kuota menolak sebagian panggilan.** HTTP 429 muncul 1 dari 6 panggilan
+  meskipun sudah dijarakkan, dan satu penolakan baru terjawab setelah 15.090 ms.
+  Ini penyebab kegagalan yang tersisa, dan bukan sesuatu yang bisa diperbaiki
+  dari sisi kode.
+- **Semua diukur dari satu laptop ke endpoint `global`.** Cloud Run di
+  `asia-southeast2` belum diukur dan bisa berbeda.
+
+**Akibat untuk entri 25, dan ini perlu diperiksa sebelum angkanya dipakai.**
+Gerbang precision di entri 25 dijalankan ketika baris ini belum ada, yaitu dengan
+penalaran menyala. Dua hal menyusul dari situ:
+
+1. Menurut docs-20 §5, precision hanya sah untuk pasangan model dan prompt yang
+   diukur. Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
+   dalam, jawabannya berubah dari `not_visible` menjadi `no` untuk
+   `tactile_paving`. Gerbang 0,85 karena itu perlu dijalankan ulang di atas
+   konfigurasi ini.
+2. **Angka n yang kecil di entri 25 belum tentu berarti model menolak menebak.**
+   `presisi.run.test.ts` memanggil `suggestAttributes` lewat jalur yang sama yang
+   di sini timeout 3 dari 3 kali, dan menjalankannya tiga paralel sehingga
+   penolakan kuota lebih mungkin. Kalau sebagian besar dari 36 citra itu berakhir
+   `timeout`, daftar usulannya kosong bukan karena model diam, melainkan karena
+   jawabannya tidak pernah datang. Itu akan menjelaskan n=3 dan n=2 dari 36
+   citra. Laporan hasil ukur menyimpan `status` dan `latency_ms` per citra, jadi
+   ini bisa dipastikan dengan menghitung berapa yang `ok` dan berapa yang
+   `timeout` — sebelum kesimpulan "model tidak pernah mengusulkan ada jalur
+   pemandu" dibawa ke deck.
+
+Perubahan ini tidak membatalkan entri 25 dan tidak menyentuh migrasi yang sudah
+diterapkan. Yang diminta hanya satu: hitung ulang statusnya, lalu putuskan.
+
+Syarat pembekuan kontrak §10 no. 1 sendiri **belum terpenuhi**. Yang berubah
+adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
