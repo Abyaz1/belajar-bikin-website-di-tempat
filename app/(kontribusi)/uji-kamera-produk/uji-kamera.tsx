@@ -132,12 +132,19 @@ function CaraA({
   const { videoRef, state, detail, start, capture } = useCamera();
   const announce = useAnnounce();
   const [busy, setBusy] = useState(false);
+  // Berkas yang persis akan dikirim layar kamera produk — untuk uji Vertex
+  // (lib/verification/vertex.live.test.ts) dan untuk himpunan uji precision.
+  const [unduhan, setUnduhan] = useState<string | null>(null);
   const problem = CAMERA_PROBLEM[state];
 
   async function shoot() {
     setBusy(true);
     try {
       const shot = await capture();
+      setUnduhan((lama) => {
+        if (lama) URL.revokeObjectURL(lama);
+        return URL.createObjectURL(shot.blob);
+      });
       const r = await sniffMetadata(shot.blob);
       onReport({ meta: r, w: shot.width, h: shot.height, sw: shot.sourceWidth, sh: shot.sourceHeight });
       announce(
@@ -184,6 +191,13 @@ function CaraA({
         )}
       </div>
       {report ? <ReportView report={report} /> : null}
+      {unduhan ? (
+        <p>
+          <a href={unduhan} download="kamera-produk.jpg" className="inline-flex min-h-11 items-center">
+            Unduh foto ini (JPEG persis seperti yang dikirim ke server)
+          </a>
+        </p>
+      ) : null}
     </section>
   );
 }
