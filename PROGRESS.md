@@ -8,6 +8,72 @@ mengukurnya tidak dipakai, dan yang belum jadi disebut belum jadi.
 
 ---
 
+## Checkpoint 2 — 21:00, 18 September (gerbang precision)
+
+Sasaran jadwal: *gerbang precision diputuskan, atribut di bawah 0,85 dimatikan
+usulannya.*
+
+### Ringkasan jujur
+
+Seluruh perkakasnya siap dan teruji, tetapi **gerbangnya belum bisa dijalankan**
+karena himpunan uji berlabel belum ada. Label harus ditetapkan manusia sebelum
+model melihat citranya; mengarangnya akan membuat satu-satunya angka yang
+menggerbangi usulan AI tidak berarti apa-apa. Jadi ini menunggu anotasi, bukan
+menunggu kode.
+
+| Sasaran | Keadaan |
+|---|---|
+| Aplikasi hidup di Cloud Run | **tercapai** — revisi `ifest-00004-rxf`, seluruh halaman kontrak §9 membalas 200 |
+| Cloud SQL terisi dan terpakai | **tercapai** — 44 tempat, jalur baca dan tulis keduanya jalan |
+| GCS terpakai | **tercapai** — unggahan nyata, objek terbukti tidak bisa diakses publik |
+| Vertex AI terpanggil | **tercapai** — `model_status: ok`, model menjawab pada kontribusi nyata |
+| Gerbang precision | **belum** — menunggu himpunan uji berlabel dari problem owner |
+
+### Yang berubah sejak checkpoint 1
+
+- Deployment diperbaiki. Sebelumnya melayani image lama yang belum memuat E1,
+  sehingga `/uji-penolakan` membalas 500 dan `/tempat` macet di "Memuat data
+  tempat…". Keduanya pulih.
+- Migrasi dan data benih demo diterapkan ke Cloud SQL.
+- Penyemaian OSM koridor Dipatiukur masuk: 39 tempat, 3 klaim atribut, semuanya
+  `belum_terverifikasi`.
+- Jalur tulis diuji ujung ke ujung di produksi: sesi anonim, token penangkapan,
+  draft dengan kesembilan pemeriksaan lolos, konfirmasi wajib ditegakkan,
+  pengulangan ditolak 409.
+- Penegakan append-only diuji langsung di Cloud SQL, bukan hanya di lokal.
+- Uji penolakan dinaikkan jadi 55 kasus supaya memenuhi syarat sepuluh per kelas.
+
+### Satu hasil yang layak masuk deck
+
+Pada kontribusi nyata di produksi, model menjawab `not_visible` untuk ketiga
+atribut yang diukur — citranya memang bukan pintu — lalu kontributor
+mengoreksinya, dan `was_corrected` tercatat `true`. Model menolak menebak,
+manusia mengoreksi, keduanya terekam. Itu pengaman yang paling sering gagal di
+sistem sejenis, dan di sini ada buktinya.
+
+### Batasan yang diakui
+
+- **Tidak ada satu pun bukti yang punya foto tayang.** Pengaburan wajah adalah
+  butir 1 daftar pemotongan dan belum dikerjakan, jadi kolom foto tayang kosong
+  untuk semua baris termasuk data demo. Fotonya tersimpan, hanya tidak
+  ditampilkan. Ini perlu keputusan: dipotong resmi dan dicatat, atau dikerjakan.
+- Penolakan Row Level Security bersifat senyap: nol baris, tanpa galat.
+- Unggahan bersih lewat API langsung tidak tertangkap pemeriksaan metadata, dan
+  koordinat yang dikarang lolos pemeriksaan jarak. Keduanya punya tes sendiri
+  yang sengaja mengharapkan hasil itu.
+
+### Angka
+
+| Ukuran | Angka | Cara |
+|---|---|---|
+| Unit test seluruh repo | 285 lolos, 2 dilewati | `npm test` |
+| Uji penolakan | 55 lolos, sepuluh atau lebih per kelas | `pytest tests/rejection` |
+| Tempat di produksi | 44 (39 OSM, 5 demo) | Cloud SQL |
+| Atribut terverifikasi tanpa jejak audit | 0 | pemeriksaan di akhir skrip benih |
+| Build produksi | berhasil, tanpa peringatan | `npm run build` |
+
+---
+
 ## Checkpoint 1 — 15:00, 18 September
 
 Sasaran jadwal: *aplikasi nyata sudah di Cloud Run, Cloud SQL dan GCS tersambung.*
