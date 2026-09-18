@@ -766,3 +766,66 @@ diterapkan. Yang diminta hanya satu: hitung ulang statusnya, lalu putuskan.
 
 Syarat pembekuan kontrak §10 no. 1 sendiri **belum terpenuhi**. Yang berubah
 adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
+
+---
+
+## 28. Gerbang precision diukur ulang di atas penalaran yang dimatikan
+
+**Kondisi di proposal:** Entri 25 mencatat keputusan gerbang precision, dan entri
+27 mematikan penalaran model supaya panggilan muat di anggaran 8 detik. Entri 27
+sendiri menyatakan konsekuensinya: mematikan penalaran mengubah jawaban model,
+jadi gerbang 0,85 harus diukur ulang di atas konfigurasi itu (docs-20 §5).
+
+**Yang diubah:** Pengukuran diulang atas 36 citra berlabel yang sama, prompt yang
+sama `2026-09-18.v1`, dengan `thinkingBudget: 0` dan batas waktu kontrak 8 detik —
+bukan 45 detik seperti pengukuran pertama.
+
+| atribut | precision | n | 95% | gerbang |
+|---|---|---|---|---|
+| `step_count` | 1,00 | 2 | 0,34–1,00 | lolos |
+| `ramp_wheelchair` | 1,00 | 1 | 0,21–1,00 | lolos |
+| `tactile_paving` | tidak terdefinisi | 0 | — | **dimatikan** |
+
+**Keputusannya tidak berubah.** `tactile_paving` tetap mati, dua atribut lain
+tetap menyala, dan tidak ada satu pun salah positif di ketiganya. Yang berubah
+angka pendukungnya, dan itu justru menguatkan: kali ini diukur di bawah batas
+waktu yang sama dengan produksi, jadi angkanya berlaku untuk konfigurasi yang
+benar-benar dipakai. Latensi median turun ke 4.955 ms dari 10.643 ms, dan 30 dari
+36 citra terjawab — dibanding 7 dari 36 pada percobaan pertama dengan batas waktu
+kontrak.
+
+**Alasan perubahan:** Angka precision hanya berlaku untuk pasangan model, prompt,
+dan konfigurasi tertentu. Membiarkan angka lama berdiri sesudah penalaran
+dimatikan berarti memajang angka yang tidak pernah diukur pada sistem yang
+dijalankan. Entri 25 sengaja tidak diubah: angkanya benar untuk konfigurasi saat
+itu, dan menghapusnya diam-diam akan menghilangkan jejak bahwa konfigurasinya
+pernah berbeda.
+
+Pengukuran ulang ini juga membongkar cacat di perkakas ukurnya sendiri. Percobaan
+pertama sesudah penalaran dimatikan melaporkan 16 panggilan "failed", dan angka
+precision-nya tetap terlihat baik. Sebabnya ternyata bukan model, melainkan
+**HTTP 429, kuota Vertex habis** karena satu sesi pengukuran menembak 36
+panggilan beruntun dan sesi itu sudah dijalankan berkali-kali. Panggilan yang
+gagal dikeluarkan dari hitungan, sehingga precision dihitung dari sisa citra yang
+kebetulan terjawab — makin banyak yang gagal, makin sedikit kesempatan model
+berbuat salah, dan makin bagus angkanya. Perkakas ukur yang diam saat gagal
+menghasilkan angka yang menyanjung.
+
+Dua perbaikan dipasang di pengukur, keduanya **tidak menyentuh jalur produksi**:
+sebab kegagalan kini ikut dicatat dan dicetak, sehingga "16 gagal" tidak lagi
+perlu ditebak apakah itu kuota, skema, atau jaringan; dan kegagalan kuota
+ditunggu lalu diulang dengan jeda berlipat, paralelisme diturunkan dari tiga ke
+dua. Kontrak §7 melarang retry di jalur produksi dan larangan itu tetap berlaku
+utuh untuk E4 — yang diukur di sini adalah ketepatan model, bukan perilaku E4
+saat sibuk, dan keduanya menuntut aturan yang berbeda.
+
+**Dampak terhadap masalah inti:** Gerbang precision adalah janji bahwa usulan
+model tidak dinyalakan tanpa bukti. Janji itu kosong kalau angkanya diukur pada
+konfigurasi yang bukan konfigurasi yang dijalankan, atau dihitung dari citra yang
+kebetulan lolos sementara sisanya hilang tanpa suara. Sesudah dua perbaikan ini,
+angka yang kami sebut adalah angka dari sistem yang sama dengan yang dipakai
+kontributor, dengan jumlah citra yang gagal disebutkan terang-terangan di
+laporannya. Enam citra masih melewati 8 detik dan dilaporkan apa adanya; itu
+berarti sekitar satu dari enam kontribusi tidak akan menerima usulan model sama
+sekali, dan kontributor mengisi formulirnya sendiri — perilaku yang memang
+dirancang, bukan kegagalan.
