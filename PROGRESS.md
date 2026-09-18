@@ -67,6 +67,7 @@ kedua baru boleh dibawa ke deck setelah pengukuran pada himpunan uji berlabel.
   `step_count` berisi angka, `ramp_wheelchair` berisi `ada` atau angka, sebagian
   besar isian kosong, dan `pelabel` kosong di semua citra. Gerbang precision
   menunggu label diperbaiki oleh manusia sambil melihat fotonya.
+- `PERUBAHAN.md` telah dilengkapi seluruhnya dengan 24 entri berformat empat bagian (15 perubahan arsitektur dari proposal ke kontrak bersama, termasuk Entri 10 himpunan atribut minimum beserta tabel sebelum vs sesudah, dan 9 perubahan teknis implementasi).
 
 ### Batasan yang diakui
 
