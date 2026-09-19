@@ -609,7 +609,7 @@ dasar apa", bukan hanya jejak di basis data. Batasnya diakui:
 **Kondisi di proposal:** Kamus atribut menetapkan tiga atribut yang boleh menerima
 usulan model — `step_count`, `ramp_wheelchair`, dan `tactile_paving` — dengan
 alasan bahwa ketiganya adalah yang precision-nya diukur. Exsum Lampiran 6 dan
-CLAUDE.md §8 (`SUGGESTION_PRECISION_GATE`) menetapkan
+konfigurasi `SUGGESTION_PRECISION_GATE` (`lib/verification/config.ts`) menetapkan
 ambang aktivasi 0,85 per atribut. Tabel `attribute_type` menyalakan ketiganya.
 
 **Yang diubah:** `tactile_paving` dimatikan, `ai_suggestable = false`. Dua atribut
@@ -669,7 +669,7 @@ Dua pengukuran, keduanya lewat modul yang persis menegakkan C8 di E4:
 | 66 pasangan pintu **berbeda** | jarak terdekat **24** — tidak satu pun salah dianggap duplikat |
 | dua HP, pintu **sama**, jarak 2 cm | **14** — hasil klasifikasi `none`, penguatan terlewat |
 
-**Alasan perubahan:** Sisi pintu-berbeda menjawab kekhawatiran lama. CLAUDE.md §17
+**Alasan perubahan:** Sisi pintu-berbeda menjawab kekhawatiran lama. Keputusan tim di jam 0
 mengantisipasi "turunkan ke 4 kalau salah tolak"; dengan pasangan terdekat di 24
 dan ambang di 6, jarak amannya 18 dan kekhawatiran itu tidak terbukti. Ambangnya
 tidak perlu turun.
@@ -714,10 +714,10 @@ perkakas, karena ia menghasilkan keyakinan.
 
 ## 27. Penalaran model dimatikan supaya panggilan muat di anggaran 8 detik
 
-**Kondisi di proposal:** CLAUDE.md §8 (`VERTEX_TIMEOUT_MS`) menetapkan batas waktu
-model 8 detik tanpa retry, dan modul verifikasi dirancang satu panggilan per bukti. Angka 8 detik dipilih
+**Kondisi di proposal:** Konfigurasi `VERTEX_TIMEOUT_MS` (`lib/verification/config.ts`,
+`.env.example`) menetapkan batas waktu model 8 detik tanpa retry, dan modul verifikasi dirancang satu panggilan per bukti. Angka 8 detik dipilih
 karena separuh anggaran 60 detik beban kontribusi tidak boleh habis di satu
-panggilan. Nama model `gemini-3.8-flash` dicatat di CLAUDE.md §17 sebagai "lolos tes di
+panggilan. Nama model `gemini-3.8-flash` dicatat dalam keputusan jam 0 tim sebagai "lolos tes di
 lokasi global". Yang tidak pernah diuji adalah pasangan lengkapnya: model itu,
 prompt `2026-09-18.v1`, skema berbatas, dan foto pintu masuk sungguhan berukuran
 1600 px.
@@ -764,8 +764,8 @@ belum selesai:
 Gerbang precision di entri 25 dijalankan ketika baris ini belum ada, yaitu dengan
 penalaran menyala. Dua hal menyusul dari situ:
 
-1. Precision hanya sah untuk pasangan model dan prompt yang diukur (CLAUDE.md
-   §17, baris nama model). Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
+1. Precision hanya sah untuk pasangan model dan prompt yang diukur (angka gerbang
+   berlaku untuk satu pasangan model dan prompt). Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
    dalam, jawabannya berubah dari `not_visible` menjadi `no` untuk
    `tactile_paving`. Gerbang 0,85 karena itu perlu dijalankan ulang di atas
    konfigurasi ini.
@@ -783,7 +783,7 @@ penalaran menyala. Dua hal menyusul dari situ:
 Perubahan ini tidak membatalkan entri 25 dan tidak menyentuh migrasi yang sudah
 diterapkan. Yang diminta hanya satu: hitung ulang statusnya, lalu putuskan.
 
-Syarat pembekuan nama model di CLAUDE.md §17 (foto 1600 px dijawab di bawah 8
+Syarat pembekuan nama model yang ditetapkan tim (foto 1600 px dijawab di bawah 8
 detik) sendiri **belum terpenuhi**. Yang berubah
 adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
 
@@ -835,7 +835,7 @@ Dua perbaikan dipasang di pengukur, keduanya **tidak menyentuh jalur produksi**:
 sebab kegagalan kini ikut dicatat dan dicetak, sehingga "16 gagal" tidak lagi
 perlu ditebak apakah itu kuota, skema, atau jaringan; dan kegagalan kuota
 ditunggu lalu diulang dengan jeda berlipat, paralelisme diturunkan dari tiga ke
-dua. CLAUDE.md §8 melarang retry di jalur produksi dan larangan itu tetap berlaku
+dua. Kebijakan tanpa retry di jalur produksi (`VERTEX_TIMEOUT_MS`) tetap berlaku
 utuh untuk E4 — yang diukur di sini adalah ketepatan model, bukan perilaku E4
 saat sibuk, dan keduanya menuntut aturan yang berbeda.
 
@@ -962,7 +962,8 @@ wewenang menolak berarti membiarkan angka yang belum terbukti menghapus kesaksia
 manusia yang berdiri di depan pintu itu.
 
 **Dampak terhadap masalah inti:** Kalimat "AI asisten, bukan otoritas" berlaku di
-level kode (aturan 2, CLAUDE.md §2). Gambar L2 di Exsum tidak mewakili produk yang
+level kode: `observation.confirmed_value` berstatus NOT NULL di skema, dan hanya E5
+yang menulis observasi. Gambar L2 di Exsum tidak mewakili produk yang
 dibangun, dan kami menyebutnya terbuka supaya gambar itu tidak dibaca sebagai
 fitur.
 
@@ -1052,7 +1053,7 @@ sama dengan bagi siapa pun: laporan kesiapan dan jejak audit yang terbuka tanpa
 akun, serta jalur sanggahan berupa kontribusi tandingan berfoto (entri 13).
 
 **Alasan perubahan:** Ini butir 4 daftar pemotongan yang disepakati tim di awal
-babak final (CLAUDE.md §16). Umpan balik yang layak butuh identitas pengelola yang
+babak final. Umpan balik yang layak butuh identitas pengelola yang
 terverifikasi, dan itu tidak bisa dibangun dengan jujur dalam 24 jam.
 
 **Dampak terhadap masalah inti:** Tautan jejak audit sebuah tempat bisa dikirim ke
@@ -1201,7 +1202,8 @@ angkanya dinyatakan bersifat awal.
 **Yang diubah:** Beban diukur dari jam server, bukan stopwatch (`npm run ukur:beban`):
 dari layar titik pandang dibuka (`capture_session.issued_at`) sampai konfirmasi
 tersimpan (`observation.observed_at`). Metriknya dihitung hanya untuk titik pandang
-**wajib**, yaitu pintu masuk (CLAUDE.md §5), karena titik pandang lain menuntut
+**wajib**, yaitu pintu masuk (satu-satunya titik pandang yang diwajibkan API untuk
+kontribusi minimum), karena titik pandang lain menuntut
 satu atribut dan tidak memanggil model.
 
 | titik pandang | kontribusi | total per kontribusi | lewat 60 dtk |
