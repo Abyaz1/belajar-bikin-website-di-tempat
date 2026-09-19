@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPlace, getPlaceFacts } from "@/lib/ui/api/server";
 import { PROFILES, VANTAGES, isProfile, type PlaceDetail, type ProfileCode } from "@/lib/ui/api/types";
-import { AttributeRow } from "@/lib/ui/attribute-row";
+import { AttributeRow, FotoTitikPandang, LegendaTanda, fotoTitikPandang } from "@/lib/ui/attribute-row";
 import { DemoLabel, VerdictBadge } from "@/lib/ui/badges";
 import { ButtonLink } from "@/lib/ui/button";
 import {
@@ -198,6 +198,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
             {checkedCount} dari {attrs.length} kondisi sudah diperiksa. Setiap nilai membawa foto, hasil pemeriksaan, dan
             tanggalnya.
           </p>
+          <LegendaTanda />
         </div>
         {VANTAGES.map((v) => {
           const rows = attrs.filter((a) => attributeVantage(a.code) === v);
@@ -212,17 +213,24 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
                   Kirim foto {VANTAGE_LABEL[v].toLowerCase()}
                 </Link>
               </div>
-              <ul className="rounded-md border border-line px-4">
-                {rows.map((a) => (
-                  <AttributeRow
-                    key={a.code}
-                    attribute={a}
-                    placeName={place.name}
-                    detailHref={`${base}/atribut/${encodeURIComponent(a.code)}?profil=${profile}`}
-                    auditHref={`${base}/atribut/${encodeURIComponent(a.code)}/audit`}
-                  />
-                ))}
-              </ul>
+              {/* Satu foto besar untuk seluruh titik pandang, lalu kondisinya.
+                  Satu kiriman foto menjadi bukti semua kondisi di sini, jadi
+                  mengulang foto yang sama di tiap baris hanya membingungkan. */}
+              <div className="overflow-hidden rounded-md border border-line bg-surface">
+                <FotoTitikPandang sumber={fotoTitikPandang(rows)} judul={VANTAGE_LABEL[v]} placeName={place.name} />
+                <ul className="px-4">
+                  {rows.map((a) => (
+                    <AttributeRow
+                      key={a.code}
+                      attribute={a}
+                      placeName={place.name}
+                      fotoKelompok={fotoTitikPandang(rows)?.photo_url ?? null}
+                      detailHref={`${base}/atribut/${encodeURIComponent(a.code)}?profil=${profile}`}
+                      auditHref={`${base}/atribut/${encodeURIComponent(a.code)}/audit`}
+                    />
+                  ))}
+                </ul>
+              </div>
             </section>
           );
         })}

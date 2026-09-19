@@ -107,6 +107,31 @@ export function IconCheck() {
   );
 }
 
+export function IconX() {
+  return (
+    <Svg>
+      <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" strokeWidth={3} />
+    </Svg>
+  );
+}
+
+export function IconDash() {
+  return (
+    <Svg>
+      <path d="M6 12h12" strokeWidth={3} />
+    </Svg>
+  );
+}
+
+export function IconQuestion() {
+  return (
+    <Svg>
+      <path d="M9.2 9a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.1 1-1.1 1.8v.4" strokeWidth={2.5} />
+      <path d="M12 17.4v.1" strokeWidth={3} />
+    </Svg>
+  );
+}
+
 export function IconFlag() {
   return (
     <Svg>
