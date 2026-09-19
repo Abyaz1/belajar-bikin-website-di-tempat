@@ -9,7 +9,7 @@
 import type { AuditEntry } from "./api/types";
 import { DemoLabel } from "./badges";
 import { ChecksTable } from "./checks";
-import { AUDIT_ACTION_LABEL, actorLabel, valueOption } from "./copy";
+import { AUDIT_ACTION_LABEL, actorLabel, attributeLabel, valueOption } from "./copy";
 import { formatDateTime, formatMeters } from "./format";
 
 export function EvidencePanel({
@@ -104,6 +104,31 @@ export function AuditTimeline({ entries, attributeCode }: { entries: AuditEntry[
               Sebelumnya: {valueOption(attributeCode, e.before).toLowerCase()}. Sesudahnya:{" "}
               <span className="font-semibold">{valueOption(attributeCode, e.after).toLowerCase()}</span>.
             </p>
+          ) : null}
+
+          {/* Foto tiap kiriman. E3 mengirim photo_url per bukti; tanpa ini, foto
+              selain yang terbaru (penguat, nilai yang disengketakan, kiriman
+              lama) tidak terlihat di mana pun. Ruangnya dipesan supaya
+              linimasa tidak melompat saat foto dimuat. */}
+          {e.evidence?.photo_url ? (
+            <figure className="space-y-1">
+              <a href={e.evidence.photo_url} className="inline-block rounded-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element -- foto bukti dari endpoint sendiri */}
+                <img
+                  src={e.evidence.photo_url}
+                  alt={`Foto bukti ${attributeLabel(attributeCode).toLowerCase()}, ${
+                    e.evidence.captured_at ? `diambil ${formatDateTime(e.evidence.captured_at)}` : `dikirim ${formatDateTime(e.at)}`
+                  }`}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-40 w-56 rounded-sm border border-line bg-surface-alt object-cover"
+                />
+              </a>
+              <figcaption className="text-meta text-ink-muted">
+                {e.evidence.captured_at ? `Foto diambil ${formatDateTime(e.evidence.captured_at)}. ` : null}
+                Ketuk foto untuk ukuran penuh.
+              </figcaption>
+            </figure>
           ) : null}
 
           {e.evidence ? (
