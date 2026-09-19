@@ -1,5 +1,5 @@
 /**
- * Konfigurasi terpusat jalur Verification — 00-KONTRAK §7, CLAUDE.md §8.
+ * Konfigurasi terpusat jalur Verification. Daftar lengkapnya ada di .env.example.
  * Tidak ada angka ambang ditulis langsung di dalam fungsi. Nilai default di
  * sini adalah nilai kontrak; pola sama dengan lib/trust/config.ts.
  */

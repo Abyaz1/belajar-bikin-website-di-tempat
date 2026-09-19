@@ -36,12 +36,14 @@ Langkah demo singkat:
 | Berkas | Isi |
 |---|---|
 | `PERUBAHAN.md` | Setiap perbedaan antara Exsum (proposal penyisihan) dan implementasi, dalam format empat bagian |
-| `CLAUDE.md` | Kontrak bersama tim: aturan yang tidak boleh dilanggar kode, kamus atribut, kode alasan penolakan, konfigurasi, dan endpoint. Rujukan "kontrak §…" di dokumen lain mengacu ke pasal di berkas ini |
+| `.env.example` | Seluruh ambang dan konfigurasi beserta nilai bawaannya |
+| `db/migrations/` | Skema basis data, termasuk penegakan append-only dan kolom yang wajib terisi |
 | `tools/metrics/testset/README.md` | Himpunan uji precision dan cara mengukurnya |
 
 Selama babak final, tim juga memakai dokumen kerja internal: PRD, TRD, dan
-spesifikasi per peran. Dokumen-dokumen itu tidak di-commit. Isi yang mengikat kode
-sudah dipadatkan di `CLAUDE.md`, dan setiap penyimpangan darinya dicatat di
+spesifikasi per peran. Dokumen-dokumen itu tidak di-commit. Aturan yang mengikat
+ditegakkan langsung di skema basis data, konfigurasi, dan kode, sehingga bisa
+diperiksa dari repositori ini. Setiap penyimpangan dari rancangan dicatat di
 `PERUBAHAN.md` beserta alasannya.
 
 ## Prerequisite Project

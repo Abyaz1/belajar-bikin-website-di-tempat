@@ -2,7 +2,7 @@ import "server-only";
 
 /**
  * Pembaca basis data untuk E1/E2/E3. Hanya SELECT, dan hanya kolom yang disebut
- * satu per satu (CLAUDE.md §14: tidak ada SELECT * di jalur yang keluar ke
+ * satu per satu (aturan tim: tidak ada SELECT * di jalur yang keluar ke
  * respons). Status atribut SELALU dari view attribute_state_read — tidak ada
  * query di sini yang menghitung status sendiri. observation hanya dipakai untuk
  * mencari id dan nilai terkonfirmasi, jadi ai_confidence tidak pernah terbaca.
