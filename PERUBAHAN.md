@@ -1318,3 +1318,58 @@ terlihat langsung di layar yang sama:
 Batasnya dinyatakan: cakupan terverifikasi jauh lebih kecil dari koridor yang
 dijanjikan Exsum, dan halte serta fasilitas kesehatan belum punya satu pun bukti
 berfoto.
+
+---
+
+## 44. Ambang pHash diuji ulang pada sampel jauh lebih besar, dan satu angka di entri 26 dikoreksi
+
+**Kondisi di proposal:** Entri 26 menetapkan ambang pHash 6 sebagai final dan
+menyatakan pita penguatan 3–6 tidak terjangkau. Dasarnya 66 pasangan pintu
+berbeda dari 12 citra, dan **satu** pasangan pintu-sama dari dua HP.
+
+**Yang diubah:** Tidak ada ambang yang diubah. Yang bertambah bukti, dan satu
+angka di entri 26 dikoreksi karena ternyata salah.
+
+| yang diukur | entri 26 | sekarang |
+|---|---|---|
+| pasangan pintu berbeda | 66 (12 citra) | **630** (36 citra) |
+| pintu berbeda terdekat | 24 | **18** |
+| pasangan pada atau di bawah ambang 6 | 0 | **0** dari 630 |
+| pasangan pintu-sama | 1, dari uji laboratorium | **11**, dari kontribusi produksi nyata |
+| jarak kandidat penguatan | 14 | **24 sampai 38** |
+
+**Alasan perubahan:** Entri 26 menyebut "celah 14–24 yang bersih". Itu keliru,
+dan ketahuan begitu sampelnya diperbesar: dengan 630 pasangan, pintu berbeda
+terdekat bukan 24 melainkan **18**, sehingga celahnya cuma 14–18. Tiga belas
+pasangan berada di bawah 24, angka yang sebelumnya kami kira lantai.
+
+Arah koreksinya menambah risiko, bukan mengurangi, dan itu justru sebabnya
+dicatat. Sampel kecil memberi angka yang terlihat lebih aman daripada kenyataan.
+
+Dua kesimpulan entri 26 tidak berubah, dan keduanya kini berdiri di atas bukti
+yang jauh lebih kuat:
+
+Ambang 6 tetap aman dari salah tolak. Dari 630 pasangan pintu berbeda, **tidak
+satu pun** berjarak 6 ke bawah — jarak terdekat 18, tiga kali ambangnya. Ini
+sepuluh kali lipat sampel yang dipakai entri 26.
+
+Pita penguatan tetap tidak terjangkau, dan sekarang terbukti pada data sungguhan,
+bukan pada satu pasangan yang diatur. Sebelas pasangan bukti produksi dengan
+tempat dan titik pandang sama tetapi kontributor berbeda — persis keadaan yang
+pita itu dirancang untuk menangkap — berjarak 24 sampai 38. Tidak satu pun masuk
+pita 3–6, dan tidak satu pun akan ditolak sebagai berkas yang dioper.
+
+Keputusan tidak melebarkan pita justru makin kuat. Melebarkannya ke 18 sekarang
+berarti langsung bertabrakan dengan pasangan pintu berbeda yang memang ada di 18,
+selain tetap membuat kontributor yang sama memotret ulang pintu yang sama ikut
+ditolak.
+
+**Dampak terhadap masalah inti:** Kami menuntut sistem lain membuktikan klaimnya,
+jadi angka kami sendiri harus tahan diperiksa ulang dengan sampel yang lebih
+besar. Yang terjadi di sini adalah angka kami bergerak ke arah yang kurang
+menguntungkan ketika buktinya ditambah, dan kami menuliskannya alih-alih
+membiarkan angka lama yang lebih enak dibaca. Kalimat yang benar untuk diucapkan
+sekarang: pemeriksaan berkas berulang diuji pada 630 pasangan dan tidak pernah
+salah menolak, sementara penguatan lintas kontributor **tidak** terdeteksi lewat
+kemiripan citra — itu dihitung dari jumlah kontributor berbeda yang menyatakan
+nilai sama, bukan dari foto yang mirip.
