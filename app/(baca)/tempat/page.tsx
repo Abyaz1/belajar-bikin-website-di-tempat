@@ -192,7 +192,11 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
         {places.length === 0 ? (
           <div className="space-y-2 rounded-md border border-line p-4">
             <p>{q ? `Tidak ada tempat yang cocok dengan “${q}”.` : "Belum ada tempat di koridor ini."}</p>
-            {q ? <Link href={href(profile, view, "")}>Tampilkan semua tempat</Link> : null}
+            {q ? (
+              <Link href={href(profile, view, "")} className="inline-flex min-h-12 items-center">
+                Tampilkan semua tempat
+              </Link>
+            ) : null}
           </div>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">

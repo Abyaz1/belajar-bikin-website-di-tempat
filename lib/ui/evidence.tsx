@@ -41,8 +41,16 @@ export function EvidencePanel({
   return (
     <figure className="space-y-3 rounded-md border border-line p-4">
       {photoUrl ? (
+        // Tinggi tetap supaya ruang foto sudah dipesan sebelum berkasnya tiba:
+        // keterangan di bawahnya tidak melompat. Foto tegak maupun mendatar
+        // muat utuh di dalamnya (object-contain).
         // eslint-disable-next-line @next/next/no-img-element -- foto bukti dari endpoint sendiri
-        <img src={photoUrl} alt={alt} className="max-h-96 w-full rounded-sm border border-line object-contain" />
+        <img
+          src={photoUrl}
+          alt={alt}
+          decoding="async"
+          className="h-72 w-full rounded-sm border border-line bg-surface-alt object-contain md:h-96"
+        />
       ) : (
         <p className="text-ink-muted">Foto bukti tidak tersedia untuk ditayangkan.</p>
       )}

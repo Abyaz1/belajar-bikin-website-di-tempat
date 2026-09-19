@@ -34,30 +34,45 @@ pintu masuk memperlihatkan apakah ada lift di lantai dua atau apakah toilet di
 belakang gedung bisa dimasuki kursi roda. Membiarkan kontributor mencentang kondisi
 lift dari foto gerbang luar memaksa mereka mengarang fakta.
 
-**Dampak terhadap masalah inti:** Memastikan setiap fakta yang tersimpan di basis data
-didukung oleh bukti visual langsung dari sudut pandang yang masuk akal. Tidak ada lagi
-klaim fasilitas yang tidak terlihat di foto bukti.
+**Dampak terhadap masalah inti:** API menolak klaim atribut yang berada di luar titik
+pandang fotonya, jadi foto pintu masuk tidak bisa lagi mendasari klaim lift atau
+toilet. Yang tidak dijamin: isi foto itu sendiri tetap dinyatakan kontributor, dan
+kebenarannya bersandar pada konfirmasi manusia serta pemeriksaan provenans.
 
 ---
 
-## 2. Delapan atribut terukur; atribut kemiringan (`incline`) dikeluarkan
+## 2. Kamus sembilan atribut menjadi delapan: `incline` dan `wheelchair` keluar, `surface_condition` masuk
 
-**Kondisi di proposal:** Mengusulkan 9 atribut aksesibilitas fisik, termasuk
-kemiringan lintasan (*incline*) dalam satuan derajat atau persentase sudut kemiringan
-ramp.
+**Kondisi di proposal:** Exsum Lampiran 3 (Tabel L1) memuat sembilan atribut
+beserta padanan tag OpenStreetMap-nya: `wheelchair` (yes / limited / no),
+`ramp:wheelchair`, `step_count`, `incline` (persen), `tactile_paving`, `kerb`,
+`door:width` (meter), `toilets:wheelchair`, dan `highway=elevator`.
 
-**Yang diubah:** Kamus atribut disederhanakan menjadi 8 atribut fisik yang dapat
-diamati. Atribut `incline` dihapus seluruhnya dari skema.
+**Yang diubah:** Kamus berisi delapan atribut: `step_count`, `ramp_wheelchair`,
+`kerb`, `door_width_band`, `surface_condition`, `tactile_paving`,
+`elevator_status`, dan `toilets_wheelchair`.
+- `incline` dihapus seluruhnya dari skema.
+- `wheelchair` dikeluarkan dari kamus dan disimpan terpisah sebagai klaim pihak
+  ketiga (entri 5).
+- `surface_condition` (`good` / `uneven` / `damaged`) ditambahkan.
+- Lebar pintu dan status lift berubah bentuk nilai (entri 3 dan 21).
 
-**Alasan perubahan:** Menaksir sudut kemiringan ramp dari selembar foto 2D tanpa
-alat ukur fisik (*inclinometer*) adalah presisi semu (*false precision*). Sudut
-pengambilan kamera, perspektif, dan distorsi lensa ponsel membuat estimasi sudut
-sangat bias. Kesalahan tebakan sudut pada ramp yang curam dapat berakibat fatal bagi
-pengguna kursi roda manual.
+**Alasan perubahan:**
+- `incline`: menaksir sudut kemiringan ramp dari selembar foto 2D tanpa alat ukur
+  fisik adalah presisi semu. Sudut pengambilan kamera, perspektif, dan distorsi
+  lensa ponsel membuat taksirannya bias, dan taksiran yang keliru pada ramp curam
+  bisa berakibat fatal bagi pengguna kursi roda manual.
+- `wheelchair`: nilainya adalah penilaian, bukan fakta yang bisa diamati.
+  Menyimpannya sebagai atribut bertentangan dengan Keputusan 1 di Exsum 3.1.
+- `surface_condition`: Exsum Lampiran 4 (Tabel L2) punya aturan "permukaan rusak
+  atau tidak rata" yang berlaku untuk ketiga profil, tetapi Tabel L1 tidak punya
+  atribut untuk menampung fakta itu. Aturannya ada, datanya tidak. Atribut ini
+  menutup celah tersebut.
 
-**Dampak terhadap masalah inti:** Menghilangkan ilusi akurasi yang berbahaya. Sistem
-hanya mencatat fakta biner yang benar-benar dapat diverifikasi dari foto (apakah ada
-ramp: `yes` / `no`), bukan estimasi sudut subjektif yang menyesatkan.
+**Dampak terhadap masalah inti:** Setiap aturan penilaian kini punya atribut yang
+menjadi dasarnya, dan setiap atribut adalah fakta yang bisa dilihat di foto.
+Tidak ada lagi estimasi sudut yang tampak presisi, dan tidak ada penilaian pihak
+lain yang menyamar sebagai fakta.
 
 ---
 
@@ -174,9 +189,11 @@ kepatuhan (*compliance bias* / kecenderungan orang malas mengubah pilihan *defau
 bukan kebenaran model terhadap realitas fisik. Menjadikan tingkat koreksi sebagai
 dasar gerbang AI adalah penalaran melingkar (*circular logic*).
 
-**Dampak terhadap masalah inti:** Memastikan bahwa hak AI untuk memberikan usulan
-hanya aktif jika model terbukti berpresisi tinggi secara objektif, melindungi
-kontributor dari halusinasi model yang meyakinkan.
+**Dampak terhadap masalah inti:** Hak AI memberikan usulan kini digerbangi angka yang
+diukur pada citra berlabel manusia, bukan pada tingkat persetujuan kontributor. Yang
+tidak dijamin: dengan sampel sekecil yang akhirnya tersedia (entri 28 dan 29), angka
+itu indikatif. Yang benar-benar menahan halusinasi model masuk ke basis data adalah
+konfirmasi wajib kontributor, bukan gerbang ini.
 
 ---
 
@@ -208,7 +225,7 @@ mengevaluasi aturan penghalang (*blocker*). Jika tidak ada aturan blocker yang
 terpenuhi, tempat langsung dinyatakan `dapat_diakses`.
 
 **Yang diubah:** Diperkenalkan konsep **Himpunan Atribut Minimum** per profil
-(`docs-20 §2.2`). Jika ada satu saja atribut dalam himpunan minimum yang belum
+(`MINIMUM_ATTRIBUTES` di `lib/rules/reference.ts`). Jika ada satu saja atribut dalam himpunan minimum yang belum
 terverifikasi, status tempat wajib jatuh ke `belum_dapat_dipastikan`, terlepas dari
 apakah ada aturan blocker yang menyala atau tidak.
 
@@ -463,9 +480,9 @@ di tempat lain, dan bukan tidak dicatat sama sekali.
 
 ## 21. Tag `highway=elevator` dari OpenStreetMap tidak dipetakan ke status lift
 
-**Kondisi di proposal:** Spesifikasi penyemaian OSM (docs-20 §3) mengambil
-`highway=elevator` bersama tag fakta lain seperti `ramp:wheelchair`, `step_count`,
-dan `tactile_paving`.
+**Kondisi di proposal:** Exsum Lampiran 3 (Tabel L1) memadankan atribut lift
+dengan tag `highway=elevator` ("tersedia; status fungsi"), bersama tag fakta lain
+seperti `ramp:wheelchair`, `step_count`, dan `tactile_paving`.
 
 **Yang diubah:** Tag itu tidak dipetakan ke atribut apa pun. `elevator_status`
 dari penyemaian selalu kosong, jadi atribut ini hanya bisa terisi lewat
@@ -480,7 +497,7 @@ terlihat saat pemetaannya ditulis jadi kode (`scripts/seed/osm.ts`).
 
 **Dampak terhadap masalah inti:** Hampir tidak ada yang hilang. Pada koridor UNPAD
 Dipatiukur, 39 tempat hasil penyemaian hanya membawa 3 klaim atribut, sesuai
-perkiraan docs-20 bahwa tag koridor Indonesia nyaris kosong. Yang terjaga adalah
+perkiraan tim sejak awal bahwa tag koridor Indonesia nyaris kosong. Yang terjaga adalah
 disiplinnya: tidak ada nilai di basis data yang lebih yakin daripada sumbernya.
 Status lift, satu-satunya atribut dengan masa tinjau ulang 90 hari karena mudah
 berubah, tidak pernah berawal dari tebakan.
@@ -522,7 +539,8 @@ foto ulang dari tempat yang sama.
 
 **Kondisi di proposal:** Profil netra dilayani lewat aturan penilaian (jalur
 pemandu, tepi trotoar, permukaan) dan lewat antarmuka yang ramah pembaca layar
-(docs-30 §6, A1–A9). Tidak ada keluaran suara dari produk itu sendiri.
+(Exsum 3.4 menjadikan kepatuhan pembaca layar syarat wajib). Tidak ada keluaran
+suara dari produk itu sendiri.
 
 **Yang diubah:** Tombol "Bacakan" di laporan tempat dan rincian atribut.
 - Laporan dibacakan dengan mesin suara bawaan perangkat (Web Speech API). Di
@@ -590,7 +608,8 @@ dasar apa", bukan hanya jejak di basis data. Batasnya diakui:
 
 **Kondisi di proposal:** Kamus atribut menetapkan tiga atribut yang boleh menerima
 usulan model — `step_count`, `ramp_wheelchair`, dan `tactile_paving` — dengan
-alasan bahwa ketiganya adalah yang precision-nya diukur. Kontrak §7 menetapkan
+alasan bahwa ketiganya adalah yang precision-nya diukur. Exsum Lampiran 6 dan
+CLAUDE.md §8 (`SUGGESTION_PRECISION_GATE`) menetapkan
 ambang aktivasi 0,85 per atribut. Tabel `attribute_type` menyalakan ketiganya.
 
 **Yang diubah:** `tactile_paving` dimatikan, `ai_suggestable = false`. Dua atribut
@@ -695,10 +714,10 @@ perkakas, karena ia menghasilkan keyakinan.
 
 ## 27. Penalaran model dimatikan supaya panggilan muat di anggaran 8 detik
 
-**Kondisi di proposal:** Kontrak §7 menetapkan batas waktu model 8 detik tanpa
-retry, dan docs-20 §4 menetapkan satu panggilan per bukti. Angka 8 detik dipilih
+**Kondisi di proposal:** CLAUDE.md §8 (`VERTEX_TIMEOUT_MS`) menetapkan batas waktu
+model 8 detik tanpa retry, dan modul verifikasi dirancang satu panggilan per bukti. Angka 8 detik dipilih
 karena separuh anggaran 60 detik beban kontribusi tidak boleh habis di satu
-panggilan. Nama model `gemini-3.8-flash` dicatat di §10 sebagai "lolos tes di
+panggilan. Nama model `gemini-3.8-flash` dicatat di CLAUDE.md §17 sebagai "lolos tes di
 lokasi global". Yang tidak pernah diuji adalah pasangan lengkapnya: model itu,
 prompt `2026-09-18.v1`, skema berbatas, dan foto pintu masuk sungguhan berukuran
 1600 px.
@@ -745,8 +764,8 @@ belum selesai:
 Gerbang precision di entri 25 dijalankan ketika baris ini belum ada, yaitu dengan
 penalaran menyala. Dua hal menyusul dari situ:
 
-1. Menurut docs-20 §5, precision hanya sah untuk pasangan model dan prompt yang
-   diukur. Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
+1. Precision hanya sah untuk pasangan model dan prompt yang diukur (CLAUDE.md
+   §17, baris nama model). Mematikan penalaran mengubah jawaban model — pada satu foto ruangan
    dalam, jawabannya berubah dari `not_visible` menjadi `no` untuk
    `tactile_paving`. Gerbang 0,85 karena itu perlu dijalankan ulang di atas
    konfigurasi ini.
@@ -764,7 +783,8 @@ penalaran menyala. Dua hal menyusul dari situ:
 Perubahan ini tidak membatalkan entri 25 dan tidak menyentuh migrasi yang sudah
 diterapkan. Yang diminta hanya satu: hitung ulang statusnya, lalu putuskan.
 
-Syarat pembekuan kontrak §10 no. 1 sendiri **belum terpenuhi**. Yang berubah
+Syarat pembekuan nama model di CLAUDE.md §17 (foto 1600 px dijawab di bawah 8
+detik) sendiri **belum terpenuhi**. Yang berubah
 adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
 
 ---
@@ -774,7 +794,7 @@ adalah penyebabnya sudah diketahui dan terukur, bukan statusnya.
 **Kondisi di proposal:** Entri 25 mencatat keputusan gerbang precision, dan entri
 27 mematikan penalaran model supaya panggilan muat di anggaran 8 detik. Entri 27
 sendiri menyatakan konsekuensinya: mematikan penalaran mengubah jawaban model,
-jadi gerbang 0,85 harus diukur ulang di atas konfigurasi itu (docs-20 §5).
+jadi gerbang 0,85 harus diukur ulang di atas konfigurasi itu.
 
 **Yang diubah:** Pengukuran diulang atas 36 citra berlabel yang sama, prompt yang
 sama `2026-09-18.v1`, dengan `thinkingBudget: 0` dan batas waktu kontrak 8 detik —
@@ -815,7 +835,7 @@ Dua perbaikan dipasang di pengukur, keduanya **tidak menyentuh jalur produksi**:
 sebab kegagalan kini ikut dicatat dan dicetak, sehingga "16 gagal" tidak lagi
 perlu ditebak apakah itu kuota, skema, atau jaringan; dan kegagalan kuota
 ditunggu lalu diulang dengan jeda berlipat, paralelisme diturunkan dari tiga ke
-dua. Kontrak §7 melarang retry di jalur produksi dan larangan itu tetap berlaku
+dua. CLAUDE.md §8 melarang retry di jalur produksi dan larangan itu tetap berlaku
 utuh untuk E4 — yang diukur di sini adalah ketepatan model, bukan perilaku E4
 saat sibuk, dan keduanya menuntut aturan yang berbeda.
 
@@ -832,7 +852,476 @@ dirancang, bukan kegagalan.
 
 ---
 
-## 29. Ambang pHash diuji ulang pada sampel jauh lebih besar, dan satu angka di entri 26 dikoreksi
+## Bagian III: Perbedaan terhadap Exsum yang ditemukan saat audit akhir
+
+Entri di bawah ini ditemukan dengan membandingkan Exsum baris demi baris, termasuk
+gambar dan lampirannya, dengan implementasi di akhir babak final. Sebagian adalah
+penyimpangan yang disengaja tetapi belum dicatat. Sebagian lagi adalah janji di
+Exsum yang tidak terpenuhi, dan dicatat sebagai batasan.
+
+---
+
+## 29. Himpunan uji precision 36 citra, dan rencana cadangannya tidak dijalankan
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4) menetapkan set uji 60 hingga
+90 citra yang dikumpulkan dan dianotasi tim. Lampiran 9 menyiapkan rencana
+cadangan: bila variasi atribut di sekitar lokasi acara tidak mencukupi,
+**khususnya untuk contoh negatif**, set uji beralih ke citra berlisensi terbuka
+dari basis data aksesibilitas publik, dengan ukuran set dan ambang tetap, dan
+peralihannya dicatat.
+
+**Yang diubah:**
+- Set uji berisi 36 foto koridor Dipatiukur, bukan 60–90. Semuanya dipakai
+  mengukur; tidak ada bagian penyetelan. Prompt dibekukan di versi `2026-09-18.v1`
+  sebelum foto-foto ini ada, jadi tidak ada citra yang pernah dipakai menyetelnya.
+- Sebaran labelnya timpang:
+  - `step_count`: 14 tanpa anak tangga, 22 dengan anak tangga.
+  - `ramp_wheelchair`: 7 ada ramp, 29 tanpa ramp.
+  - `tactile_paving`: **36 dari 36 tanpa ubin pemandu**. Tidak ada satu pun contoh
+    positif.
+- Rencana cadangan citra berlisensi terbuka **tidak dijalankan**, padahal syarat
+  peralihannya terpenuhi untuk `tactile_paving`. Ini penyimpangan dari rencana kami
+  sendiri, bukan hanya dari angka.
+- Seluruh label ditetapkan satu orang (tercatat di kolom `pelabel` pada
+  `tools/metrics/testset/labels.json`), jadi kesepakatan antarpelabel tidak diukur.
+
+**Alasan perubahan:** Foto koridor sendiri didahulukan karena itulah kondisi yang
+akan dihadapi model di koridor penerapan. Saat kekurangannya terlihat, waktu yang
+tersisa tidak cukup untuk mencari citra berlisensi terbuka, memeriksa lisensinya,
+lalu melabelinya dengan disiplin yang sama (label ditetapkan sebelum model melihat
+citra).
+
+**Dampak terhadap masalah inti:** Angka precision di entri 25 dan 28 berlaku,
+tetapi sangat indikatif: n-nya 1 sampai 3, dan batas bawah selang kepercayaan
+95% jauh di bawah 0,85. Keputusan mematikan usulan `tactile_paving` bersandar pada
+ketiadaan bukti, bukan pada bukti bahwa model salah. Karena set uji tidak punya
+contoh positif, model tidak pernah diuji pada jalur pemandu yang benar-benar ada.
+Yang menahan nilai keliru masuk ke basis data tetap konfirmasi wajib kontributor,
+bukan angka ini.
+
+---
+
+## 30. Recall usulan model dilaporkan
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4): recall dilaporkan apa adanya
+dan tidak dijadikan syarat aktivasi, karena usulan terlewat lebih murah biayanya
+daripada usulan keliru.
+
+**Yang diubah:** Sampai audit akhir, tidak ada angka recall di dokumen mana pun di
+repositori. Angkanya dilaporkan di sini, dari pengukuran di entri 28 (penalaran
+dimatikan, batas waktu 8 detik).
+
+Definisinya: benar-positif dibagi **seluruh** citra berlabel positif, termasuk
+citra yang tidak terjawab karena lewat batas waktu atau dijawab "tidak terlihat".
+Ini recall ujung ke ujung, yaitu seberapa sering kontributor di depan pintu yang
+bersangkutan benar-benar menerima usulan yang tepat. Karena precision di entri 28
+bernilai 1,00, jumlah benar-positif sama dengan n.
+
+| atribut | kelas positif | benar-positif | label positif | recall |
+|---|---|---|---|---|
+| `step_count` | tidak ada anak tangga | 2 | 14 | 0,14 |
+| `ramp_wheelchair` | ada ramp | 1 | 7 | 0,14 |
+| `tactile_paving` | ada ubin pemandu | 0 | 0 | tidak terdefinisi |
+
+`lib/verification/presisi.ts` juga menghitung recall versi lain yang hanya
+menghitung citra yang dijawab model dengan nilai selain "tidak terlihat". Angka
+versi itu ada di berkas hasil pengukuran dan nilainya sama atau lebih tinggi.
+Yang dilaporkan di sini sengaja versi yang lebih rendah.
+
+**Alasan perubahan:** Exsum menjanjikan recall dilaporkan. Precision 1,00 tanpa
+recall memberi kesan model bekerja baik, padahal model sangat jarang mengusulkan
+kelas positif sama sekali.
+
+**Dampak terhadap masalah inti:** Recall 0,14 berarti pada sebagian besar
+kontribusi, model tidak membantu mengisi dua atribut penentu itu, dan kontributor
+mengisinya sendiri. Itu sesuai rancangan: usulan yang terlewat hanya menambah
+beberapa ketukan, sedangkan usulan yang keliru bisa mengirim orang ke pintu yang
+tidak bisa dilalui. Tetapi pada konfigurasi dan set uji ini, manfaat model untuk
+mempercepat kontribusi kecil, dan itu kami nyatakan.
+
+---
+
+## 31. Model hanya mengusulkan; model tidak pernah menolak klaim kontributor
+
+**Kondisi di proposal:** Teks Exsum 3.2 tahap 3 menyatakan model multimodal
+mengusulkan nilai atribut dan kontributor wajib mengonfirmasi atau mengoreksinya.
+Tetapi wireframe di Lampiran 2 (Gambar L2) memperlihatkan arah sebaliknya: model
+memeriksa klaim kontributor dan bisa menolaknya ("Guiding block ditolak").
+
+**Yang diubah:** Implementasi mengikuti teks 3.2. Model hanya mengusulkan nilai
+untuk atribut yang lolos gerbang precision (kini `step_count` dan
+`ramp_wheelchair`), usulan tidak pernah terpilih otomatis, dan model tidak punya
+jalur untuk menolak atau menurunkan klaim kontributor. Penolakan kontribusi hanya
+datang dari sembilan pemeriksaan provenans (C0–C8), dan tidak satu pun menilai isi
+foto.
+
+**Alasan perubahan:** Model yang bisa menolak klaim adalah model yang punya
+wewenang atas fakta. Precision model ini diukur pada n=1 sampai 3 (entri 28), dan
+untuk jalur pemandu tidak pernah diuji pada contoh positif (entri 29). Memberinya
+wewenang menolak berarti membiarkan angka yang belum terbukti menghapus kesaksian
+manusia yang berdiri di depan pintu itu.
+
+**Dampak terhadap masalah inti:** Kalimat "AI asisten, bukan otoritas" berlaku di
+level kode (aturan 2, CLAUDE.md §2). Gambar L2 di Exsum tidak mewakili produk yang
+dibangun, dan kami menyebutnya terbuka supaya gambar itu tidak dibaca sebagai
+fitur.
+
+---
+
+## 32. Kontribusi yang ditolak ditolak permanen, bukan masuk antrean tinjauan manual
+
+**Kondisi di proposal:** Diagram alur di Exsum Lampiran 1 (Gambar L1) menyatakan
+kontribusi yang gagal pemeriksaan "ditandai untuk tinjauan manual".
+
+**Yang diubah:**
+- Kontribusi yang gagal satu pemeriksaan saja ditolak dengan HTTP 422, beserta
+  **semua** alasannya dan nilai terukurnya.
+- Bukti, hasil pemeriksaan, dan audit `provenance_failed` tetap ditulis dan
+  terbaca publik di jejak audit.
+- Draft yang ditolak tidak bisa dikonfirmasi selamanya (E5 membalas 422).
+- Tidak ada antrean, peran peninjau, maupun jalur untuk meloloskannya belakangan.
+  Satu-satunya "penandaan" adalah hasil `flag` untuk kontribusi yang **diterima**
+  tetapi janggal, misalnya jarak 75–120 m dari tempat (C7). Penanda itu tercatat
+  di jejak audit.
+
+**Alasan perubahan:** Antrean tinjauan tanpa peninjau adalah janji kosong, dan
+dalam 24 jam tidak ada peran moderator yang bisa dibangun dan dijalankan. Lebih
+penting lagi, jalur untuk meloloskan kontribusi yang ditolak adalah jalur untuk
+melewati pemeriksaan provenans: nilainya hanya sekuat orang yang memegang tombolnya.
+
+**Dampak terhadap masalah inti:** Setiap penolakan punya alasan dan angka yang
+bisa diperiksa siapa pun, dan tidak ada keputusan di balik layar yang mengubahnya.
+Kontributor yang ditolak mengambil foto baru, dan percobaan itu tercatat terpisah.
+
+---
+
+## 33. Penguatan dihitung dari jumlah kontributor berbeda, tanpa bobot rekam jejak
+
+**Kondisi di proposal:** Diagram di Exsum Lampiran 1 (Gambar L1) menyebut konsensus
+"dibobot rekam jejak". Teks 3.2 tahap 4 justru menyatakan pembobotan reputasi
+ditunda, dan Lampiran 8 memasukkannya ke daftar yang ditunda. Exsum sendiri tidak
+konsisten di titik ini.
+
+**Yang diubah:** Implementasi mengikuti teks. `corroboration_count` adalah jumlah
+`contributor_id` berbeda yang nilai terkonfirmasinya sama dengan nilai berlaku dan
+masih dalam jendela kesegaran. Tidak ada skor reputasi maupun bobot.
+
+**Alasan perubahan:** Kontributor adalah sesi anonim (entri 7), jadi tidak ada rekam
+jejak yang bisa dibobot. Membuat skor reputasi dari puluhan kontribusi selama 24
+jam akan menghasilkan angka yang terlihat seperti ukuran kepercayaan tetapi tidak
+mengukur apa pun.
+
+**Dampak terhadap masalah inti:** Yang ditampilkan ke pengguna adalah hitungan yang
+bisa diperiksa ("dikuatkan 2 kontributor berbeda"), bukan skor yang rumusnya
+tersembunyi. Batasnya diakui: satu orang yang membuka beberapa sesi anonim bisa
+terhitung sebagai beberapa kontributor. Pembuatan sesi tercatat di jejak audit
+(entri 20), tetapi tidak dicegah.
+
+---
+
+## 34. Hambatan keras tidak mengeluarkan lokasi dari hasil
+
+**Kondisi di proposal:** Exsum Lampiran 4: "Pembatas keras mengeluarkan lokasi dari
+hasil; catatan bersifat peringatan tanpa mengeluarkannya."
+
+**Yang diubah:** Tidak ada lokasi yang disembunyikan. E1 mengembalikan semua tempat
+di wilayah yang diminta. Daftar dan peta menampilkan tempat dengan hambatan keras
+sebagai "tidak dapat diakses" beserta nama profilnya, dan laporan tempat menyebut
+kalimat hambatannya (misalnya "Pintu masuk punya dua anak tangga tanpa ramp").
+
+**Alasan perubahan:** Tempat yang disembunyikan tidak bisa dibedakan dari tempat
+yang tidak ada di data. Pengguna yang tidak menemukan puskesmas terdekatnya tidak
+tahu apakah puskesmas itu tidak dapat diakses atau belum pernah diperiksa. Itu
+kekaburan yang sama antara "terverifikasi tidak ada" dan "belum diketahui" yang
+ingin dihapus produk ini. Pengguna juga tetap bisa memutuskan berangkat dengan
+pendamping, asal tahu hambatannya apa.
+
+**Dampak terhadap masalah inti:** Keputusan tetap di tangan pengguna, dengan fakta
+dan buktinya terlihat. Penilaian "tidak dapat diakses" selalu disertai alasan dan
+tanggal pemeriksaan, bukan ketiadaan yang diam.
+
+---
+
+## 35. Umpan balik bagi pengelola fasilitas tidak dibangun
+
+**Kondisi di proposal:** Exsum 3.2 tahap 6 (Penyajian) mencakup "umpan balik bagi
+pengelola". Lampiran 8 hanya menunda papan kendali pengelola, bukan umpan baliknya.
+
+**Yang diubah:** Tidak ada fitur khusus pengelola. Yang tersedia bagi pengelola
+sama dengan bagi siapa pun: laporan kesiapan dan jejak audit yang terbuka tanpa
+akun, serta jalur sanggahan berupa kontribusi tandingan berfoto (entri 13).
+
+**Alasan perubahan:** Ini butir 4 daftar pemotongan yang disepakati tim di awal
+babak final (CLAUDE.md §16). Umpan balik yang layak butuh identitas pengelola yang
+terverifikasi, dan itu tidak bisa dibangun dengan jujur dalam 24 jam.
+
+**Dampak terhadap masalah inti:** Tautan jejak audit sebuah tempat bisa dikirim ke
+pengelolanya apa adanya: isinya daftar fakta, foto, dan tanggal, bukan tuduhan.
+Yang hilang adalah jalur aktif dari sistem ke pengelola. Sistem tidak memberi tahu
+siapa pun; pengelola harus datang sendiri.
+
+---
+
+## 36. Beberapa layanan Google Cloud, bukan satu layanan terkelola
+
+**Kondisi di proposal:** Exsum 3.4 dan Lampiran 5 (Tabel L3): basis data,
+autentikasi, dan penyimpanan berkas ditangani satu layanan terkelola berbasis
+PostgreSQL, supaya hemat waktu integrasi.
+
+**Yang diubah:**
+
+| fungsi | di implementasi |
+|---|---|
+| aplikasi | Cloud Run |
+| basis data | Cloud SQL PostgreSQL, dengan Row Level Security untuk tabel append-only |
+| penyimpanan bukti | Cloud Storage, bucket privat |
+| autentikasi | tidak ada layanan; sesi anonim bertanda tangan HMAC (entri 7) |
+| rahasia | Secret Manager |
+| usulan model | Vertex AI |
+| pengaburan wajah | Cloud Vision API (entri 24) |
+
+**Alasan perubahan:** Model multimodal berjalan di Vertex AI, dan kredit komputasi
+awan yang disebut di Tabel L3 berlaku di Google Cloud. Menaruh seluruh layanan di
+satu proyek membuat izin cukup diatur lewat satu akun layanan, tanpa kunci yang
+disalin antarpenyedia. Layanan autentikasi tidak lagi dibutuhkan sejak akun diganti
+sesi anonim.
+
+**Dampak terhadap masalah inti:** Integrasinya lebih banyak dari rencana, tetapi
+penegakan append-only jejak audit bersandar pada Row Level Security dan pencabutan
+hak di PostgreSQL biasa, dan sudah diuji langsung di Cloud SQL produksi. Aturan
+keterlacakan tidak bergantung pada fitur khusus satu penyedia.
+
+---
+
+## 37. Aturan "lift tidak berfungsi, tujuan di atas lantai satu" tidak pernah menyala
+
+**Kondisi di proposal:** Exsum Lampiran 4 (Tabel L2): lift tidak berfungsi dengan
+tujuan di atas lantai satu berarti "tidak dapat diakses" untuk kursi roda manual
+dan "dengan catatan" untuk alat bantu jalan.
+
+**Yang diubah:** Ini batasan, bukan penyimpangan yang disengaja. Aturannya ada di
+rules engine dan di tabel aturan. Syaratnya adalah properti tempat
+`layanan_di_atas_lantai_dasar = true`. Kolom itu bernilai bawaan `false`, dan tidak
+ada jalur yang mengisinya: bukan penyemaian OSM, bukan data demo, bukan alur
+kontribusi, bukan antarmuka. Akibatnya:
+- aturan lift tidak pernah menyala di purwarupa ini;
+- `elevator_status` tidak pernah masuk himpunan atribut minimum, jadi status lift
+  tidak pernah memengaruhi penilaian.
+
+Status lift tetap direkam, tampil di laporan beserta tanggalnya, dan meluruh ke
+"perlu ditinjau ulang" setelah 90 hari.
+
+**Alasan perubahan:** "Tujuan di atas lantai satu" adalah fakta tentang layanan di
+dalam gedung, bukan sesuatu yang terlihat dari foto pintu masuk, dan tidak ada
+titik pandang yang dirancang untuk merekamnya. Celah ini baru terlihat saat audit
+akhir, senasib dengan pita penguatan C8 (entri 26) yang juga tidak pernah
+terjangkau.
+
+**Dampak terhadap masalah inti:** Untuk gedung yang layanannya di lantai atas,
+penilaian kursi roda bisa berbunyi "dapat diakses" padahal liftnya rusak. Karena
+itu laporan tetap menampilkan status lift dan tanggalnya terpisah dari penilaian.
+Perbaikannya jelas tapi belum dikerjakan: satu pertanyaan tambahan di titik pandang
+interior ("layanan utama di lantai berapa?") yang mengisi properti itu dengan bukti
+yang sama seperti atribut lain.
+
+---
+
+## 38. Letak toilet aksesibel hanya tercatat ada atau tidak
+
+**Kondisi di proposal:** Exsum 3.3 menyebut laporan kesiapan memuat "letak toilet
+aksesibel", dan wireframe di Lampiran 2 (Gambar L2) menampilkan contoh "Lantai 1".
+
+**Yang diubah:** `toilets_wheelchair` hanya bernilai `yes` / `no`, direkam dari titik
+pandang toilet. Letak atau lantainya tidak direkam.
+
+**Alasan perubahan:** Foto toilet memperlihatkan apakah ruangnya bisa dimasuki kursi
+roda, tetapi tidak memperlihatkan di lantai berapa foto itu diambil. Koordinat dari
+peramban tidak membawa ketinggian yang bisa dipercaya. Letak yang diketik bebas
+akan jadi satu-satunya atribut yang tidak didukung foto.
+
+**Dampak terhadap masalah inti:** Kecil. Pengguna tahu ada toilet yang bisa dimasuki
+kursi roda beserta foto dan tanggalnya, tetapi harus menanyakan letaknya di lokasi.
+
+---
+
+## 39. Metrik penolakan dilaporkan, dan kelas uji keempat ditambahkan
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4) menetapkan kurang dari 5 persen
+kontribusi bermasalah lolos, diuji pada tiga kelas: unggahan dari galeri, foto
+lokasi lain, dan berkas daur ulang. Metrik itu dinyatakan tidak berlaku untuk
+kelas serangan di luar ketiganya.
+
+**Yang diubah:**
+- Uji penolakan dijalankan sebagai suite otomatis (`tests/rejection`) yang
+  menembak E4 sungguhan. Isinya 55 kasus: 11 unggahan galeri, 14 lokasi di luar
+  radius, 10 berkas daur ulang, **11 unggahan bersih lewat API langsung**, ditambah
+  6 kasus sesi dan waktu serta 3 pagar aturan. Pada jalan terakhir yang tercatat,
+  55 dari 55 sesuai harapan.
+- Suite lengkap dijalankan di lingkungan terpisah, bukan ke produksi. Tabel bukti
+  bersifat append-only, jadi 55 kiriman uji akan meninggalkan puluhan baris permanen
+  di basis data yang dibuka juri. Sebagai gantinya, **enam kiriman bermasalah**
+  dijalankan lewat E4 produksi ke tempat khusus "Gedung Latihan Uji Penolakan":
+  unggahan galeri ber-EXIF, foto lokasi lain (17.171 m, batas 120 m), ketelitian
+  lokasi rendah (500 m, batas 150 m), selisih waktu 3.600 detik, berkas daur ulang
+  (Hamming 0), dan satu kiriman yang gagal di empat pemeriksaan sekaligus. **Enam
+  ditolak, nol lolos (n=6).** Satu kiriman bersih di tempat yang sama diterima.
+- Sesudahnya, setiap bukti yang gagal di produksi punya catatan audit
+  `provenance_failed`, dan tidak satu pun atribut tersimpan dari bukti yang gagal
+  (aturan 4, diperiksa dengan `npm run periksa:keutuhan`).
+- Di tiga kelas Exsum, setiap kiriman yang dirancang bermasalah ditolak, jadi yang
+  lolos 0 persen. Suite yang sama juga memuat kasus kendali yang **harus** diterima,
+  misalnya foto berbeda di tempat yang sama, dan kasus itu memang diterima.
+- Kelas keempat, unggahan bersih tanpa EXIF lewat API langsung, ditambahkan
+  walaupun tidak ada di Exsum. Di kelas ini pemeriksaan **diharapkan lolos**:
+  JPEG yang di-encode ulang lolos C3, dan koordinat yang dikarang tepat di titik
+  tempat lolos C7.
+
+**Alasan perubahan:** Angka 0 persen di tiga kelas itu sebagian besar benar menurut
+konstruksi. Berkas galeri selalu membawa EXIF, jadi selalu ditolak C3, dan angka
+itu tidak berarti apa-apa kalau berdiri sendiri. Kelas keempat adalah serangan yang
+paling murah dan paling jujur untuk dilaporkan, jadi diukur dan dicatat sebagai
+batasan yang terukur, bukan disembunyikan di luar cakupan metrik.
+
+**Dampak terhadap masalah inti:** Batas dari tiga kelas itu ikut dinyatakan:
+- "Foto lokasi lain" hanya tertolak kalau koordinat yang dikirim jujur.
+- "Berkas daur ulang" hanya tertolak sampai jarak Hamming 6. Salinan yang diubah
+  lebih jauh lolos sebagai berkas berbeda (entri 26).
+
+Lapisan provenans menaikkan biaya pemalsuan, dan menutupnya tidak. Suite ini
+menunjukkan persis di mana batas itu berada.
+
+---
+
+## 40. Beban kontribusi dilaporkan: pintu masuk 30,6 dan 61,2 detik (n=2)
+
+**Kondisi di proposal:** Exsum Lampiran 6 (Tabel L4): beban kontribusi di bawah 60
+detik per lokasi, diuji pada anggota tim dan peserta lain di lokasi acara, dan
+angkanya dinyatakan bersifat awal.
+
+**Yang diubah:** Beban diukur dari jam server, bukan stopwatch (`npm run ukur:beban`):
+dari layar titik pandang dibuka (`capture_session.issued_at`) sampai konfirmasi
+tersimpan (`observation.observed_at`). Metriknya dihitung hanya untuk titik pandang
+**wajib**, yaitu pintu masuk (CLAUDE.md §5), karena titik pandang lain menuntut
+satu atribut dan tidak memanggil model.
+
+| titik pandang | kontribusi | total per kontribusi | lewat 60 dtk |
+|---|---|---|---|
+| **pintu masuk (metrik)** | 2 | **61,2 dtk** dan **30,6 dtk** | 1, lewat 1,2 dtk |
+| toilet (pembanding) | 3 | 28,9 · 7,6 · 7,3 dtk | 0 |
+| dalam gedung (pembanding) | 2 | 71,2 · 26,6 dtk | 1 |
+
+Satu kontribusi lain di basis data (Gedung Latihan Uji Penolakan, waktu siapkan
+dan kirim 1,0 detik) berasal dari pengujian jalur tulis lewat skrip, bukan dari
+orang yang memotret. Kontribusi itu tidak dihitung.
+
+**Alasan perubahan:** Exsum menjanjikan angka ini tanpa menyebut cara mengukurnya.
+Jam server tidak bisa salah tekan dan bisa diulang siapa pun dari basis data yang
+sama. Jam klien sengaja tidak dipakai karena bisa dinyatakan apa saja. Titik pandang
+tidak dirata-ratakan jadi satu. Kalau dicampur, kontribusi toilet yang cepat membuat
+median turun ke kisaran 29 detik, padahal tidak ada satu pun kontribusi pintu masuk
+secepat itu.
+
+**Dampak terhadap masalah inti:** Target 60 detik tercapai pada satu dari dua
+kontribusi pintu masuk; yang lain lewat 1,2 detik dan tetap dihitung. Percobaan
+kedua memakan separuh waktu percobaan pertama. Itu efek belajar, dan kontributor
+sungguhan juga baru pertama kali mencoba, jadi angka percobaan pertama yang lebih
+mewakili mereka. Selisih antara pintu masuk dan toilet memperlihatkan porsi
+anggaran yang dihabiskan panggilan model dan enam atribut. Sampelnya dua, dan
+pesertanya anggota tim, bukan pengguna sasaran, sesuai batas yang sudah dinyatakan
+Exsum.
+
+---
+
+## 41. Kode atribut tidak lagi sama persis dengan tag OpenStreetMap
+
+**Kondisi di proposal:** Exsum 3.1 menyatakan penamaan atribut mengikuti konvensi
+tag OpenStreetMap, supaya data awal bisa disemai lewat Overpass API dan kontribusi
+bisa dikembalikan ke ekosistem terbuka.
+
+**Yang diubah:**
+- Kode atribut ditulis sebagai pengenal yang aman untuk basis data dan kode
+  (`ramp_wheelchair`, `toilets_wheelchair`), bukan tag bertitik dua
+  (`ramp:wheelchair`).
+- Tiga atribut tidak lagi berpadanan satu-satu dengan tag OSM:
+  - `door_width_band` berupa pita, bukan meter (entri 3);
+  - `elevator_status` berupa status fungsi, bukan keberadaan lift (entri 21);
+  - `surface_condition` tidak punya padanan tag di node tempat (entri 2).
+- Pemetaan tag ke atribut dikerjakan satu fungsi (`scripts/seed/osm.ts`), dan
+  hanya berjalan satu arah: dari OSM ke sistem ini.
+
+**Alasan perubahan:** Tag OSM dirancang untuk memetakan dunia, bukan untuk menyimpan
+fakta yang bisa dibuktikan dari foto. Setiap kali keduanya berbeda, bentuk yang
+bisa dibuktikan dari foto yang dipilih.
+
+**Dampak terhadap masalah inti:** Penyemaian tetap berjalan (39 tempat di koridor
+Dipatiukur). Pengembalian kontribusi ke OSM memang sudah ditunda di Exsum
+Lampiran 8, tetapi sekarang jaraknya lebih jauh dari yang dibayangkan: pita lebar
+pintu dan status lift tidak bisa ditulis balik ke tag OSM tanpa kehilangan makna.
+
+---
+
+## 42. Pilihan "tidak terlihat dari sini" untuk model dan kontributor
+
+**Kondisi di proposal:** Exsum 3.2 tahap 3: model mengusulkan nilai atribut, dan
+kontributor wajib mengonfirmasi atau mengoreksinya. Tidak disebut apa yang terjadi
+kalau atributnya tidak tampak di foto.
+
+**Yang diubah:** Nilai `not_visible` sah untuk atribut mana pun:
+- model boleh menjawab `not_visible`, dan jawaban itu diteruskan apa adanya;
+- kontributor punya pilihan "Tidak terlihat dari sini" di setiap atribut;
+- `not_visible` dicatat di observasi dan jejak audit, tetapi **tidak pernah**
+  membentuk nilai berlaku sebuah atribut.
+
+**Alasan perubahan:** Tanpa pilihan itu, model dan kontributor dipaksa memilih nilai
+untuk sesuatu yang tidak tampak di foto. Justru itu jalan paling pendek menuju
+halusinasi model yang dikonfirmasi kontributor yang terburu-buru.
+
+**Dampak terhadap masalah inti:** "Belum diketahui" tetap berbeda dari "terverifikasi
+tidak ada" sampai ke level data. Foto yang tidak memperlihatkan ramp tidak
+menghasilkan catatan "tidak ada ramp". Akibatnya tercatat terbuka: sebagian
+jawaban model adalah `not_visible`, sehingga usulan yang bisa dinilai jadi lebih
+sedikit (entri 30).
+
+---
+
+## 43. Lapis terverifikasi dipersempit ke gedung Unpad Dipatiukur; seed OSM koridor tetap jadi latar
+
+**Kondisi di proposal:** Exsum 3.5 menetapkan penerapan awal pada satu koridor yang
+dilalui satu komunitas, yaitu rute kampus, halte, dan fasilitas kesehatan terdekat.
+Seluruh koridor itu dibayangkan menjadi wilayah verifikasi.
+
+**Yang diubah:**
+- Wilayah yang diverifikasi dengan foto dipersempit ke gedung-gedung Universitas
+  Padjadjaran di Jalan Dipati Ukur. Saat entri ini ditulis, lapis terverifikasi
+  berisi satu tempat, dengan 7 atribut yang punya bukti foto, hasil pemeriksaan
+  keaslian, dan jejak audit.
+- Hasil penyemaian OSM untuk seluruh koridor tetap dipertahankan sebagai latar:
+  39 tempat berupa kampus, fasilitas kesehatan, dan halte, semuanya berstatus belum
+  terverifikasi. Tempat-tempat itu tetap tampil di daftar dan peta, dan penilaiannya
+  "belum dapat dipastikan" untuk semua profil.
+
+**Alasan perubahan:** Verifikasi harus terjangkau dalam 24 jam. Satu kontribusi yang
+sah menuntut kontributor berdiri di depan pintu masuk, dalam radius 75–120 m dari
+titik tempat, dengan fix GPS segar. Artinya setiap tempat terverifikasi butuh
+kunjungan fisik. Gedung Unpad Dipatiukur berada dalam jangkauan tim selama
+acara. Halte dan fasilitas kesehatan di sepanjang koridor tidak bisa didatangi
+satu per satu sambil tetap membangun sistemnya.
+
+**Dampak terhadap masalah inti:** Keputusan ini justru menguatkan masalah inti.
+Masalah yang kami angkat adalah platform yang menyimpan klaim tanpa bukti. Dengan
+lapis terverifikasi yang sempit di atas latar OSM yang luas, perbandingannya
+terlihat langsung di layar yang sama:
+- segelintir atribut membawa foto, tanggal, dan jejak audit;
+- puluhan tempat lain hanya punya lokasi dan, paling banyak, klaim pihak ketiga
+  yang tidak dipakai untuk menilai.
+
+Batasnya dinyatakan: cakupan terverifikasi jauh lebih kecil dari koridor yang
+dijanjikan Exsum, dan halte serta fasilitas kesehatan belum punya satu pun bukti
+berfoto.
+
+---
+
+## 44. Ambang pHash diuji ulang pada sampel jauh lebih besar, dan satu angka di entri 26 dikoreksi
 
 **Kondisi di proposal:** Entri 26 menetapkan ambang pHash 6 sebagai final dan
 menyatakan pita penguatan 3–6 tidak terjangkau. Dasarnya 66 pasangan pintu

@@ -22,9 +22,9 @@ const BASE =
 
 const VARIANT: Record<ButtonVariant, string> = {
   utama:
-    "bg-action text-surface border-2 border-action hover:-translate-y-px hover:shadow-[0_6px_16px_-6px_rgb(54_59_88/0.5)] active:translate-y-0 active:shadow-none",
+    "bg-action text-surface border-2 border-action motion-safe:hover:-translate-y-px hover:shadow-[0_6px_16px_-6px_rgb(54_59_88/0.5)] active:translate-y-0 active:shadow-none",
   sekunder:
-    "bg-surface text-action border-2 border-action hover:bg-surface-alt hover:-translate-y-px active:translate-y-0",
+    "bg-surface text-action border-2 border-action hover:bg-surface-alt motion-safe:hover:-translate-y-px active:translate-y-0",
   teks: "bg-transparent text-action border-2 border-transparent underline underline-offset-2 hover:decoration-2",
 };
 

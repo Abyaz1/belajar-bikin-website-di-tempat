@@ -71,7 +71,7 @@ export function PanduanAwal({ terbuka, profilAktif }: { terbuka: boolean; profil
 
         {langkah === 0 ? (
           <section className="space-y-4">
-            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-[1.75rem] leading-tight font-bold">
+            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-screen">
               Periksa kondisi fisik sebuah tempat sebelum berangkat
             </h2>
             <p>
@@ -88,7 +88,7 @@ export function PanduanAwal({ terbuka, profilAktif }: { terbuka: boolean; profil
 
         {langkah === 1 ? (
           <section className="space-y-4">
-            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-[1.75rem] leading-tight font-bold">
+            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-screen">
               Cara kerjanya
             </h2>
             <ol className="space-y-4">
@@ -112,7 +112,7 @@ export function PanduanAwal({ terbuka, profilAktif }: { terbuka: boolean; profil
 
         {langkah === 2 ? (
           <section className="space-y-4">
-            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-[1.75rem] leading-tight font-bold">
+            <h2 id="panduan-judul" ref={judulRef} tabIndex={-1} className="text-screen">
               Pilih profil kebutuhan
             </h2>
             <p className="text-ink-muted">Penilaian tiap tempat berbeda untuk tiap profil. Bisa diganti kapan saja.</p>

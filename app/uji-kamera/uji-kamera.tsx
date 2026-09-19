@@ -184,8 +184,6 @@ export function UjiKamera() {
     let sudahTurun = false;
     let id = 0;
 
-    setTurunKeRendah(false);
-
     const terima = (rendah: boolean) => (pos: GeolocationPosition) => {
       adaFix = true;
       setFixPertamaMs((p) => p ?? Math.round(performance.now() - mulai));
@@ -301,6 +299,7 @@ export function UjiKamera() {
     setFixPertamaMs(null);
     setGalatGps(null);
     setDetik(0);
+    setTurunKeRendah(false);
     setMemantau(true);
     setPengumuman("Pemantauan lokasi dimulai");
   }
