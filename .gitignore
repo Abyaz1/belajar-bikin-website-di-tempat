@@ -64,3 +64,6 @@ next-env.d.ts
 /layak_baru/
 /kurang_layak_baru/
 /tidak_layak_baru/
+
+# instruksi asisten koding (lokal, tidak di-commit)
+CLAUDE.md
