@@ -18,17 +18,18 @@ function BrandMark() {
 }
 
 // `pendek` tampil di layar sempit supaya keempat tab muat tanpa digulir.
+// Beranda tidak jadi tab: merek di kiri sudah menuju ke sana.
 const TAB: { href: string; label: string; pendek: string; aktif: (p: string) => boolean }[] = [
-  { href: "/", label: "Beranda", pendek: "Beranda", aktif: (p) => p === "/" },
-  { href: "/tempat", label: "Daftar tempat", pendek: "Daftar", aktif: (p) => p.startsWith("/tempat") },
+  { href: "/tempat", label: "Daftar tempat", pendek: "Tempat", aktif: (p) => p.startsWith("/tempat") },
+  { href: "/peta", label: "Peta", pendek: "Peta", aktif: (p) => p.startsWith("/peta") },
   { href: "/profil", label: "Aturan penilaian", pendek: "Aturan", aktif: (p) => p.startsWith("/profil") },
   { href: "/cara-kerja", label: "Cara kerja", pendek: "Cara kerja", aktif: (p) => p.startsWith("/cara-kerja") },
 ];
 
 /**
- * Kepala halaman: satu kartu putih membulat. Kiri merek, tengah tab teks
- * (yang aktif bergaris bawah tebal), kanan tombol Buka peta. Di halaman peta ia
- * melayang di atas peta layar penuh.
+ * Kepala halaman: satu kartu putih membulat. Kiri merek, kanan empat tab teks
+ * (yang aktif bergaris bawah tebal). Satu baris navigasi saja, tanpa tombol
+ * ajakan terpisah. Di halaman peta ia melayang di atas peta layar penuh.
  */
 export function SiteHeader() {
   const path = usePathname() ?? "/";
@@ -36,25 +37,14 @@ export function SiteHeader() {
 
   return (
     <header className={cx("z-[1100] px-3 pt-3 md:px-6 md:pt-4", diPeta ? "fixed inset-x-0 top-0" : "relative")}>
-      <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 md:grid-cols-[auto_1fr_auto] md:px-5">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 md:grid-cols-[auto_1fr] md:gap-x-4 md:px-5">
         <Link href="/" className="merek inline-flex min-h-12 items-center gap-3 rounded-md px-1 text-card font-bold text-ink no-underline">
           <BrandMark />
           {PRODUCT_NAME}
         </Link>
 
-        <div className="flex items-center justify-end gap-2 md:order-3">
-          <Link
-            href="/peta"
-            aria-current={diPeta ? "page" : undefined}
-            className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-5 font-semibold text-on-brand no-underline hover:opacity-90"
-          >
-            Buka peta
-            <span aria-hidden="true" className="panah">›</span>
-          </Link>
-        </div>
-
-        <nav aria-label="Navigasi utama" className="col-span-2 md:order-2 md:col-span-1">
-          <ul className="grid grid-cols-4 md:flex md:justify-center md:gap-2">
+        <nav aria-label="Navigasi utama">
+          <ul className="grid grid-cols-4 md:flex md:justify-end md:gap-2">
             {TAB.map((t) => {
               const aktif = t.aktif(path);
               return (

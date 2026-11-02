@@ -39,8 +39,17 @@ function namaBucket(): string {
   return nama;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function pastikanPlaceIdSah(placeId: string): void {
+  if (!UUID_RE.test(placeId)) {
+    throw new Error("placeId tidak valid: " + placeId);
+  }
+}
+
 /** Satu-satunya tempat bentuk kunci objek ditentukan. Jangan dirakit di tempat lain. */
 export function objectKey(buf: Buffer, placeId: string): string {
+  pastikanPlaceIdSah(placeId);
   const digest = createHash('sha256').update(buf).digest('hex').slice(0, 32);
   return `evidence/${placeId}/${digest}.jpg`;
 }
@@ -51,6 +60,7 @@ export function objectKey(buf: Buffer, placeId: string): string {
  * tidak berawalan `tayang/`, dan objek asli tidak pernah tersaji lewat sana.
  */
 export function publicKey(buf: Buffer, placeId: string): string {
+  pastikanPlaceIdSah(placeId);
   const digest = createHash('sha256').update(buf).digest('hex').slice(0, 32);
   return `tayang/${placeId}/${digest}.jpg`;
 }

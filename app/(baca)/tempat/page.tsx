@@ -116,8 +116,7 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
 
       {/* Pintasan pencarian per jenis tempat: satu ketukan, tanpa mengetik.
           Hanya tautan ke ?q=, tidak ada yang disimpan di peramban. */}
-      <nav aria-label="Pintasan jenis tempat" className="space-y-2">
-        <p className="text-meta font-semibold">Tampilkan jenis tempat:</p>
+      <nav aria-label="Pintasan jenis tempat">
         <ul className="flex flex-wrap gap-2">
           {JENIS.map((j) => {
             const aktif = q.toLowerCase() === j.q;
@@ -143,24 +142,6 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
         </ul>
       </nav>
 
-      {MAP_ENABLED ? (
-        <nav aria-label="Tampilan" className="flex flex-wrap gap-2">
-          {(["daftar", "peta"] as const).map((v) => (
-            <Link
-              key={v}
-              href={href(profile, v, q)}
-              aria-current={view === v ? "page" : undefined}
-              className={cx(
-                "inline-flex min-h-12 items-center rounded-md border-2 px-4 font-semibold no-underline",
-                view === v ? "border-brand bg-brand text-on-brand" : "border-line-control bg-surface text-ink hover:bg-surface-alt",
-              )}
-            >
-              {v === "daftar" ? "Daftar" : "Peta"}
-            </Link>
-          ))}
-        </nav>
-      ) : null}
-
       {view === "peta" ? (
         <section aria-labelledby="judul-peta" className="space-y-3">
           <h2 id="judul-peta" className="text-section">
@@ -183,6 +164,14 @@ export default async function Page({ searchParams }: PageProps<"/tempat">) {
             }))}
           />
         </section>
+      ) : null}
+
+      {view !== "peta" ? (
+        <div className="flex justify-end">
+          <ButtonLink href={href(profile, "peta", q)} variant="sekunder">
+            Lihat sebagai peta
+          </ButtonLink>
+        </div>
       ) : null}
 
       <section aria-labelledby="judul-daftar" className="space-y-4">

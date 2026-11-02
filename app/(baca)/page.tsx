@@ -6,8 +6,8 @@ import { PROFILES, isProfile, type PlaceDetail, type PlaceSummary } from "@/lib/
 import { VerdictBadge } from "@/lib/ui/badges";
 import { COOKIE_PANDUAN } from "@/lib/ui/cara-kerja";
 import { PROFILE_TITLE, valueSentence, verdictWithProfile } from "@/lib/ui/copy";
-import { IconSearch, IconShield } from "@/lib/ui/icons";
-import { ILUSTRASI_PROFIL, IlustrasiKursiRoda } from "@/lib/ui/ilustrasi";
+import { IconSearch } from "@/lib/ui/icons";
+import { IlustrasiKursiRoda } from "@/lib/ui/ilustrasi";
 import { MapView } from "@/lib/ui/map-view";
 import { PanduanAwal } from "@/lib/ui/panduan-awal";
 
@@ -79,7 +79,6 @@ export default async function Page({ searchParams }: PageProps<"/">) {
     }
   }
 
-  const terverifikasi = places.reduce((n, p) => n + (p.status_counts?.terverifikasi ?? 0), 0);
   const nilai = (code: string) => unggulan?.attributes.find((a) => a.code === code)?.current_value ?? null;
   const foto = unggulan?.attributes.find((a) => a.photo_url);
   const unpad = unggulan ? adalahUnpad(unggulan.name) : false;
@@ -245,118 +244,30 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
-      {/* Bagian bawah beranda: doodle samar selebar layar mengisi ruang kosong
-          sampai menyentuh kaki halaman (melewati padding bawah main dan margin
-          atas footer). Dekoratif. */}
-      <div className="relative isolate space-y-16 pb-8 md:space-y-24">
-        <div
-          aria-hidden="true"
-          className="absolute -top-8 -bottom-24 left-1/2 -z-10 m-0! w-screen -translate-x-1/2 bg-[url(/doodle-astara.svg)] bg-[length:240px_240px] md:-bottom-26 [mask-image:linear-gradient(to_bottom,transparent,black_10%)]"
-        />
-      {/* ── Angka koridor ── */}
-      <section aria-labelledby="judul-angka" className="space-y-6">
-      <h2 id="judul-angka" className="sr-only">Angka koridor</h2>
-      <div className="grid grid-cols-2 gap-y-8 border-y border-line py-10 md:grid-cols-4">
-        {[
-          { angka: String(places.length), label: "Tempat di koridor Dipatiukur" },
-          { angka: String(terverifikasi), label: "Kondisi fisik terverifikasi" },
-          { angka: "9", label: "Pemeriksaan keaslian tiap foto" },
-          { angka: "3", label: "Profil kebutuhan" },
-        ].map((s) => (
-          <div key={s.label} className="flex items-center justify-center gap-3">
-            <span className="text-stat text-ink">{s.angka}</span>
-            <span className="max-w-[8rem] text-label font-normal text-ink-muted uppercase">{s.label}</span>
-          </div>
-        ))}
-      </div>
+      {/* Bagian bawah dibuat ringkas: tiga poin dan satu tautan ke Cara kerja. */}
+      <section aria-labelledby="kenapa" className="space-y-8 pb-8">
+        <h2 id="kenapa" className="text-display text-ink">
+          Fakta berbukti di balik setiap penilaian
+        </h2>
+        <ul className="grid gap-4 md:grid-cols-3">
+          {[
+            { judul: "Dipilih manusia", isi: "Model hanya mengusulkan nilai dari foto. Kontributor yang memilih." },
+            { judul: "Ditolak dengan angka", isi: "Sembilan pemeriksaan keaslian tiap foto. Yang gagal disertai nilai terukurnya." },
+            { judul: "Dinilai sesuai kebutuhan", isi: "Fakta yang sama dinilai berbeda untuk tiap profil kebutuhan." },
+          ].map((p) => (
+            <li key={p.judul} className="space-y-2 rounded-lg bg-surface p-5">
+              <h3 className="text-card">{p.judul}</h3>
+              <p className="text-meta text-ink-muted">{p.isi}</p>
+            </li>
+          ))}
+        </ul>
+        <Link
+          href="/cara-kerja"
+          className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-6 font-semibold text-on-brand no-underline hover:opacity-90"
+        >
+          Lihat cara kerja <span aria-hidden="true" className="panah">›</span>
+        </Link>
       </section>
-
-      {/* ── Kenapa Astara ── */}
-      <section aria-labelledby="kenapa" className="grid gap-10 md:grid-cols-[2fr_3fr] md:gap-12">
-        <div className="flex flex-col gap-6">
-          <h2 id="kenapa" className="text-display text-ink">
-            Fakta berbukti di balik setiap penilaian
-          </h2>
-          <div className="mt-auto space-y-6">
-            <p className="text-ink-muted">
-              Kami tidak menyimpan kata &ldquo;aksesibel&rdquo;. Yang disimpan adalah kondisi fisik yang terlihat di foto,
-              diperiksa keasliannya, dan dikonfirmasi manusia. Penilaiannya dihitung menurut kebutuhan Anda.
-            </p>
-            <Link
-              href="/cara-kerja"
-              className="inline-flex min-h-12 items-center gap-2 rounded-pill bg-action px-6 font-semibold text-on-brand no-underline hover:opacity-90"
-            >
-              Lihat cara kerja <span aria-hidden="true" className="panah">›</span>
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <article className="flex flex-col gap-4 rounded-lg bg-surface p-5">
-            <div className="space-y-2 rounded-md bg-p5 p-3" aria-hidden="true">
-              <p className="rounded-pill border border-line bg-surface px-3 py-2 text-label font-normal text-ink-muted">
-                Anak tangga di pintu masuk
-              </p>
-              <p className="w-fit rounded-pill bg-accent px-3 py-1 text-label text-ink">Usulan sistem: 2 anak tangga</p>
-            </div>
-            <h3 className="text-card">Usulan dibantu AI, dipilih manusia</h3>
-            <p className="text-meta text-ink-muted">
-              Model mengusulkan nilai dari foto. Kontributor tetap memilih sendiri, dan usulan tidak pernah terpilih otomatis.
-            </p>
-          </article>
-
-          <article className="flex flex-col gap-4 rounded-lg bg-surface p-5">
-            <span className="inline-flex size-12 items-center justify-center rounded-md bg-action text-on-brand">
-              <IconShield />
-            </span>
-            <h3 className="text-card">Penolakan disertai angka</h3>
-            <p className="text-meta text-ink-muted">
-              Sembilan pemeriksaan keaslian tiap foto. Yang tidak lolos ditolak beserta nilai terukurnya, misalnya jarak 214
-              meter dengan batas 120 meter.
-            </p>
-          </article>
-
-          <article className="group grid gap-4 overflow-hidden rounded-lg bg-surface p-5 sm:col-span-2 sm:grid-cols-2">
-            <div className="flex flex-col justify-end gap-2">
-              <h3 className="text-card">Dinilai sesuai kebutuhan Anda</h3>
-              <p className="text-meta text-ink-muted">
-                Fakta yang sama dinilai berbeda untuk kursi roda manual, alat bantu jalan, dan netra.
-              </p>
-            </div>
-            <div
-              aria-hidden="true"
-              className="relative min-h-60 rounded-md [background-image:radial-gradient(var(--color-p2)_1.2px,transparent_1.2px)] [background-size:12px_12px]"
-            >
-              {/* Tiga kartu menaik diagonal dari kiri bawah ke kanan atas.
-                  Kartu berikutnya selalu lebih tinggi dari label kartu di
-                  bawahnya (naik 2,75rem, cukup untuk label dua baris), jadi
-                  yang tertimpa hanya bagian gambar dan semua nama profil
-                  tetap terbaca. Lebar kartu tetap 7rem. */}
-              {PROFILES.map((p, i) => {
-                const Ilustrasi = ILUSTRASI_PROFIL[p];
-                return (
-                  <div
-                    key={p}
-                    className="kipas absolute w-28 rounded-md border border-line bg-surface p-1"
-                    style={
-                      {
-                        left: `calc((100% - 8rem) * ${i / 2} + 0.5rem)`,
-                        bottom: `${0.75 + i * 2.75}rem`,
-                        "--k": i - 1,
-                      } as CSSProperties
-                    }
-                  >
-                    <Ilustrasi className="w-full rounded-sm" />
-                    <p className="px-1 pt-1 text-label">{PROFILE_TITLE[p]}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      </div>
     </div>
 
     {/* Di luar wadah berjarak: dialog tertutup tetap dihitung sebagai saudara

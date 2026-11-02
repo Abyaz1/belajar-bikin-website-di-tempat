@@ -99,7 +99,7 @@ kutip** supaya terbaca sama oleh Next.js, Docker, dan bash.
 | `DB_PASSWORD` | password user database; di Cloud Run diambil dari Secret Manager |
 | `GCS_BUCKET` | nama bucket Cloud Storage untuk foto bukti; wajib saat `STORAGE_DRIVER=gcs` |
 | `GOOGLE_APPLICATION_CREDENTIALS` | path file kunci service account; kosongkan kalau memakai ADC atau berjalan di Cloud Run |
-| `DATABASE_URL` | string koneksi Postgres. **Seluruh jalur tulis membaca ini**, bukan `DB_NAME`/`DB_USER`/`DB_PASSWORD` |
+| `DATABASE_URL` | string koneksi Postgres untuk lingkungan lokal/skrip CLI. Jika kosong di Cloud Run, koneksi otomatis menggunakan Cloud SQL Connector (`CLOUD_SQL_CONNECTION_NAME` + `DB_*`) |
 | `SESSION_SECRET` | kunci penandatangan cookie sesi anonim, **minimal 32 karakter** |
 | `STORAGE_DRIVER` | `local` (bawaan) atau `gcs` |
 | `STORAGE_LOCAL_ROOT` | direktori penyimpanan saat `STORAGE_DRIVER=local`; bawaan `.storage` |
@@ -120,7 +120,7 @@ sebelum menyerahkan `.env` ke panitia.
   openssl rand -base64 48
   ```
 
-- **`DATABASE_URL` wajib diisi.** Peran koneksinya harus **bukan superuser**:
+- **`DATABASE_URL` wajib diisi untuk pengembangan lokal/skrip.** Di Cloud Run, bila kosong koneksi beralih ke Cloud SQL Connector. Peran koneksinya harus **bukan superuser**:
   penegakan append-only pada `audit_event`, `provenance_check`, dan `observation`
   bersandar pada Row Level Security, dan RLS tidak berlaku untuk superuser maupun
   peran ber-`BYPASSRLS`. Pakai `app_rw` yang dibuat `scripts/setup_db.sh --init-role`.
@@ -299,8 +299,7 @@ gcloud run services update ifest --region "$GCP_REGION" --remove-env-vars DEMO_R
 
 Resetnya tidak menghapus apa pun. Satu `audit_event` bertindakan
 `rate_limit_reset` ditulis beserta jumlah kontribusi sebelum reset, dan
-pemeriksaan C1 menghitung sejak reset terakhir itu. Jejaknya permanen dan
-terbaca publik di layar jejak audit — itu memang maksudnya.
+pemeriksaan C1 menghitung sejak reset terakhir itu. Jejak reset dicatat permanen pada tabel `audit_event` (`entity_type = 'contributor'`) untuk verifikasi dan audit sistem.
 
 #### Mengulang satu jalan uji yang gagal
 

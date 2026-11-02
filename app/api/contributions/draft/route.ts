@@ -83,6 +83,9 @@ export async function POST(req: Request) {
 
     const claimedToken = str(form, 'capture_token');
     const placeId = str(form, 'place_id');
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(placeId)) {
+      throw badRequest('PLACE_NOT_FOUND', 'Format place_id tidak valid');
+    }
     const vantage = VANTAGES.find((v) => v === form.get('vantage'));
     if (!vantage) throw badRequest('VANTAGE_INVALID', 'vantage tidak dikenal');
 
