@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { isUuid } from './types';
 
 export const SESSION_COOKIE = 'kontribusi_sesi';
 const SESSION_MAX_AGE_S = 60 * 60 * 24 * 30;
@@ -32,6 +33,8 @@ export function verifySession(raw: string | undefined): string | null {
   if (dot <= 0) return null;
 
   const id = raw.slice(0, dot);
+  if (!isUuid(id)) return null;
+
   const given = Buffer.from(raw.slice(dot + 1), 'base64url');
   const want = createHmac('sha256', secret()).update(id).digest();
 

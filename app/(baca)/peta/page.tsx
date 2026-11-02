@@ -43,7 +43,6 @@ export default async function Page({ searchParams }: PageProps<"/peta">) {
 
       <div className="fixed inset-0 z-0 bg-p4">
         <MapView
-          penuh
           label={`Peta ${places.length} tempat, dinilai untuk ${PROFILE_LABEL[profile]}. Tempat yang sama tersedia di tab Daftar tempat.`}
           places={places.map((p) => ({
             id: p.id,
@@ -121,7 +120,6 @@ export default async function Page({ searchParams }: PageProps<"/peta">) {
           </nav>
         </div>
       </div>
-
     </>
   );
 }

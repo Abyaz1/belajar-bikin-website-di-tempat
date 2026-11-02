@@ -9,6 +9,7 @@ import { ButtonLink } from "@/lib/ui/button";
 import { VANTAGE_LABEL, attributeLabel, attributeVantage, valueOption, valueSentence } from "@/lib/ui/copy";
 import { EvidencePanel } from "@/lib/ui/evidence";
 import { formatDate } from "@/lib/ui/format";
+import { LatarDoodle } from "@/lib/ui/latar-doodle";
 import { naskahAtribut } from "../../../../_bacakan/naskah";
 import { TombolBacakan } from "../../../../_bacakan/tombol-bacakan";
 
@@ -40,11 +41,13 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
       .filter((e) => e.action === "evidence_submitted" && !e.checks?.some((c) => c.result === "fail"))
       .at(-1) ?? null;
   const placeHref = `/tempat/${encodeURIComponent(id)}${profileQuery}`;
-  const auditHref = `/tempat/${encodeURIComponent(id)}/atribut/${encodeURIComponent(kode)}/audit`;
+  const auditHref = `/tempat/${encodeURIComponent(id)}/atribut/${encodeURIComponent(kode)}/audit${profileQuery}`;
   const contributeHref = `/kontribusi/${encodeURIComponent(id)}/${vantage}${profileQuery}`;
 
   return (
     <div className="space-y-8">
+      <LatarDoodle />
+
       <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat${profileQuery}`}>Daftar tempat</Link> <span aria-hidden="true" className="panah">›</span>{" "}
         <Link href={placeHref}>{facts.name}</Link> <span aria-hidden="true" className="panah">›</span>{" "}

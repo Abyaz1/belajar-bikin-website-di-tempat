@@ -3,7 +3,7 @@
 /**
  * Peta — TAMPILAN SEKUNDER. Daftar adalah tampilan utama, dan peta tidak pernah
  * jadi satu-satunya cara mencapai sebuah lokasi: halaman yang memuat peta
- * selalu memuat daftar yang setara (A4).
+ * selalu memuat tautan daftar yang setara (A4).
  *
  * Penanda sengaja tidak masuk urutan fokus. Memaksa pengguna papan ketik atau
  * screen reader menelusuri ratusan penanda satu per satu bukan aksesibilitas;
@@ -64,18 +64,16 @@ function escapeHtml(s: string) {
 }
 
 /**
- * `penuh`: peta memenuhi layar di halaman /peta. Roda tetikus boleh memperbesar
- * (tidak ada isi halaman lain yang perlu digulir), dan batas tampilan diberi
- * ruang untuk kepala halaman di atas serta panel profil di bawah.
+ * Peta layar penuh di halaman /peta. Roda tetikus boleh memperbesar (tidak ada
+ * isi halaman lain yang perlu digulir), dan batas tampilan diberi ruang untuk
+ * kepala halaman di atas serta panel profil di bawah.
  */
 export function MapView({
   places,
   label,
-  penuh = false,
 }: {
   places: MapPlace[];
   label: string;
-  penuh?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -88,7 +86,7 @@ export function MapView({
       if (cancelled || !ref.current) return;
 
       map = L.map(ref.current, {
-        scrollWheelZoom: penuh,
+        scrollWheelZoom: true,
         zoomControl: false,
       });
       // Kanan bawah: paling mudah dijangkau ibu jari. Ukurannya 48px (globals.css).
@@ -113,7 +111,7 @@ export function MapView({
         ),
       );
       markers.forEach((m) => m.addTo(map!));
-      const ruang = penuh ? { paddingTopLeft: [24, 120] as [number, number], paddingBottomRight: [24, 200] as [number, number] } : {};
+      const ruang = { paddingTopLeft: [24, 120] as [number, number], paddingBottomRight: [24, 200] as [number, number] };
       if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), ruang);
       else if (markers.length === 1) map.setView(markers[0].getLatLng(), 17);
       else map.setView([-6.8915, 107.616], 15);
@@ -123,18 +121,7 @@ export function MapView({
       cancelled = true;
       map?.remove();
     };
-  }, [places, penuh]);
+  }, [places]);
 
-  return (
-    <div
-      ref={ref}
-      role="region"
-      aria-label={label}
-      className={
-        penuh
-          ? "peta-penuh h-full w-full"
-          : "h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
-      }
-    />
-  );
+  return <div ref={ref} role="region" aria-label={label} className="peta-penuh h-full w-full" />;
 }

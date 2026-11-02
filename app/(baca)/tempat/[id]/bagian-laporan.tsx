@@ -196,7 +196,7 @@ export function BagianKondisiFisik({
                     placeName={placeName}
                     fotoKelompok={fotoTitikPandang(rows)?.photo_url ?? null}
                     detailHref={`${baseHref}/atribut/${encodeURIComponent(a.code)}?profil=${profile}`}
-                    auditHref={`${baseHref}/atribut/${encodeURIComponent(a.code)}/audit`}
+                    auditHref={`${baseHref}/atribut/${encodeURIComponent(a.code)}/audit?profil=${profile}`}
                   />
                 ))}
               </ul>

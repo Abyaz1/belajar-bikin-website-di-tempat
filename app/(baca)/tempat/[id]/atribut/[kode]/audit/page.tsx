@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAudit } from "@/lib/ui/api/server";
+import { isProfile } from "@/lib/ui/api/types";
 import { DemoLabel } from "@/lib/ui/badges";
 import { attributeLabel } from "@/lib/ui/copy";
 import { AuditTimeline } from "@/lib/ui/evidence";
+import { LatarDoodle } from "@/lib/ui/latar-doodle";
 
 // L6 — jejak audit. Selalu bisa dibuka tanpa akun dan tanpa profil di URL.
 // Memuat SEMUA kejadian, termasuk kontribusi yang ditolak.
@@ -17,8 +19,11 @@ export async function generateMetadata({ params }: PageProps<"/tempat/[id]/atrib
   };
 }
 
-export default async function Page({ params }: PageProps<"/tempat/[id]/atribut/[kode]/audit">) {
+export default async function Page({ params, searchParams }: PageProps<"/tempat/[id]/atribut/[kode]/audit">) {
   const { id, kode } = await params;
+  const raw = (await searchParams).profil;
+  const profileQuery = isProfile(raw) ? `?profil=${raw}` : "";
+
   const trail = await getAudit(id, kode);
   if (!trail) notFound();
 
@@ -28,9 +33,12 @@ export default async function Page({ params }: PageProps<"/tempat/[id]/atribut/[
 
   return (
     <div className="space-y-8">
+      <LatarDoodle />
+
       <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
-        <Link href={`/tempat/${encodeURIComponent(id)}`}>{trail.place.name}</Link> <span aria-hidden="true" className="panah">›</span>{" "}
-        <Link href={`/tempat/${encodeURIComponent(id)}/atribut/${encodeURIComponent(kode)}`}>{label}</Link>{" "}
+        <Link href={`/tempat/${encodeURIComponent(id)}${profileQuery}`}>{trail.place.name}</Link>{" "}
+        <span aria-hidden="true" className="panah">›</span>{" "}
+        <Link href={`/tempat/${encodeURIComponent(id)}/atribut/${encodeURIComponent(kode)}${profileQuery}`}>{label}</Link>{" "}
         <span aria-hidden="true" className="panah">›</span> <span aria-current="page">Jejak audit</span>
       </nav>
 
@@ -44,7 +52,10 @@ export default async function Page({ params }: PageProps<"/tempat/[id]/atribut/[
         </p>
         {trail.is_demo_seed ? <DemoLabel detail="sebagian kejadian di sini disemai untuk peragaan" /> : null}
         <p className="text-meta">
-          <a href={jsonHref}>Unduh jejak ini sebagai JSON</a>, supaya bisa diperiksa sendiri, bukan hanya dilihat.
+          <a href={jsonHref} className="inline-flex min-h-12 items-center">
+            Unduh jejak ini sebagai JSON
+          </a>
+          , supaya bisa diperiksa sendiri, bukan hanya dilihat.
         </p>
       </header>
 

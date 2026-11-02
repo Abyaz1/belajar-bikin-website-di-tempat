@@ -5,6 +5,7 @@ import { getPlaceByProfiles, getPlaceFacts } from "@/lib/ui/api/server";
 import { PROFILES, isProfile, type ProfileCode } from "@/lib/ui/api/types";
 import { DemoLabel } from "@/lib/ui/badges";
 import { ATTRIBUTE_ORDER, PROFILE_LABEL, verdictWithProfile } from "@/lib/ui/copy";
+import { LatarDoodle } from "@/lib/ui/latar-doodle";
 import { ProfileAnnouncer } from "@/lib/ui/profile-announcer";
 import { ProfilePicker } from "@/lib/ui/profile-picker";
 import { naskahLaporan } from "../../_bacakan/naskah";
@@ -38,6 +39,7 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
     if (!facts) notFound();
     return (
       <div className="space-y-6">
+        <LatarDoodle />
         <h1 className="text-screen">{facts.name}</h1>
         <p>Penilaian selalu untuk profil tertentu. Pilih profil untuk melihat laporan tempat ini.</p>
         <ProfilePicker current={null} hrefs={hrefs} />
@@ -58,6 +60,8 @@ export default async function Page({ params, searchParams }: PageProps<"/tempat/
 
   return (
     <div className="space-y-12">
+      <LatarDoodle />
+
       <nav aria-label="Jejak halaman" className="breadcrumb text-meta">
         <Link href={`/tempat?profil=${profile}`}>Daftar tempat</Link> <span aria-hidden="true" className="panah">›</span>{" "}
         <span aria-current="page">{place.name}</span>

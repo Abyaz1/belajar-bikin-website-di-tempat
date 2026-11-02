@@ -54,6 +54,11 @@ export async function POST(req: Request) {
     }
 
     const result = await withTx(async (c) => {
+      const contributor = await c.query('SELECT id FROM contributor WHERE id = $1', [contributorId]);
+      if (contributor.rowCount === 0) {
+        throw badRequest('SESSION_REQUIRED', 'Sesi tidak dikenal. Mulai sesi baru');
+      }
+
       const place = await c.query('SELECT id FROM place WHERE id = $1', [placeId]);
       if (place.rowCount === 0) {
         throw badRequest('PLACE_NOT_FOUND', 'Tempat tidak ditemukan');
