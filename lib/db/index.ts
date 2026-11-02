@@ -1,19 +1,23 @@
-import "server-only";
 import { Connector, IpAddressTypes } from "@google-cloud/cloud-sql-connector";
 import { Pool } from "pg";
 import { envWajib } from "@/lib/env";
 
-// Satu pool Postgres untuk seluruh aplikasi. Koneksi lewat Cloud SQL Node.js
-// Connector (TLS, izin dari ADC atau service account Cloud Run), jadi laptop
-// tidak butuh Cloud SQL Auth Proxy. Disimpan di globalThis supaya hot reload
-// `next dev` tidak membuat pool baru.
+// Satu pool Postgres untuk seluruh aplikasi (jalur baca maupun jalur tulis).
+// Koneksi lewat DATABASE_URL (lokal, Docker, suite tes) atau Cloud SQL Node.js
+// Connector di Cloud Run. Disimpan di globalThis supaya hot reload `next dev`
+// tidak membuat pool baru.
 const penyimpan = globalThis as typeof globalThis & { poolAstara?: Promise<Pool> };
 
-async function buatPool() {
-  // Postgres biasa (lokal, Docker, suite tes) lewat DATABASE_URL. Di Cloud Run
-  // variabel ini kosong, jadi jalurnya tetap Cloud SQL Connector di bawah.
+async function buatPool(): Promise<Pool> {
   const url = process.env.DATABASE_URL?.trim();
-  if (url) return new Pool({ connectionString: url, max: 5 });
+  if (url) {
+    return new Pool({
+      connectionString: url,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      statement_timeout: 10_000,
+    });
+  }
 
   const connector = new Connector();
   const opsi = await connector.getOptions({
@@ -25,7 +29,9 @@ async function buatPool() {
     user: envWajib("DB_USER"),
     password: envWajib("DB_PASSWORD"),
     database: envWajib("DB_NAME"),
-    max: 5,
+    max: 10,
+    idleTimeoutMillis: 30_000,
+    statement_timeout: 10_000,
   });
 }
 

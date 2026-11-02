@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import type { Bucket } from '@google-cloud/storage';
 import { isUuid } from './types';
 
 /**
@@ -65,48 +66,24 @@ export function publicKey(buf: Buffer, placeId: string): string {
 }
 
 // --- GCS -------------------------------------------------------------------
-// Bentuk minimal yang benar-benar dipakai, supaya berkas ini tidak bergantung
-// pada tipe paket yang belum tentu terpasang.
-interface GcsFileLike {
-  save(data: Buffer, options: Record<string, unknown>): Promise<unknown>;
-  download(): Promise<[Buffer]>;
-}
-interface GcsBucketLike {
-  file(name: string): GcsFileLike;
-}
 
-let bucketPromise: Promise<GcsBucketLike> | null = null;
+let bucketPromise: Promise<Bucket> | null = null;
 
 /**
- * Impor dinamis, bukan impor statis. @google-cloud/storage adalah dependensi
- * opsional: selama STORAGE_DRIVER=local, paketnya tidak perlu terpasang dan
- * `next build` tetap hijau. Harganya satu peringatan module-not-found saat
- * build — sama persis dengan pola di lib/trust/verification-port.ts.
+ * Impor dinamis saat STORAGE_DRIVER=gcs supaya jalur lokal tidak memuat SDK GCS.
  */
-async function ambilBucket(): Promise<GcsBucketLike> {
+async function ambilBucket(): Promise<Bucket> {
   if (!bucketPromise) {
     bucketPromise = (async () => {
-      let mod: { Storage: new (...args: unknown[]) => { bucket(n: string): GcsBucketLike } };
-      try {
-        // Paket terpasang (dependencies), tapi dipakai lewat bentuk minimal di atas.
-        mod = (await import('@google-cloud/storage')) as unknown as typeof mod;
-      } catch {
-        throw new Error(
-          'STORAGE_DRIVER=gcs tetapi paket @google-cloud/storage belum terpasang. ' +
-          'Jalankan: npm i @google-cloud/storage',
-        );
-      }
-      // Kredensial diambil dari GOOGLE_APPLICATION_CREDENTIALS saat lokal, atau
-      // dari metadata server saat berjalan di Cloud Run. Tidak ada kunci yang
-      // ditulis di kode.
-      const storage = new mod.Storage();
+      const { Storage } = await import('@google-cloud/storage');
+      const storage = new Storage();
       return storage.bucket(namaBucket());
     })();
   }
   try {
     return await bucketPromise;
   } catch (err) {
-    bucketPromise = null;   // jangan mengunci kegagalan sekali jadi kegagalan selamanya
+    bucketPromise = null; // jangan mengunci kegagalan sekali jadi kegagalan selamanya
     throw err;
   }
 }
@@ -118,11 +95,6 @@ async function ambilBucket(): Promise<GcsBucketLike> {
  * `predefinedAcl: 'publicRead'`, tidak ada `makePublic()` di berkas ini, dan
  * tidak boleh ditambahkan. Yang tayang ke pengguna adalah turunannya setelah
  * pengaburan wajah, lewat kolom evidence.public_path yang terpisah.
- *
- * Kerahasiaannya ditegakkan IAM bucket, bukan ACL per objek: bucket dengan
- * uniform bucket-level access justru MENOLAK setiap permintaan ACL per objek,
- * jadi menambahkan opsi ACL di sini akan membuat unggahan gagal, bukan lebih
- * aman. Yang menjaga: tidak ada binding allUsers pada bucket.
  */
 export async function putOriginal(buf: Buffer, placeId: string): Promise<string> {
   const key = objectKey(buf, placeId);
@@ -131,7 +103,7 @@ export async function putOriginal(buf: Buffer, placeId: string): Promise<string>
     const bucket = await ambilBucket();
     await bucket.file(key).save(buf, {
       contentType: 'image/jpeg',
-      resumable: false,           // berkas maks 5 MB, sekali tembak lebih cepat
+      resumable: false,
       metadata: { cacheControl: 'private, max-age=0, no-store' },
     });
     return key;

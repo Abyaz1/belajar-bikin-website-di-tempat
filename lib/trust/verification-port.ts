@@ -1,53 +1,20 @@
-import type { Vantage } from './types';
+import type {
+  AttributeFlag,
+  ModelStatus,
+  SuggestInput,
+  SuggestResult,
+  Suggestion,
+} from '@/lib/verification/core';
+
+export type { AttributeFlag, ModelStatus, SuggestInput, SuggestResult, Suggestion };
 
 /**
- * Seam ke modul Verification engineer.
+ * Seam ke modul verifikasi (`lib/verification`).
  *
- * Bentuknya mengikuti kontrak MEREKA, bukan sebaliknya. Versi pertama berkas ini
- * mengarang bentuknya sendiri — mencari `lib/verification/suggest.ts` dengan
- * `export const port` — dan ketika modul aslinya mendarat sebagai
- * `lib/verification/index.ts` dengan `suggestWithVertex`, impor dinamisnya gagal
- * lalu tertangkap catch dan jatuh diam-diam ke jalur tanpa usulan. Tidak ada
- * galat, tidak ada log, usulan sekadar tidak pernah muncul di layar konfirmasi.
- * Kegagalan senyap itu justru alasan seam ini sekarang meniru bentuk mereka
- * persis, termasuk `status` dan `latency_ms` yang dulu kubuang.
- *
- * Kepemilikan folder tetap: lib/verification/ bukan milikku. Yang di sini hanya
- * bentuk kontraknya plus jalur mundur yang aman.
+ * Tipe kontrak diimpor langsung dari `@/lib/verification/core` agar tidak ada
+ * duplikasi definisi antarmuka, sementara pemanggilan runtime tetap menjaga
+ * jalur mundur yang aman (tidak pernah melempar).
  */
-
-export type ModelStatus = 'ok' | 'off' | 'failed' | 'timeout';
-
-/** Satu atribut yang boleh diklaim, persis sebagaimana tersimpan di attribute_type. */
-export interface AttributeFlag {
-  attribute_code: string;
-  ai_suggestable: boolean;
-  allowed_values: string[];
-}
-
-export interface Suggestion {
-  attribute_code: string;
-  value: string | null;
-  /** Disimpan ke observation.ai_confidence. TIDAK PERNAH dikirim ke klien. */
-  confidence: number | null;
-  active: boolean;
-}
-
-export interface SuggestResult {
-  status: ModelStatus;
-  model: string;
-  prompt_version: string;
-  latency_ms: number;
-  suggestions: Suggestion[];
-  reason: string | null;
-}
-
-export interface SuggestInput {
-  image: Uint8Array;
-  mimeType: string;
-  vantage: Vantage;
-  attributes: AttributeFlag[];
-}
 
 type ModulVerifikasi = {
   suggestWithVertex?: (input: SuggestInput) => Promise<SuggestResult>;
@@ -72,16 +39,10 @@ function tanpaModel(reason: string): SuggestResult {
  * lewat batas waktu, kontributor tetap bisa mengisi seluruh atribut secara
  * manual. Konfirmasi wajib tetap berlaku apa pun yang terjadi di sini, karena
  * confirmed_value tidak pernah berasal dari model.
- *
- * Bedanya dengan versi lama: sebabnya sekarang ikut terbawa lewat `status` dan
- * `reason`, alih-alih ditelan `.catch(() => [])`. Itu yang membuat antarmuka
- * bisa membedakan "model bilang tidak ada yang terlihat" dari "model tidak
- * pernah menjawab" — dan keduanya memang beda hal.
  */
 export async function mintaUsulan(input: SuggestInput): Promise<SuggestResult> {
   let modul: ModulVerifikasi;
   try {
-    // Modul milik Verification; impor dinamis supaya kegagalannya jadi status, bukan galat build.
     modul = (await import('@/lib/verification')) as unknown as ModulVerifikasi;
   } catch {
     return tanpaModel('Modul lib/verification belum ada di build ini.');
@@ -94,7 +55,6 @@ export async function mintaUsulan(input: SuggestInput): Promise<SuggestResult> {
   try {
     return await modul.suggestWithVertex(input);
   } catch (galat) {
-    // Modulnya berjanji tidak melempar, tapi janji bukan jaminan.
     return {
       ...tanpaModel(galat instanceof Error ? galat.message : String(galat)),
       status: 'failed',

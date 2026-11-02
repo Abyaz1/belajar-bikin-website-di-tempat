@@ -506,17 +506,6 @@
   }
 }
 
-/* Peta latar hero beranda: ubin dipudarkan dan diabukan supaya teks di atasnya
-   tetap terbaca; penanda tetap berwarna. */
-.peta-latar .leaflet-tile-pane {
-  opacity: 0.45;
-  filter: grayscale(1);
-}
-.peta-latar.leaflet-container {
-  background: var(--color-p5);
-  cursor: default;
-}
-
 /* Kolom pilihan tanpa bingkai (formulir cari di beranda): panah kecil warna 1
    supaya tetap terbaca sebagai dropdown. */
 .pilih {

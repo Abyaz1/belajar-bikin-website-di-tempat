@@ -64,26 +64,18 @@ function escapeHtml(s: string) {
 }
 
 /**
- * `penuh`: peta memenuhi layar di beranda. Roda tetikus boleh memperbesar
+ * `penuh`: peta memenuhi layar di halaman /peta. Roda tetikus boleh memperbesar
  * (tidak ada isi halaman lain yang perlu digulir), dan batas tampilan diberi
  * ruang untuk kepala halaman di atas serta panel profil di bawah.
- */
-/**
- * `latar`: peta pudar di balik hero beranda. Hiasan saja: tidak bisa digeser,
- * tanpa tombol, tanpa popup, dan disembunyikan dari pembaca layar. Karena
- * disembunyikan, atribusi OpenStreetMap WAJIB ditulis halaman pemakainya di
- * luar peta (tautan di dalam wilayah aria-hidden tidak boleh bisa difokus).
  */
 export function MapView({
   places,
   label,
   penuh = false,
-  latar = false,
 }: {
   places: MapPlace[];
   label: string;
   penuh?: boolean;
-  latar?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -98,13 +90,11 @@ export function MapView({
       map = L.map(ref.current, {
         scrollWheelZoom: penuh,
         zoomControl: false,
-        ...(latar ? { attributionControl: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false } : {}),
       });
       // Kanan bawah: paling mudah dijangkau ibu jari. Ukurannya 48px (globals.css).
-      if (!latar)
-        L.control
-          .zoom({ position: "bottomright", zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" })
-          .addTo(map);
+      L.control
+        .zoom({ position: "bottomright", zoomInTitle: "Perbesar peta", zoomOutTitle: "Perkecil peta" })
+        .addTo(map);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">kontributor OpenStreetMap</a>',
@@ -114,16 +104,14 @@ export function MapView({
         L.marker([p.lat, p.lon], {
           keyboard: false,
           title: p.name,
-          interactive: !latar,
           icon: L.divIcon({ html: iconHtml(p.verdict), className: "", iconSize: [36, 36], iconAnchor: [18, 18] }),
         }),
       );
-      if (!latar)
-        markers.forEach((m, i) =>
-          m.bindPopup(
-            `<strong>${escapeHtml(places[i].name)}</strong><br>${escapeHtml(places[i].verdictText)}<br><a href="${escapeHtml(places[i].href)}">Buka laporan tempat</a>`,
-          ),
-        );
+      markers.forEach((m, i) =>
+        m.bindPopup(
+          `<strong>${escapeHtml(places[i].name)}</strong><br>${escapeHtml(places[i].verdictText)}<br><a href="${escapeHtml(places[i].href)}">Buka laporan tempat</a>`,
+        ),
+      );
       markers.forEach((m) => m.addTo(map!));
       const ruang = penuh ? { paddingTopLeft: [24, 120] as [number, number], paddingBottomRight: [24, 200] as [number, number] } : {};
       if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), ruang);
@@ -135,20 +123,17 @@ export function MapView({
       cancelled = true;
       map?.remove();
     };
-  }, [places, penuh, latar]);
+  }, [places, penuh]);
 
   return (
     <div
       ref={ref}
-      role={latar ? undefined : "region"}
-      aria-label={latar ? undefined : label}
-      aria-hidden={latar || undefined}
+      role="region"
+      aria-label={label}
       className={
-        latar
-          ? "peta-latar h-full w-full"
-          : penuh
-            ? "peta-penuh h-full w-full"
-            : "h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
+        penuh
+          ? "peta-penuh h-full w-full"
+          : "h-[28rem] w-full overflow-hidden rounded-md border border-line-control"
       }
     />
   );
