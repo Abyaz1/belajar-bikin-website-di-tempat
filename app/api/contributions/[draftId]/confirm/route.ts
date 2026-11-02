@@ -5,22 +5,16 @@ import { writeAudit } from '@/lib/trust/audit';
 import { BadRequest, REASON_MESSAGE, badRequest, jsonError } from '@/lib/trust/errors';
 import { recomputeAttributeState, type StateChange } from '@/lib/trust/attribute-state';
 import { SESSION_COOKIE, verifySession } from '@/lib/trust/session';
-import type { ReasonCode, Vantage } from '@/lib/trust/types';
+import {
+  NOT_VISIBLE,
+  isUuid,
+  type ClaimableAttributeRow,
+  type ReasonCode,
+  type Vantage,
+} from '@/lib/trust/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const NOT_VISIBLE = 'not_visible';
-
-// Kolom mengikuti tabel attribute_type milik Verification. allowed_values di
-// sana NOT NULL dan mencakup tipe integer juga ('0'..'20' untuk step_count),
-// sehingga satu aturan keanggotaan cukup untuk kedua tipe.
-interface AttributeRow {
-  code: string;
-  value_type: 'integer' | 'enum';
-  allowed_values: string[];
-  is_required_at_vantage: boolean;
-}
 
 /** Dibuang di sini supaya galat 409 tidak membocorkan draft milik orang lain. */
 class Conflict extends Error {}
@@ -57,6 +51,8 @@ export async function POST(
         'Isi permintaan harus berupa daftar { attribute_code, confirmed_value }',
       );
     }
+
+    if (!isUuid(draftId)) throw new Conflict();
 
     const result = await withTx(async (c) => {
       // ---- kunci baris draft dulu -----------------------------------
@@ -102,7 +98,7 @@ export async function POST(
       const vantage = ev[0].vantage;
 
       // ---- kamus atribut untuk vantage ini --------------------------
-      const { rows: allowed } = await c.query<AttributeRow>(
+      const { rows: allowed } = await c.query<ClaimableAttributeRow>(
         `SELECT code, value_type, allowed_values, is_required_at_vantage
            FROM attribute_type WHERE vantage = $1 ORDER BY code`,
         [vantage],
@@ -162,7 +158,7 @@ export async function POST(
 
       // ---- 6. nilai di luar kosakata atribut → 400 ------------------
       for (const s of submitted) {
-        const a = byCode.get(s.code) as AttributeRow;
+        const a = byCode.get(s.code) as ClaimableAttributeRow;
         if (s.value === NOT_VISIBLE) continue;   // sah untuk atribut mana pun
 
         // Satu aturan untuk kedua tipe: nilai harus ada di kosakata atribut.
@@ -248,18 +244,21 @@ export async function POST(
 
     // 422 selamanya, dengan alasan aslinya
     if ('rejected' in result && result.rejected) {
-      const rejected = result.rejected;
-      const CODE_TO_REASON: Record<string, ReasonCode> = {
-        C0: 'CAPTURE_SESSION_INVALID', C1: 'RATE_LIMITED',
-        C3: 'FILE_METADATA_PRESENT',   C4: 'TIMESTAMP_SKEW',
-        C5: 'GEO_MISSING',             C6: 'GEO_ACCURACY_LOW',
-        C6b: 'GEO_FIX_STALE',          C7: 'GEO_TOO_FAR',
+      const codeMap: Record<string, ReasonCode> = {
+        C0: 'CAPTURE_SESSION_INVALID',
+        C1: 'RATE_LIMITED',
+        C3: 'FILE_METADATA_PRESENT',
+        C4: 'TIMESTAMP_SKEW',
+        C5: 'GEO_MISSING',
+        C6: 'GEO_ACCURACY_LOW',
+        C6b: 'GEO_FIX_STALE',
+        C7: 'GEO_TOO_FAR',
         C8: 'DUPLICATE_IMAGE',
       };
       return jsonError(
         422,
-        rejected.map((f) => {
-          const reason = CODE_TO_REASON[f.check_code];
+        result.rejected.map((f) => {
+          const reason = codeMap[f.check_code] ?? 'CAPTURE_SESSION_INVALID';
           return {
             code: reason,
             message: REASON_MESSAGE[reason],
@@ -271,26 +270,23 @@ export async function POST(
     }
 
     return NextResponse.json({
-      draft_id: draftId,
       place_id: result.place_id,
       vantage: result.vantage,
-      /** Dicatat dan masuk audit, tapi sengaja tidak membentuk attribute_state. */
-      recorded_not_visible: result.notVisible,
-      changes: result.changes,
+      changes: result.changes.map((ch) => ({
+        attribute_code: ch.attribute_code,
+        before: ch.before,
+        after: ch.after,
+      })),
+      not_visible_recorded: result.notVisible,
     });
   } catch (err) {
     if (err instanceof Conflict) {
-      return NextResponse.json(
-        {
-          errors: [{
-            code: 'DRAFT_NOT_CONFIRMABLE',
-            message: 'Draft tidak ditemukan atau sudah pernah dikonfirmasi',
-            measured: null,
-            threshold: null,
-          }],
-        },
-        { status: 409 },
-      );
+      return jsonError(409, [{
+        code: 'DRAFT_ALREADY_CONFIRMED_OR_NOT_FOUND',
+        message: 'Draft tidak ditemukan atau sudah pernah dikonfirmasi',
+        measured: null,
+        threshold: null,
+      }]);
     }
     if (err instanceof BadRequest) {
       return NextResponse.json({ errors: [err.body] }, { status: 400 });

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { isUuid } from './types';
 
 /**
  * Adapter penyimpanan objek bukti: lokal untuk pengembangan, GCS untuk deploy.
@@ -39,11 +40,9 @@ function namaBucket(): string {
   return nama;
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 function pastikanPlaceIdSah(placeId: string): void {
-  if (!UUID_RE.test(placeId)) {
-    throw new Error("placeId tidak valid: " + placeId);
+  if (!isUuid(placeId)) {
+    throw new Error('placeId tidak valid: ' + placeId);
   }
 }
 

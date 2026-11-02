@@ -10,13 +10,16 @@ import { runProvenancePipeline } from '@/lib/trust/pipeline';
 import { SESSION_COOKIE, verifySession } from '@/lib/trust/session';
 import { putOriginal } from '@/lib/trust/storage';
 import { simpanFotoTayang } from '@/lib/trust/tayang';
-import type { Vantage } from '@/lib/trust/types';
+import {
+  formatClaimableAttributes,
+  isUuid,
+  parseVantage,
+  type ClaimableAttributeRow,
+} from '@/lib/trust/types';
 import { mintaUsulan } from '@/lib/trust/verification-port';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const VANTAGES: readonly Vantage[] = ['entrance', 'interior', 'toilet'];
 
 function str(f: FormData, k: string): string {
   const v = f.get(k);
@@ -83,10 +86,10 @@ export async function POST(req: Request) {
 
     const claimedToken = str(form, 'capture_token');
     const placeId = str(form, 'place_id');
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(placeId)) {
+    if (!isUuid(placeId)) {
       throw badRequest('PLACE_NOT_FOUND', 'Format place_id tidak valid');
     }
-    const vantage = VANTAGES.find((v) => v === form.get('vantage'));
+    const vantage = parseVantage(form.get('vantage'));
     if (!vantage) throw badRequest('VANTAGE_INVALID', 'vantage tidak dikenal');
 
     const captureMethod = str(form, 'capture_method');
@@ -108,7 +111,6 @@ export async function POST(req: Request) {
     // --- bahan pemeriksaan, dihitung sebelum transaksi ----------------
     const meta = scanJpegMetadata(bytes);
     const phash = await computePhash(bytes);
-    const storagePath = await putOriginal(bytes, placeId);
 
     // --- transaksi: pipa, evidence, provenance_check, audit -----------
     const outcome = await withTx(async (c) => {
@@ -123,6 +125,9 @@ export async function POST(req: Request) {
         throw badRequest('SESSION_REQUIRED', 'Sesi tidak dikenal. Mulai sesi baru');
       }
       const actor = contributor.rows[0].display_handle;
+
+      // Simpan objek asli hanya setelah tempat dan sesi terverifikasi ada.
+      const storagePath = await putOriginal(bytes, placeId);
 
       const pipe = await runProvenancePipeline(c, {
         contributorId,
@@ -204,10 +209,7 @@ export async function POST(req: Request) {
       // Kolom mengikuti tabel attribute_type milik Verification.
       // ai_suggestable adalah gerbang precision per atribut: dimatikan lewat
       // UPDATE saat gerbang jam 21:00, tanpa deploy ulang.
-      const { rows: claimable } = await c.query<{
-        code: string; is_required_at_vantage: boolean; allowed_values: string[];
-        value_type: 'integer' | 'enum'; ai_suggestable: boolean;
-      }>(
+      const { rows: claimable } = await c.query<ClaimableAttributeRow & { ai_suggestable: boolean }>(
         `SELECT code, is_required_at_vantage, allowed_values, value_type, ai_suggestable
            FROM attribute_type WHERE vantage = $1 ORDER BY code`,
         [vantage],
@@ -316,12 +318,7 @@ export async function POST(req: Request) {
         threshold: k.threshold,
       })),
       suggestions,
-      claimable: outcome.claimable.map((a) => ({
-        attribute_code: a.code,
-        required: a.is_required_at_vantage,
-        value_type: a.value_type,
-        allowed_values: [...a.allowed_values, 'not_visible'],
-      })),
+      claimable: formatClaimableAttributes(outcome.claimable),
     });
   } catch (err) {
     if (err instanceof BadRequest) {

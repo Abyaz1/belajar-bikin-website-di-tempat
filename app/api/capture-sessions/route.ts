@@ -8,23 +8,16 @@ import {
   newCaptureToken,
   verifySession,
 } from '@/lib/trust/session';
-import type { Vantage } from '@/lib/trust/types';
+import {
+  VANTAGES,
+  formatClaimableAttributes,
+  isUuid,
+  parseVantage,
+  type ClaimableAttributeRow,
+} from '@/lib/trust/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const VANTAGES: readonly Vantage[] = ['entrance', 'interior', 'toilet'];
-
-// Kolom mengikuti tabel attribute_type milik Verification
-// (202609181245_verifikasi_referensi.sql). allowed_values di sana NOT NULL dan
-// juga mencakup tipe integer — step_count disimpan sebagai '0'..'20' — sehingga
-// min_value dan max_value tidak ada lagi, dan tidak dibutuhkan.
-interface ClaimableRow {
-  code: string;
-  value_type: 'integer' | 'enum';
-  allowed_values: string[];
-  is_required_at_vantage: boolean;
-}
 
 /**
  * E8 — token penangkapan.
@@ -48,10 +41,11 @@ export async function POST(req: Request) {
       | null;
     if (!body) throw badRequest('BODY_INVALID', 'Isi permintaan bukan JSON yang sah');
 
-    const placeId = typeof body.place_id === 'string' ? body.place_id : null;
-    const vantage = VANTAGES.find((v) => v === body.vantage) ?? null;
+    const placeId = typeof body.place_id === 'string' ? body.place_id.trim() : '';
+    const vantage = parseVantage(body.vantage);
 
     if (!placeId) throw badRequest('PLACE_ID_REQUIRED', 'place_id wajib diisi');
+    if (!isUuid(placeId)) throw badRequest('PLACE_NOT_FOUND', 'Tempat tidak ditemukan');
     if (!vantage) {
       throw badRequest(
         'VANTAGE_INVALID',
@@ -65,7 +59,7 @@ export async function POST(req: Request) {
         throw badRequest('PLACE_NOT_FOUND', 'Tempat tidak ditemukan');
       }
 
-      const claimable = await c.query<ClaimableRow>(
+      const claimable = await c.query<ClaimableAttributeRow>(
         // Tabel Verification tidak punya sort_order. Diurutkan per code supaya
         // urutannya tetap sama di tiap panggilan; kalau antarmuka butuh urutan
         // tampil tertentu, itu kolom yang perlu diminta ke Verification.
@@ -103,14 +97,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       token: result.token,
       expires_at: result.expiresAt.toISOString(),
-      claimable: result.claimable.map((a) => ({
-        attribute_code: a.code,
-        required: a.is_required_at_vantage,
-        value_type: a.value_type,
-        // 'not_visible' sah untuk atribut mana pun dan tidak disimpan di tabel,
-        // jadi ditambahkan di sini supaya klien bisa menampilkannya.
-        allowed_values: [...a.allowed_values, 'not_visible'],
-      })),
+      claimable: formatClaimableAttributes(result.claimable),
     });
   } catch (err) {
     if (err instanceof BadRequest) {
@@ -119,12 +106,3 @@ export async function POST(req: Request) {
     throw err;
   }
 }
-
-/*
- * BATASAN YANG DICATAT, BUKAN DITAMBAL:
- * Penerbitan token tidak dibatasi laju. Siapa pun bisa meminta token sebanyak
- * yang dia mau. Itu tidak melonggarkan apa pun, karena yang membatasi
- * kontribusi adalah C1 yang menghitung baris evidence per kontributor — dan
- * kontribusi yang ditolak tetap dihitung. Yang bisa dilakukan penyerang cuma
- * menumpuk baris capture_session yang tidak terpakai.
- */
