@@ -128,7 +128,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             role="search"
             aria-label="Cari tempat"
             style={{ "--i": 2 } as CSSProperties}
-            className="masuk relative z-10 mx-auto grid w-full max-w-2xl grid-cols-2 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-0"
+            className="masuk relative z-10 mx-auto grid w-full max-w-xl grid-cols-1 items-center gap-1 rounded-lg border border-line bg-surface p-2 text-start sm:grid-cols-[1fr_1fr_auto] sm:gap-0"
           >
             <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
               <span className="block text-label font-normal text-ink-muted">Profil kebutuhan</span>
@@ -140,7 +140,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                 ))}
               </select>
             </label>
-            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3 sm:border-e sm:border-line">
+            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3">
               <span className="block text-label font-normal text-ink-muted">Jenis tempat</span>
               <select name="q" defaultValue="" className={FIELD}>
                 {JENIS.map((j) => (
@@ -148,13 +148,6 @@ export default async function Page({ searchParams }: PageProps<"/">) {
                     {j.label}
                   </option>
                 ))}
-              </select>
-            </label>
-            <label className="block rounded-md px-2 py-1 hover:bg-surface-alt sm:px-3">
-              <span className="block text-label font-normal text-ink-muted">Tampilan</span>
-              <select name="tampilan" defaultValue="daftar" className={FIELD}>
-                <option value="daftar">Daftar</option>
-                <option value="peta">Peta</option>
               </select>
             </label>
             <button
