@@ -87,9 +87,9 @@
   --color-demo-bg: #fbf3d0;
 
   /* ── Tipografi: rem, TIDAK PERNAH px. Batas bawah mutlak 0,875rem ── */
-  /* Tiga ukuran pajangan (DESIGN.md: Hero, Display, Stat). Hero dan Display
-     mengalir mengikuti lebar layar di antara dua batas rem, jadi tetap ikut
-     membesar saat pengguna memperbesar huruf. */
+  /* Dua ukuran pajangan (Hero dan Display). Keduanya mengalir mengikuti lebar
+     layar di antara dua batas rem, jadi tetap ikut membesar saat pengguna
+     memperbesar huruf. */
   --text-hero: clamp(2rem, 1.25rem + 3vw, 3.5rem);
   --text-hero--line-height: 1.15;
   --text-hero--letter-spacing: -0.025em;
@@ -97,9 +97,6 @@
   --text-display: clamp(2rem, 1.5rem + 1.5vw, 2.5rem);
   --text-display--line-height: 1.2;
   --text-display--font-weight: 700;
-  --text-stat: 2.5rem;
-  --text-stat--line-height: 1;
-  --text-stat--font-weight: 700;
   --text-screen: 1.75rem;
   --text-screen--line-height: 1.25;
   --text-screen--font-weight: 700;
@@ -319,18 +316,6 @@
   .masuk {
     animation: masuk 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: calc(var(--i, 0) * 90ms);
-  }
-
-  /* Tiga kartu profil di "Dinilai sesuai kebutuhan Anda": mengipas sedikit
-     saat artikelnya disorot. */
-  .kipas {
-    transition:
-      rotate 350ms cubic-bezier(0.16, 1, 0.3, 1),
-      translate 350ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .group:hover .kipas {
-    rotate: calc(var(--k, 0) * 4deg);
-    translate: calc(var(--k, 0) * 0.375rem) -0.25rem;
   }
 
   /* Satu momen gerak produk ini: penilaian "dicap" ulang setiap profil
@@ -567,8 +552,7 @@
 
   /* Efek sorot: warna dan bayangan tetap, gerak dihapus. */
   .card-link:hover,
-  :where(a, button).rounded-pill:hover,
-  .group:hover .kipas {
+  :where(a, button).rounded-pill:hover {
     translate: none;
     rotate: none;
   }
