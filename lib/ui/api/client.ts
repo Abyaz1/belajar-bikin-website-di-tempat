@@ -6,7 +6,6 @@
  * sini — klien hanya mengirim dan menampilkan jawabannya apa adanya.
  */
 
-import { UI_FIXTURES } from "../brand";
 import type {
   ApiErrorBody,
   CaptureSession,
@@ -19,10 +18,6 @@ import type {
 } from "./types";
 
 async function call(path: string, init: RequestInit): Promise<Response> {
-  if (UI_FIXTURES) {
-    const { fixtureFetch } = await import("./fixtures");
-    return fixtureFetch(path, init);
-  }
   return fetch(path, { credentials: "same-origin", ...init });
 }
 
@@ -94,8 +89,6 @@ export interface DraftInput {
   /** Dicatat server sebagai keterangan, BUKAN diperiksa (spek 10 §2.3).
    *  Kosakatanya sama dengan suite tests/rejection milik Trust. */
   captureMethod: "getusermedia" | "galeri";
-  /** Hanya dibaca mode data contoh; server nyata mengabaikannya. */
-  fixtureScenario?: string;
 }
 
 /** E4. 422 berarti ditolak — dan penolakan itu tetap tercatat di server. */
@@ -114,7 +107,6 @@ export async function submitDraft(input: DraftInput): Promise<DraftResult> {
     form.set("client_accuracy_m", String(Math.round(input.fix.accuracy * 10) / 10));
     form.set("client_fix_at", new Date(input.fix.at).toISOString());
   }
-  if (input.fixtureScenario) form.set("ui_fixture_scenario", input.fixtureScenario);
 
   let res: Response;
   try {
@@ -152,7 +144,7 @@ export async function confirmDraft(draftId: string, items: ConfirmItem[]): Promi
     return { kind: "error", status: 0, error: null };
   }
   if (!res.ok) return { kind: "error", status: res.status, error: await errorBody(res) };
-  const json = await res.json();
-  const changes: StateChange[] = Array.isArray(json) ? json : (json?.changes ?? []);
+  const json = (await res.json()) as { changes?: StateChange[] } | StateChange[];
+  const changes = Array.isArray(json) ? json : (json?.changes ?? []);
   return { kind: "saved", changes };
 }

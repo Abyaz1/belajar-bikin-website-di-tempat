@@ -73,7 +73,6 @@ export function PanelUji({ places }: { places: Target[] }) {
         fix,
         capturedAt: new Date(),
         captureMethod,
-        fixtureScenario: kind,
       });
       setLastSent(image);
       result =

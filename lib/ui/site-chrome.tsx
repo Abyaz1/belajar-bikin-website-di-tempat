@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PRODUCT_NAME, UI_FIXTURES } from "./brand";
+import { PRODUCT_NAME } from "./brand";
 import { cx } from "./cx";
 
 /** Tanda merek: pintu dengan centang. Dekoratif, nama produk selalu tertulis di sebelahnya. */
@@ -67,19 +67,6 @@ export function SiteHeader() {
         </nav>
       </div>
     </header>
-  );
-}
-
-export function FixtureBanner() {
-  const path = usePathname() ?? "/";
-  if (!UI_FIXTURES || path === "/peta") return null;
-  return (
-    // Lebar, jarak tepi, dan sudutnya sama dengan kepala halaman supaya sejajar.
-    <div className="px-3 pt-2 md:px-6">
-      <p className="mx-auto max-w-6xl rounded-lg border border-line bg-accent px-4 py-2 text-meta">
-        <strong>Mode data contoh.</strong> Isi halaman ini fiktif; jangan dipakai untuk demo atau video.
-      </p>
-    </div>
   );
 }
 

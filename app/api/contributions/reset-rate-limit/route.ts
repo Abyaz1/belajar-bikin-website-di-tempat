@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
  * sana justru merusak tesis produk ini. Yang terjadi: satu `audit_event`
  * bertindakan `rate_limit_reset` ditulis, dan C1 menghitung kontribusi sejak
  * reset terakhir alih-alih sejak satu jam lalu. Jadi resetnya meninggalkan bekas
- * permanen yang terbaca publik di jejak audit, lengkap dengan waktunya.
+ * permanen di tabel audit_event (entity_type = contributor), lengkap dengan waktunya.
  *
  * GERBANGNYA MATI SECARA BAWAAN. Tanpa `DEMO_RESET_TOKEN` terisi, rute ini
  * membalas 404 — bukan 403 — supaya keberadaannya tidak terumumkan. Endpoint
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       contributor: hasil.handle,
       terpakai_sebelum_reset: hasil.terpakaiSebelumnya,
-      /** Jejaknya permanen dan terbaca publik. Itu memang maksudnya. */
+      /** Jejaknya tercatat permanen di tabel audit_event. */
       tercatat_di_audit: true,
     });
   } catch (err) {
