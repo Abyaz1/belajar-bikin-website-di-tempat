@@ -13,34 +13,26 @@
  * layar ini menampilkan jawabannya apa adanya.
  */
 
-import { useCallback, useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
-import { confirmDraft, openCaptureSession, RequestFailed, submitDraft } from "@/lib/ui/api/client";
-import {
-  NOT_VISIBLE,
-  type ApiErrorBody,
-  type CaptureSession,
-  type Claimable,
-  type ConfirmItem,
-  type DraftAccepted,
-  type StateChange,
-  type Vantage,
+import { useCallback, useEffect, useRef, useState } from "react";
+import { openCaptureSession, RequestFailed, submitDraft } from "@/lib/ui/api/client";
+import type {
+  ApiErrorBody,
+  CaptureSession,
+  Claimable,
+  ConfirmItem,
+  DraftAccepted,
+  StateChange,
+  Vantage,
 } from "@/lib/ui/api/types";
 import { useAnnounce } from "@/lib/ui/announcer";
 import { Button, ButtonLink } from "@/lib/ui/button";
 import { CAMERA_PROBLEM, useCamera, type Capture } from "@/lib/ui/camera";
-import { ChecksTable, FlagNotice, RejectionView } from "@/lib/ui/checks";
-import { AttributeChoice, EMPTY_CHOICE, optionsFor, resolveChoice, type ChoiceValue } from "@/lib/ui/choice";
-import {
-  ATTRIBUTE,
-  ATTRIBUTE_ORDER,
-  VANTAGE_HINT,
-  VANTAGE_LABEL,
-  attributeLabel,
-  valueOption,
-  valueSentence,
-} from "@/lib/ui/copy";
+import { RejectionView } from "@/lib/ui/checks";
+import { VANTAGE_HINT, VANTAGE_LABEL } from "@/lib/ui/copy";
 import { useGeo } from "@/lib/ui/geo";
 import { GeoStatus } from "@/lib/ui/geo-status";
+import { Konfirmasi } from "./konfirmasi";
+import { Ringkasan, type LangkahTersimpan } from "./ringkasan";
 
 interface Shot {
   capture: Capture;
@@ -55,7 +47,7 @@ type Step =
   | { name: "mengirim"; session: CaptureSession; shot: Shot }
   | { name: "ditolak"; errors: ApiErrorBody[] }
   | { name: "konfirmasi"; draft: DraftAccepted; shot: Shot; claimable: Claimable[] }
-  | { name: "tersimpan"; changes: StateChange[]; sent: ConfirmItem[]; corrected: number; seconds: number };
+  | ({ name: "tersimpan" } & LangkahTersimpan);
 
 export function Alur({
   place,
@@ -265,7 +257,11 @@ export function Alur({
         playsInline
         muted
         aria-label={`Pratinjau kamera. Arahkan ke ${VANTAGE_LABEL[vantage].toLowerCase()}, lalu tekan Ambil foto.`}
-        className={step.name === "kamera" && cameraState === "live" ? "block max-h-[45vh] w-full rounded-md bg-ink object-contain" : "hidden"}
+        className={
+          step.name === "kamera" && cameraState === "live"
+            ? "block max-h-[45vh] w-full rounded-md bg-ink object-contain"
+            : "hidden"
+        }
       />
       {shot ? (
         // eslint-disable-next-line @next/next/no-img-element -- pratinjau berkas lokal (blob:)
@@ -318,260 +314,6 @@ export function Alur({
           alasannya ditampilkan sekaligus.
         </p>
       ) : null}
-    </section>
-  );
-}
-
-// ── L10 — konfirmasi usulan ─────────────────────────────────────────────────
-
-const REQUIRED_MISSING = "Pilih salah satu. Kalau tidak terlihat di foto, pilih “Tidak terlihat dari sini”.";
-
-function Konfirmasi({
-  heading,
-  draft,
-  claimable,
-  photoUrl,
-  placeName,
-  vantage,
-  placeHref,
-  onSaved,
-}: {
-  heading: RefObject<HTMLHeadingElement | null>;
-  draft: DraftAccepted;
-  claimable: Claimable[];
-  photoUrl: string;
-  placeName: string;
-  vantage: Vantage;
-  placeHref: string;
-  onSaved: (changes: StateChange[], sent: ConfirmItem[], corrected: number) => void;
-}) {
-  const announce = useAnnounce();
-  const [values, setValues] = useState<Record<string, ChoiceValue>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const ordered = [...claimable].sort(
-    (a, b) =>
-      Number(b.required) - Number(a.required) ||
-      ATTRIBUTE_ORDER.indexOf(a.attribute_code) - ATTRIBUTE_ORDER.indexOf(b.attribute_code),
-  );
-  const suggestionFor = (code: string) => draft.suggestions.find((s) => s.attribute_code === code) ?? null;
-  const anyActive = draft.suggestions.some((s) => s.active);
-  const modelDown =
-    draft.model_status === "failed" || draft.model_status === "timeout" || (!draft.model_status && !anyActive);
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (saving) return;
-    const items: ConfirmItem[] = [];
-    const errs: Record<string, string> = {};
-    for (const c of ordered) {
-      const code = c.attribute_code;
-      const r = resolveChoice(code, values[code] ?? EMPTY_CHOICE);
-      if (r === null) {
-        if (c.required) errs[code] = REQUIRED_MISSING;
-        continue;
-      }
-      if ("error" in r) {
-        errs[code] = r.error;
-        continue;
-      }
-      items.push({ attribute_code: code, confirmed_value: r.value });
-    }
-    setErrors(errs);
-    const bad = Object.keys(errs);
-    if (bad.length > 0) {
-      document.getElementById(`atribut-${bad[0]}`)?.focus();
-      announce(`${bad.length} isian perlu dilengkapi sebelum dikirim.`, "assertive");
-      return;
-    }
-
-    setSaving(true);
-    setSubmitError(null);
-    const res = await confirmDraft(draft.draft_id, items);
-    setSaving(false);
-    if (res.kind === "saved") {
-      const corrected = items.filter((i) => {
-        const s = suggestionFor(i.attribute_code);
-        return s?.active && s.value !== null && s.value !== i.confirmed_value;
-      }).length;
-      onSaved(res.changes, items, corrected);
-      return;
-    }
-    const message =
-      res.status === 0
-        ? "Tidak dapat menghubungi server. Pilihan Anda masih di sini; coba simpan lagi."
-        : res.status === 409
-          ? "Kiriman ini sudah dikonfirmasi sebelumnya atau tidak ditemukan. Tidak ada yang disimpan dua kali."
-          : res.status === 422
-            ? "Kiriman ini sudah ditolak pemeriksaan dan tidak bisa dikonfirmasi."
-            : (res.error?.message ?? `Server menolak konfirmasi (${res.status}).`);
-    setSubmitError(message);
-    announce(message, "assertive");
-  }
-
-  return (
-    <section aria-labelledby="judul-langkah" className="space-y-6">
-      <div className="space-y-2">
-        <h2 id="judul-langkah" ref={heading} tabIndex={-1} className="text-section">
-          Konfirmasi apa yang terlihat
-        </h2>
-        <p>
-          Foto lolos pemeriksaan. Jawab sesuai foto ini saja. Usulan sistem ditandai, tapi tidak pernah dipilih untuk
-          Anda. Nilai baru tersimpan setelah Anda memilihnya sendiri.
-        </p>
-      </div>
-
-      <FlagNotice checks={draft.checks} />
-
-      {modelDown ? (
-        <p className="rounded-md border border-line-control bg-surface-alt p-3">
-          Usulan sistem tidak tersedia untuk foto ini
-          {draft.model_status === "timeout" ? " (melewati batas 8 detik)" : ""}. Isi sesuai yang Anda lihat; alur ini
-          sengaja tidak bergantung pada model.
-        </p>
-      ) : draft.model_status === "off" ? (
-        <p className="rounded-md border border-line-control bg-surface-alt p-3">Usulan sistem sedang dimatikan. Isi sesuai yang Anda lihat.</p>
-      ) : null}
-
-      <div className="flex flex-wrap items-start gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau berkas lokal (blob:) */}
-        <img
-          src={photoUrl}
-          alt={`Foto ${VANTAGE_LABEL[vantage].toLowerCase()} ${placeName} yang baru dikirim`}
-          className="h-40 w-full max-w-xs rounded-md border border-line object-cover"
-        />
-        <details className="min-w-0 flex-1 basis-64">
-          <summary className="inline-flex min-h-12 cursor-pointer items-center font-semibold text-action underline">
-            Lihat hasil tiap pemeriksaan
-          </summary>
-          <ChecksTable checks={draft.checks} caption="Hasil pemeriksaan keaslian foto ini" />
-        </details>
-      </div>
-
-      <form onSubmit={submit} noValidate className="space-y-4">
-        {ordered.map((c) => {
-          const code = c.attribute_code;
-          const s = suggestionFor(code);
-          return (
-            <AttributeChoice
-              key={code}
-              code={code}
-              question={ATTRIBUTE[code]?.question ?? attributeLabel(code)}
-              required={c.required}
-              options={optionsFor(code, c.allowed_values)}
-              value={values[code] ?? EMPTY_CHOICE}
-              onChange={(v) => {
-                setValues((prev) => ({ ...prev, [code]: v }));
-                if (errors[code])
-                  setErrors((prev) => {
-                    const next = { ...prev };
-                    delete next[code];
-                    return next;
-                  });
-              }}
-              suggestion={s}
-              modelNote={
-                s && !s.active ? "Usulan sistem dimatikan untuk kondisi ini karena ketepatannya belum lolos ambang." : null
-              }
-              error={errors[code] ?? null}
-            />
-          );
-        })}
-
-        {submitError ? (
-          <p role="alert" className="rounded-md border-2 border-tidak-line bg-tidak-fill p-3 font-semibold text-tidak-ink">
-            {submitError}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" large loading={saving} loadingText="Menyimpan…">
-            Simpan jawaban saya
-          </Button>
-          <ButtonLink large variant="teks" href={placeHref}>
-            Batal, kembali ke laporan tempat
-          </ButtonLink>
-        </div>
-      </form>
-    </section>
-  );
-}
-
-// ── L11 — ringkasan perubahan ───────────────────────────────────────────────
-
-function Ringkasan({
-  heading,
-  step,
-  placeHref,
-  vantageHref,
-}: {
-  heading: RefObject<HTMLHeadingElement | null>;
-  step: Extract<Step, { name: "tersimpan" }>;
-  placeHref: string;
-  vantageHref: string;
-}) {
-  const notVisible = step.sent.filter((s) => s.confirmed_value === NOT_VISIBLE);
-
-  return (
-    <section aria-labelledby="judul-langkah" className="space-y-6">
-      <div className="space-y-2">
-        <h2 id="judul-langkah" ref={heading} tabIndex={-1} className="text-section">
-          Tersimpan
-        </h2>
-        <p>
-          {step.sent.length} jawaban tercatat dari foto ini
-          {step.corrected > 0 ? `, ${step.corrected} di antaranya mengoreksi usulan sistem` : ""}.
-        </p>
-        <p className="text-meta text-ink-muted">
-          Waktu dari memilih titik pandang sampai tersimpan: {step.seconds} detik.
-        </p>
-      </div>
-
-      {step.changes.length > 0 ? (
-        <ul className="space-y-3">
-          {step.changes.map((c) => {
-            const before = c.before?.current_value ?? null;
-            const after = c.after.current_value;
-            const kind = before === null ? "baru" : before === after ? "sama" : "berbeda";
-            return (
-              <li key={c.attribute_code} className="space-y-1 rounded-md border border-line p-4">
-                <h3 className="text-card">{attributeLabel(c.attribute_code, c.label)}</h3>
-                <p>{valueSentence(c.attribute_code, after)}</p>
-                <p className="text-meta">
-                  {kind === "baru"
-                    ? "Baru tercatat. Sebelumnya belum ada bukti."
-                    : kind === "sama"
-                      ? c.after.corroboration_count > 1
-                        ? `Menguatkan nilai yang sama. Sekarang dikuatkan ${c.after.corroboration_count} kontributor berbeda.`
-                        : "Sama dengan nilai yang sudah tercatat."
-                      : `Berbeda dari catatan sebelumnya (${valueOption(c.attribute_code, before).toLowerCase()}). ${
-                          c.after.is_disputed ? "Kondisi ini ditandai bersengketa, dan keduanya tetap ditampilkan." : ""
-                        }`}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {notVisible.length > 0 ? (
-        <p className="text-meta">
-          Dicatat sebagai tidak terlihat dari foto ini, tanpa mengubah nilai berlaku:{" "}
-          {notVisible.map((s) => attributeLabel(s.attribute_code).toLowerCase()).join(", ")}.
-        </p>
-      ) : null}
-
-      <div className="flex flex-wrap gap-3">
-        <ButtonLink large href={placeHref}>
-          Lihat laporan tempat
-        </ButtonLink>
-        <ButtonLink large variant="sekunder" href={vantageHref}>
-          Kirim foto dari titik pandang lain
-        </ButtonLink>
-      </div>
-      <p className="text-meta text-ink-muted">Setiap perubahan tercatat di jejak audit tiap kondisi.</p>
     </section>
   );
 }
